@@ -7,7 +7,16 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from shared_pb2 import UUID, Empty, StreamIdentifier
-from streams_pb2 import AppendReq, AppendResp, DeleteReq, DeleteResp, ReadReq, ReadResp
+from streams_pb2 import (
+    AppendReq,
+    AppendResp,
+    DeleteReq,
+    DeleteResp,
+    ReadReq,
+    ReadResp,
+    TombstoneReq,
+    TombstoneResp,
+)
 from streams_pb2_grpc import StreamsStub
 
 
@@ -53,6 +62,19 @@ class DeleteResult:
     @staticmethod
     def from_response(response: DeleteResp) -> DeleteResult:
         return DeleteResult(
+            commit_position=response.position.commit_position,
+            prepare_position=response.position.prepare_position,
+        )
+
+
+@dataclass
+class TombstoneResult:
+    commit_position: int
+    prepare_position: int
+
+    @staticmethod
+    def from_response(response: TombstoneResp) -> TombstoneResult:
+        return TombstoneResult(
             commit_position=response.position.commit_position,
             prepare_position=response.position.prepare_position,
         )
@@ -177,7 +199,6 @@ class Streams:
         self, *, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
     ) -> DeleteResult:
         if revision is not None:
-            # Append at specified revision
             options = {"revision": revision}
         else:
             options: dict[str, None | Empty] = {v.value: None for v in StreamState}
@@ -192,3 +213,21 @@ class Streams:
 
         response = self._stub.Delete(delete_request)
         return DeleteResult.from_response(response)
+
+    def tombstone(
+        self, *, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+    ) -> TombstoneResult:
+        if revision is not None:
+            options = {"revision": revision}
+        else:
+            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
+            options[stream_state.value] = Empty()
+
+        tombstone_request = TombstoneReq(
+            options=TombstoneReq.Options(
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+                **options,
+            )
+        )
+        response = self._stub.Tombstone(tombstone_request)
+        return TombstoneResult.from_response(response)
