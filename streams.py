@@ -6,10 +6,15 @@ import uuid
 from dataclasses import dataclass
 from typing import Iterable
 
+from google.protobuf.duration_pb2 import Duration
+from google.protobuf.empty_pb2 import Empty as GEmpty
+
 from shared_pb2 import UUID, Empty, StreamIdentifier
 from streams_pb2 import (
     AppendReq,
     AppendResp,
+    BatchAppendReq,
+    BatchAppendResp,
     DeleteReq,
     DeleteResp,
     ReadReq,
@@ -231,3 +236,62 @@ class Streams:
         )
         response = self._stub.Tombstone(tombstone_request)
         return TombstoneResult.from_response(response)
+
+    def batch_append(
+        self,
+        *,
+        stream: str,
+        event_type: str,
+        data: Iterable[dict | bytes],
+        stream_state: StreamState = StreamState.ANY,
+        revision: int | None = None,
+        custom_metadata: None | dict = None,
+        correlation_id: None | uuid.UUID = None,
+        deadline_seconds: None | int = None,
+        deadline_nanos: None | int = None,
+    ) -> "BatchAppendResult":
+        correlation_id = UUID(string=str(correlation_id or uuid.uuid4()))
+        if revision is not None:
+            # Append at specified revision
+            options = {"revision": revision}
+        else:
+            options: dict[str, None | GEmpty] = {v.value: None for v in StreamState}
+            options[stream_state.value] = GEmpty()
+        options = BatchAppendReq(
+            correlation_id=correlation_id,
+            options=BatchAppendReq.Options(
+                stream_position=0,  # TODO: wtf is position?
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+                # #TODO: deadline=Duration(seconds=deadline_seconds, nanos=deadline_nanos),
+                **options,
+            ),
+            is_final=False,  # This needs to be off for options
+        )
+        proposed_messages = BatchAppendReq(
+            correlation_id=correlation_id,
+            proposed_messages=(
+                BatchAppendReq.ProposedMessage(
+                    id=UUID(string=str(uuid.uuid4())),
+                    metadata={
+                        "type": event_type,
+                        "content-type": ContentType.OCTET_STREAM.value
+                        if isinstance(data, bytes)
+                        else ContentType.JSON.value,
+                    },
+                    custom_metadata=json.dumps(custom_metadata).encode() if custom_metadata else b"",
+                    data=json.dumps(item).encode() if isinstance(item, dict) else item,
+                )
+                for item in data
+            ),
+            is_final=True,  # TODO - figure out what to do with this
+        )
+
+        append_response_iter = self._stub.BatchAppend(iter([options, proposed_messages]))
+        # __import__("ipdb").set_trace()
+        for appemd_resp in append_response_iter:
+            append_response: BatchAppendResp
+            # if append_response.HasField("wrong_expected_version"):
+            #     raise Exception(f"TODO: wrong expected version: {append_response.wrong_expected_version}")
+            # if not append_response.HasField("success"):
+            #     raise Exception(f"TODO: {append_response}")
+            # return BatchAppendResult.from_response(append_response)
