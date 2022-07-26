@@ -82,3 +82,11 @@ def test_appending_at_correct_revision(client):
         data=b"",
         revision=1,
     )
+
+
+@pytest.mark.asyncio
+async def test_append_async(async_client):
+    stream = str(uuid.uuid4())
+    result = await async_client.streams.append(stream, "foo_bar", {"x": 1})
+    assert isinstance(result, AppendResult)
+    assert result.commit_position > 0
