@@ -3,8 +3,8 @@ from __future__ import annotations
 import enum
 import json
 import uuid
-from dataclasses import dataclass
-from typing import Iterable
+from dataclasses import dataclass, field
+from typing import Iterable, Optional, Type, TypeVar
 
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
@@ -36,12 +36,6 @@ class StreamState(enum.Enum):
 class ReadFrom(enum.Enum):
     START = "start"
     END = "end"
-
-
-@enum.unique
-class ContentType(enum.Enum):
-    OCTET_STREAM = "application/octet-stream"
-    JSON = "application/json"
 
 
 @dataclass
@@ -85,6 +79,12 @@ class TombstoneResult:
         )
 
 
+@enum.unique
+class ContentType(enum.Enum):
+    OCTET_STREAM = "application/octet-stream"
+    JSON = "application/json"
+
+
 @dataclass
 class ReadResult:
     id: str
@@ -112,13 +112,54 @@ class ReadResult:
         )
 
 
+ProposedMessageType = TypeVar("ProposedMessageType", BatchAppendReq.ProposedMessage, AppendReq.ProposedMessage)
+
+
+@dataclass
+class Message:
+    event_type: str
+    data: bytes | dict
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
+    custom_metadata: Optional[dict] = None
+
+    def to_protobuf(self, message_type: Type[ProposedMessageType]) -> ProposedMessageType:
+        assert isinstance(self.data, (bytes, dict))
+        return message_type(
+            id=UUID(string=str(self.id)),
+            metadata={
+                "type": self.event_type,
+                "content-type": ContentType.OCTET_STREAM.value
+                if isinstance(self.data, bytes)
+                else ContentType.JSON.value,
+            },
+            custom_metadata=json.dumps(self.custom_metadata).encode() if self.custom_metadata else b"",
+            data=json.dumps(self.data).encode() if isinstance(self.data, dict) else self.data,
+        )
+
+
+@dataclass
+class BatchAppendResult:
+    correlation_id: str
+    current_revision: int
+    commit_position: int
+    prepare_position: int
+
+    @staticmethod
+    def from_response(response: BatchAppendResp) -> BatchAppendResult:
+        return BatchAppendResult(
+            correlation_id=response.correlation_id,
+            current_revision=response.success.current_revision,
+            commit_position=response.success.position.commit_position,
+            prepare_position=response.success.position.prepare_position,
+        )
+
+
 class Streams:
     def __init__(self, streams_stub: StreamsStub) -> None:
         self._stub = streams_stub
 
     def append(
         self,
-        *,
         stream: str,
         event_type: str,
         data: dict | bytes,
@@ -132,24 +173,20 @@ class Streams:
         else:
             options: dict[str, None | Empty] = {v.value: None for v in StreamState}
             options[stream_state.value] = Empty()
+
         options = AppendReq(
             options=AppendReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 **options,
             )
         )
+
         proposed_message = AppendReq(
-            proposed_message=AppendReq.ProposedMessage(
-                id=UUID(string=str(uuid.uuid4())),
-                metadata={
-                    "type": event_type,
-                    "content-type": ContentType.OCTET_STREAM.value
-                    if isinstance(data, bytes)
-                    else ContentType.JSON.value,
-                },
-                custom_metadata=json.dumps(custom_metadata).encode() if custom_metadata else b"",
-                data=json.dumps(data).encode() if isinstance(data, dict) else data,
-            ),
+            proposed_message=Message(
+                event_type=event_type,
+                data=data,
+                custom_metadata=custom_metadata,
+            ).to_protobuf(AppendReq.ProposedMessage)
         )
 
         append_response: AppendResp = self._stub.Append(iter([options, proposed_message]))
@@ -162,7 +199,6 @@ class Streams:
 
     def read(
         self,
-        *,
         stream: str,
         count: int,
         backwards: bool = False,
@@ -201,7 +237,7 @@ class Streams:
             yield ReadResult.from_response(response)
 
     def delete(
-        self, *, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
     ) -> DeleteResult:
         if revision is not None:
             options = {"revision": revision}
@@ -220,7 +256,7 @@ class Streams:
         return DeleteResult.from_response(response)
 
     def tombstone(
-        self, *, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
     ) -> TombstoneResult:
         if revision is not None:
             options = {"revision": revision}
@@ -239,59 +275,43 @@ class Streams:
 
     def batch_append(
         self,
-        *,
         stream: str,
-        event_type: str,
-        data: Iterable[dict | bytes],
+        messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
         revision: int | None = None,
-        custom_metadata: None | dict = None,
         correlation_id: None | uuid.UUID = None,
-        deadline_seconds: None | int = None,
-        deadline_nanos: None | int = None,
-    ) -> "BatchAppendResult":
-        correlation_id = UUID(string=str(correlation_id or uuid.uuid4()))
+        deadline_ms: None | int = None,
+    ) -> BatchAppendResult:
+        correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
+        options: dict[str, int | GEmpty | None]
         if revision is not None:
             # Append at specified revision
             options = {"revision": revision}
         else:
-            options: dict[str, None | GEmpty] = {v.value: None for v in StreamState}
+            options = {v.value: None for v in StreamState}
             options[stream_state.value] = GEmpty()
-        options = BatchAppendReq(
-            correlation_id=correlation_id,
+
+        if deadline_ms is not None:
+            options["deadline"] = Duration(nanos=deadline_ms * 1000000)
+
+        options_req = BatchAppendReq(
+            correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
-                stream_position=0,  # TODO: wtf is position?
+                # stream_position=0,  # TODO: wtf is position?
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                # #TODO: deadline=Duration(seconds=deadline_seconds, nanos=deadline_nanos),
                 **options,
             ),
             is_final=False,  # This needs to be off for options
         )
         proposed_messages = BatchAppendReq(
-            correlation_id=correlation_id,
-            proposed_messages=(
-                BatchAppendReq.ProposedMessage(
-                    id=UUID(string=str(uuid.uuid4())),
-                    metadata={
-                        "type": event_type,
-                        "content-type": ContentType.OCTET_STREAM.value
-                        if isinstance(data, bytes)
-                        else ContentType.JSON.value,
-                    },
-                    custom_metadata=json.dumps(custom_metadata).encode() if custom_metadata else b"",
-                    data=json.dumps(item).encode() if isinstance(item, dict) else item,
-                )
-                for item in data
-            ),
-            is_final=True,  # TODO - figure out what to do with this
+            correlation_id=correlation_id_,
+            proposed_messages=(m.to_protobuf(BatchAppendReq.ProposedMessage) for m in messages),
+            is_final=True,
         )
 
-        append_response_iter = self._stub.BatchAppend(iter([options, proposed_messages]))
-        # __import__("ipdb").set_trace()
-        for appemd_resp in append_response_iter:
-            append_response: BatchAppendResp
-            # if append_response.HasField("wrong_expected_version"):
-            #     raise Exception(f"TODO: wrong expected version: {append_response.wrong_expected_version}")
-            # if not append_response.HasField("success"):
-            #     raise Exception(f"TODO: {append_response}")
-            # return BatchAppendResult.from_response(append_response)
+        append_response: BatchAppendResp = next(self._stub.BatchAppend(iter([options_req, proposed_messages])))
+        if append_response.HasField("error"):
+            raise Exception(f"TODO: got error {append_response.error}")
+        if not append_response.HasField("success"):
+            raise Exception(f"TODO: {append_response}")
+        return BatchAppendResult.from_response(append_response)
