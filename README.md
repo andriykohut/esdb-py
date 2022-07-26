@@ -16,15 +16,19 @@ pyenv local esdb-py
 4. Start eventstore in docker: `make run-esdb`
 5. Try running the example `python client_example.py`
 ```py
-channel = grpc.insecure_channel("localhost:2113")
-stub = StreamsStub(channel)
-streams = Streams(stub)
-result = streams.append(
-    "test",
-    event_type="order_placed",
-    data={"x": 1, "y": 2},
-)
-for result in streams.read("test", 10):
-    print(result)
+    channel = grpc.insecure_channel("localhost:2113")
+    stub = StreamsStub(channel)
+    streams = Streams(stub)
+    result = streams.append(
+        stream="test",
+        event_type="order_placed",
+        data={"x": 1, "y": 2, "ts": datetime.datetime.utcnow().isoformat()},
+    )
+    print("Forwards!")
+    for result in streams.read(stream="test", count=10):
+        print(result.data)
 
+    print("Backwards!")
+    for result in streams.read(stream="test", count=10, backwards=True):
+        print(result.data)
 ```

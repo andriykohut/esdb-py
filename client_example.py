@@ -1,3 +1,4 @@
+import datetime
 import enum
 import json
 import uuid
@@ -10,17 +11,20 @@ from streams_pb2_grpc import StreamsStub
 from shared_pb2 import Empty, StreamIdentifier, UUID
 
 
+@enum.unique
 class StreamState(enum.Enum):
     ANY = "any"
     NO_STREAM = "no_stream"
     STREAM_EXISTS = "stream_exists"
 
 
+@enum.unique
 class ReadFrom(enum.Enum):
     START = "start"
     END = "end"
 
 
+@enum.unique
 class ContentType(enum.Enum):
     OCTET_STREAM = "application/octet-stream"
     JSON = "application/json"
@@ -31,6 +35,14 @@ class AppendResult:
     current_revision: int
     commit_position: int
     prepare_position: int
+
+    @staticmethod
+    def from_response(response: AppendResp) -> "AppendResult":
+        return AppendResult(
+            current_revision=response.success.current_revision,
+            commit_position=response.success.position.commit_position,
+            prepare_position=response.success.position.prepare_position,
+        )
 
 
 @dataclass
@@ -44,7 +56,7 @@ class ReadResult:
     data: dict | bytes
 
     @staticmethod
-    def from_read_response(response: ReadResp) -> "ReadResult":
+    def from_response(response: ReadResp) -> "ReadResult":
         return ReadResult(
             id=response.event.event.id.string,
             stream_name=response.event.event.stream_identifier.stream_name.decode(),
@@ -64,11 +76,12 @@ class Streams:
 
     def append(
         self,
+        *,
         stream: str,
         event_type: str,
         data: dict | bytes,
         stream_state: StreamState = StreamState.ANY,
-    ):
+    ) -> AppendResult:
         stream_state_args: dict[str, None | Empty] = {
             v.value: None for v in StreamState
         }
@@ -104,28 +117,29 @@ class Streams:
             )
         if not append_response.HasField("success"):
             raise Exception(f"TODO: {append_response}")
-        return AppendResult(
-            current_revision=append_response.success.current_revision,
-            commit_position=append_response.success.position.commit_position,
-            prepare_position=append_response.success.position.prepare_position,
-        )
+        return AppendResult.from_response(append_response)
 
     def read(
-        self, stream: str, count: int, read_from: ReadFrom = ReadFrom.START
+        self,
+        *,
+        stream: str,
+        count: int,
+        backwards: bool = False,
     ) -> Iterable[ReadResult]:
-        stream_options = {v.value: None for v in ReadFrom}
-        stream_options[read_from.value] = Empty()
         read_request = ReadReq(
             options=ReadReq.Options(
                 stream=ReadReq.Options.StreamOptions(
                     stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                     revision=1,  # TODO figure out what this does?
-                    **stream_options,
+                    start=None if backwards else Empty(),
+                    end=Empty() if backwards else None,
                 ),
-                all=None,  # TODO: Does this mean read all?
-                read_direction=ReadReq.Options.Forwards,  # TODO: How is this different to star/end in stream identifier?
+                all=None,
+                read_direction=ReadReq.Options.Backwards
+                if backwards
+                else ReadReq.Options.Forwards,
                 resolve_links=False,  # TODO: figure out what this does
-                count=count,  # TODO: How many messages to read?
+                count=count,
                 subscription=None,  # TODO: Deal with subscriptions
                 filter=None,  # TODO: Deal with filters
                 no_filter=Empty(),
@@ -136,16 +150,24 @@ class Streams:
         )
         for response in self._stub.Read(read_request):
             response: ReadResp
-            yield ReadResult.from_read_response(response)
+            if response.HasField("stream_not_found"):
+                raise Exception("TODO: Stream not found")
+            yield ReadResult.from_response(response)
 
 
-channel = grpc.insecure_channel("localhost:2113")
-stub = StreamsStub(channel)
-streams = Streams(stub)
-result = streams.append(
-    "test",
-    event_type="order_placed",
-    data={"x": 1, "y": 2},
-)
-for result in streams.read("test", 10):
-    print(result)
+if __name__ == "__main__":
+    channel = grpc.insecure_channel("localhost:2113")
+    stub = StreamsStub(channel)
+    streams = Streams(stub)
+    result = streams.append(
+        stream="test",
+        event_type="order_placed",
+        data={"x": 1, "y": 2, "ts": datetime.datetime.utcnow().isoformat()},
+    )
+    print("Forwards!")
+    for result in streams.read(stream="test", count=10):
+        print(result.data)
+
+    print("Backwards!")
+    for result in streams.read(stream="test", count=10, backwards=True):
+        print(result.data)
