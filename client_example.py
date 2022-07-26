@@ -2,6 +2,7 @@ import enum
 import json
 import uuid
 from dataclasses import dataclass
+from typing import Iterable
 
 import grpc
 from streams_pb2 import AppendReq, AppendResp, ReadReq, ReadResp
@@ -19,9 +20,10 @@ class ReadFrom(enum.Enum):
     START = "start"
     END = "end"
 
+
 class ContentType(enum.Enum):
-    OCTET_STREAM = 'application/octet-stream'
-    JSON = 'application/json'
+    OCTET_STREAM = "application/octet-stream"
+    JSON = "application/json"
 
 
 @dataclass
@@ -29,6 +31,7 @@ class AppendResult:
     current_revision: int
     commit_position: int
     prepare_position: int
+
 
 @dataclass
 class ReadResult:
@@ -41,13 +44,15 @@ class ReadResult:
     data: dict | bytes
 
     @staticmethod
-    def from_read_response(response: ReadResp) -> 'ReadResult':
+    def from_read_response(response: ReadResp) -> "ReadResult":
         return ReadResult(
             id=response.event.event.id.string,
             stream_name=response.event.event.stream_identifier.stream_name.decode(),
             metadata=response.event.event.metadata,
             custom_metadata=response.event.event.custom_metadata,
-            data=json.loads(response.event.event.data) if response.event.event.metadata['content-type'] == ContentType.JSON.value else response.event.event.data,
+            data=json.loads(response.event.event.data)
+            if response.event.event.metadata["content-type"] == ContentType.JSON.value
+            else response.event.event.data,
             prepare_position=response.event.commit_position,
             commit_position=response.event.commit_position,
         )
@@ -64,7 +69,9 @@ class Streams:
         data: dict | bytes,
         stream_state: StreamState = StreamState.ANY,
     ):
-        stream_state_args: dict[str, None | Empty] = {v.value: None for v in StreamState}
+        stream_state_args: dict[str, None | Empty] = {
+            v.value: None for v in StreamState
+        }
         stream_state_args[stream_state.value] = Empty()
         options = AppendReq(
             options=AppendReq.Options(
@@ -87,7 +94,9 @@ class Streams:
             ),
         )
 
-        append_response: AppendResp = self._stub.Append(iter([options, proposed_message]))
+        append_response: AppendResp = self._stub.Append(
+            iter([options, proposed_message])
+        )
 
         if append_response.HasField("wrong_expected_version"):
             raise Exception(
@@ -101,28 +110,33 @@ class Streams:
             prepare_position=append_response.success.position.prepare_position,
         )
 
-    def read(self, stream: str, count: int, read_from: ReadFrom = ReadFrom.START) -> 'TODO':
+    def read(
+        self, stream: str, count: int, read_from: ReadFrom = ReadFrom.START
+    ) -> Iterable[ReadResult]:
         stream_options = {v.value: None for v in ReadFrom}
         stream_options[read_from.value] = Empty()
-        read_request = ReadReq(options=ReadReq.Options(
-            stream=ReadReq.Options.StreamOptions(
-                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                revision=1,  # TODO figure out what this does?
-                **stream_options,
-            ),
-            all=None,  # TODO: Does this mean read all?
-            read_direction=ReadReq.Options.Forwards,  # TODO: How is this different to star/end in stream identifier?
-            resolve_links=False,  # TODO: figure out what this does
-            count=count,  # TODO: How many messages to read?
-            subscription=None,  # TODO: Deal with subscriptions
-            filter=None,  # TODO: Deal with filters
-            no_filter=Empty(),
-            uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty())
-        ))
+        read_request = ReadReq(
+            options=ReadReq.Options(
+                stream=ReadReq.Options.StreamOptions(
+                    stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+                    revision=1,  # TODO figure out what this does?
+                    **stream_options,
+                ),
+                all=None,  # TODO: Does this mean read all?
+                read_direction=ReadReq.Options.Forwards,  # TODO: How is this different to star/end in stream identifier?
+                resolve_links=False,  # TODO: figure out what this does
+                count=count,  # TODO: How many messages to read?
+                subscription=None,  # TODO: Deal with subscriptions
+                filter=None,  # TODO: Deal with filters
+                no_filter=Empty(),
+                uuid_option=ReadReq.Options.UUIDOption(
+                    structured=Empty(), string=Empty()
+                ),
+            )
+        )
         for response in self._stub.Read(read_request):
             response: ReadResp
             yield ReadResult.from_read_response(response)
-
 
 
 channel = grpc.insecure_channel("localhost:2113")
