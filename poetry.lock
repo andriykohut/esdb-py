@@ -131,18 +131,6 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
-name = "protoletariat"
-version = "0.9.4"
-description = "Python protocol buffers for the rest of us"
-category = "dev"
-optional = false
-python-versions = ">=3.7,<3.11"
-
-[package.dependencies]
-click = ">=7.1.2,<9"
-protobuf = ">=3.19.1,<4.0.0"
-
-[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -177,7 +165,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.10"
-content-hash = "0052255baa192d3ed3dce23208d1f3f4a7309679b53547b87161aed5e40fabc6"
+content-hash = "a5f7ac58e265cac7bd1be524daa741a18c61d3aae57773013f864de293a25f5c"
 
 [metadata.files]
 black = [
@@ -375,10 +363,6 @@ protobuf = [
     {file = "protobuf-3.20.1-cp39-cp39-win_amd64.whl", hash = "sha256:7e371f10abe57cee5021797126c93479f59fccc9693dafd6bd5633ab67808a91"},
     {file = "protobuf-3.20.1-py2.py3-none-any.whl", hash = "sha256:adfc6cf69c7f8c50fd24c793964eef18f0ac321315439d94945820612849c388"},
     {file = "protobuf-3.20.1.tar.gz", hash = "sha256:adc31566d027f45efe3f44eeb5b1f329da43891634d61c75a5944e9be6dd42c9"},
-]
-protoletariat = [
-    {file = "protoletariat-0.9.4-py3-none-any.whl", hash = "sha256:25f2dec490ef66a3a577c6956d03835ffbcb769865ecefd709798a81ffd46b30"},
-    {file = "protoletariat-0.9.4.tar.gz", hash = "sha256:f34633c9b1d4b0c4efccadd09a4f2a3c3dc1ddb3d38240dfdbafad2553f85fe3"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
