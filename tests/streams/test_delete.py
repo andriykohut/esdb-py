@@ -61,5 +61,3 @@ def test_delete_with_stream_state(client):
         client.streams.delete(stream=stream3)
 
     assert "Expected version: -2, Actual version: -1" in str(err)
-
-
