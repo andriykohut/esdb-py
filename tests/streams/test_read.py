@@ -60,3 +60,13 @@ def test_read_count(client):
 
     assert len(last_ten_backwards) == 10
     assert [e.data["i"] for e in last_ten_backwards] == reversed_events[10:]
+
+
+def test_read_from_projection(client):
+    event_type = str(uuid.uuid4())
+    for _ in range(10):
+        client.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
+
+    events = list(client.streams.read(stream=f"$et-{event_type}", count=500))
+    assert events
+    assert all(e.metadata["type"] == event_type for e in events)
