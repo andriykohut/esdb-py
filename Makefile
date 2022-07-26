@@ -7,3 +7,8 @@ protoc:
 		--grpc_python_out=. \
 		--mypy_out=. \
 		protos/*.proto
+
+
+pretty:
+	black .
+	isort .

@@ -4,9 +4,9 @@ import uuid
 from dataclasses import dataclass
 from typing import Iterable
 
+from shared_pb2 import UUID, Empty, StreamIdentifier
 from streams_pb2 import AppendReq, AppendResp, ReadReq, ReadResp
 from streams_pb2_grpc import StreamsStub
-from shared_pb2 import Empty, StreamIdentifier, UUID
 
 
 @enum.unique
@@ -79,14 +79,18 @@ class Streams:
         event_type: str,
         data: dict | bytes,
         stream_state: StreamState = StreamState.ANY,
+        revision: None | int = None,
     ) -> AppendResult:
-        stream_state_args: dict[str, None | Empty] = {v.value: None for v in StreamState}
-        stream_state_args[stream_state.value] = Empty()
+        if revision is not None:
+            # Append at specified revision
+            options = {"revision": revision}
+        else:
+            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
+            options[stream_state.value] = Empty()
         options = AppendReq(
             options=AppendReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                # revision=1,  # TODO: Figure out what this does?
-                **stream_state_args,
+                **options,
             )
         )
         proposed_message = AppendReq(
@@ -120,13 +124,15 @@ class Streams:
         revision: int | None = None,
     ) -> Iterable[ReadResult]:
         options = {}
-        if revision:
+        if revision is not None:
             options["revision"] = revision
         else:
-            options.update({
-                "start": None if backwards else Empty(),
-                "end": Empty() if backwards else None,
-            })
+            options.update(
+                {
+                    "start": None if backwards else Empty(),
+                    "end": Empty() if backwards else None,
+                }
+            )
         read_request = ReadReq(
             options=ReadReq.Options(
                 stream=ReadReq.Options.StreamOptions(

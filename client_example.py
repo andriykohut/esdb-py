@@ -9,6 +9,7 @@ stream = f"test-{str(uuid.uuid4())}"
 
 for i in range(10):
     append_result = client.streams.append(
+        revision=0,
         stream=stream,
         event_type="test_event",
         data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},

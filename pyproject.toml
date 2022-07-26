@@ -5,6 +5,10 @@ description = "gRPC client for EventStore DB"
 authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
 license = "MIT"
 
+packages = [
+    { include = "**/*.py" },
+]
+
 [tool.poetry.dependencies]
 python = "3.10"
 
@@ -13,6 +17,8 @@ grpcio-tools = "^1.47.0"
 mypy = "^0.971"
 mypy-protobuf = "^3.2.0"
 black = "^22.6.0"
+pytest = "^7.1.2"
+isort = "^5.10.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -20,3 +26,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 119
+exclude = ".+pb2.+"
+
+[tool.isort]
+profile = "black"
+skip_glob = "*pb2*"
