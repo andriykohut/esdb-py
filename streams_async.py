@@ -4,6 +4,9 @@ from streams_pb2 import AppendReq, AppendResp
 from streams_pb2_grpc import StreamsStub
 
 
+# TODO: This is just a stub to see if the things are working - refactor this to reuse what we already have for
+#       non-async client since the only difference in `await self._stub.Method(...)` vs `self._stub.Method(...)`
+
 class Streams:
     def __init__(self, streams_stub: StreamsStub) -> None:
         self._stub = streams_stub

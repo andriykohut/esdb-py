@@ -3,6 +3,21 @@
 EventStoreDB Python gRPC client
 > NOTE: This project is still work in progress
 
+**Implemented parts**
+- [ ] secure connection
+- [ ] streams
+  - [x] append
+  - [x] batch append
+  - [x] delete
+  - [x] read
+  - [x] tombstone
+  - [ ] filtering
+  - [ ] exception handling
+  - [ ] async
+- [ ] subscriptions
+- [ ] users
+- [ ] tbd
+
 
 # Setting things up
 1. Install [poetry](https://python-poetry.org/docs/#installation)
@@ -14,7 +29,9 @@ pyenv local esdb-py
 ```
 3. Install deps with `poetry install`
 4. Start eventstore in docker: `make run-esdb`
-5. Try running the example `python client_example.py`
+5. Run the tests: `pytest tests`
+
+Usage:
 ```py
 import datetime
 import uuid
