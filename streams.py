@@ -50,7 +50,7 @@ class ReadResult:
     prepare_position: int
     commit_position: int
     metadata: dict
-    custom_metadata: bytes
+    custom_metadata: dict | None
     data: dict | bytes
 
     @staticmethod
@@ -59,7 +59,9 @@ class ReadResult:
             id=response.event.event.id.string,
             stream_name=response.event.event.stream_identifier.stream_name.decode(),
             metadata=response.event.event.metadata,
-            custom_metadata=response.event.event.custom_metadata,
+            custom_metadata=json.loads(response.event.event.custom_metadata)
+            if response.event.event.custom_metadata
+            else None,
             data=json.loads(response.event.event.data)
             if response.event.event.metadata["content-type"] == ContentType.JSON.value
             else response.event.event.data,
@@ -80,6 +82,7 @@ class Streams:
         data: dict | bytes,
         stream_state: StreamState = StreamState.ANY,
         revision: None | int = None,
+        custom_metadata: None | dict = None,
     ) -> AppendResult:
         if revision is not None:
             # Append at specified revision
@@ -102,7 +105,7 @@ class Streams:
                     if isinstance(data, bytes)
                     else ContentType.JSON.value,
                 },
-                custom_metadata=b"{}",
+                custom_metadata=json.dumps(custom_metadata).encode() if custom_metadata else b"",
                 data=json.dumps(data).encode() if isinstance(data, dict) else data,
             ),
         )
