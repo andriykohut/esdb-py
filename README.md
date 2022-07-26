@@ -14,4 +14,17 @@ pyenv local esdb-py
 ```
 3. Install deps with `poetry install`
 4. Start eventstore in docker: `make run-esdb`
-6. Try running the example `python client_example.py`
+5. Try running the example `python client_example.py`
+```py
+channel = grpc.insecure_channel("localhost:2113")
+stub = StreamsStub(channel)
+streams = Streams(stub)
+result = streams.append(
+    "test",
+    event_type="order_placed",
+    data={"x": 1, "y": 2},
+)
+for result in streams.read("test", 10):
+    print(result)
+
+```
