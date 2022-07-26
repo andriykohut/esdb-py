@@ -48,3 +48,18 @@ print("Backwards start from middle!")
 for result in client.streams.read(stream=stream, count=10, backwards=True, revision=5):
     print(result.data)
 ```
+
+Async example:
+```py
+import asyncio
+from esclient import AsyncESClient
+
+
+async def append():
+    client = AsyncESClient("localhost:2113")
+    result = await client.streams.append("stream", "type", {"x": 1})
+    assert result.commit_position > 0
+
+
+asyncio.run(append())
+```
