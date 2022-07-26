@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import enum
 import json
 import uuid
@@ -5,7 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from shared_pb2 import UUID, Empty, StreamIdentifier
-from streams_pb2 import AppendReq, AppendResp, ReadReq, ReadResp
+from streams_pb2 import AppendReq, AppendResp, DeleteReq, DeleteResp, ReadReq, ReadResp
 from streams_pb2_grpc import StreamsStub
 
 
@@ -35,11 +37,24 @@ class AppendResult:
     prepare_position: int
 
     @staticmethod
-    def from_response(response: AppendResp) -> "AppendResult":
+    def from_response(response: AppendResp) -> AppendResult:
         return AppendResult(
             current_revision=response.success.current_revision,
             commit_position=response.success.position.commit_position,
             prepare_position=response.success.position.prepare_position,
+        )
+
+
+@dataclass
+class DeleteResult:
+    commit_position: int
+    prepare_position: int
+
+    @staticmethod
+    def from_response(response: DeleteResp) -> DeleteResult:
+        return DeleteResult(
+            commit_position=response.position.commit_position,
+            prepare_position=response.position.prepare_position,
         )
 
 
@@ -157,3 +172,23 @@ class Streams:
             if response.HasField("stream_not_found"):
                 raise Exception("TODO: Stream not found")
             yield ReadResult.from_response(response)
+
+    def delete(
+        self, *, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+    ) -> DeleteResult:
+        if revision is not None:
+            # Append at specified revision
+            options = {"revision": revision}
+        else:
+            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
+            options[stream_state.value] = Empty()
+
+        delete_request = DeleteReq(
+            options=DeleteReq.Options(
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+                **options,
+            )
+        )
+
+        response = self._stub.Delete(delete_request)
+        return DeleteResult.from_response(response)
