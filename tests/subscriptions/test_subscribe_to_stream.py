@@ -1,4 +1,3 @@
-import threading
 import time
 import uuid
 
@@ -14,8 +13,7 @@ def test_subscribe_to_stream(client):
 
     # emit some events to the same stream
     for _ in range(10):
-        with threading.Lock():
-            client.streams.append(stream, "foobar", b"data")
+        client.streams.append(stream, "foobar", b"data")
 
     # create a subscription
     client.subscriptions.create_stream_subscription(stream=stream, group_name=group, revision=1)
