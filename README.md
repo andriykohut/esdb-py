@@ -43,7 +43,7 @@ import uuid
 from esclient import ESClient
 
 # For insecure connection without basic auth:
-# client = ESClient("localhost:2113")
+# client = ESClient("localhost:2113", tls=False)
 with open("certs/ca/ca.crt", "rb") as fh:
   root_cert = fh.read()
   
