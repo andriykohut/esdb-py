@@ -4,7 +4,12 @@ EventStoreDB Python gRPC client
 > NOTE: This project is still work in progress
 
 **Implemented parts**
-- [ ] secure connection
+- [x] secure connection
+- [x] basic auth
+- [ ] other connection options
+  - [ ] multi-node gossip
+  - [ ] keepalive
+- [ ] async client [wip]
 - [ ] streams
   - [x] append
   - [x] batch append
@@ -13,7 +18,6 @@ EventStoreDB Python gRPC client
   - [x] tombstone
   - [ ] filtering
   - [ ] exception handling
-  - [ ] async
 - [ ] subscriptions
 - [ ] users
 - [ ] tbd
