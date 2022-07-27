@@ -32,12 +32,6 @@ class StreamState(enum.Enum):
     STREAM_EXISTS = "stream_exists"
 
 
-@enum.unique
-class ReadFrom(enum.Enum):
-    START = "start"
-    END = "end"
-
-
 @dataclass
 class AppendResult:
     current_revision: int
@@ -297,7 +291,7 @@ class Streams:
         options_req = BatchAppendReq(
             correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
-                # stream_position=0,  # TODO: wtf is position?
+                # stream_position=0,  # TODO: wtf is this? probably expected position
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 **options,
             ),

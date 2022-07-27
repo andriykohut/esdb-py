@@ -5,6 +5,8 @@ from typing import Optional
 
 import grpc
 
+from persistent_pb2_grpc import PersistentSubscriptionsStub
+from persistent_subscriptions import PersistentSubscriptions
 from streams import Streams
 from streams_async import Streams as StreamsAsync
 from streams_pb2_grpc import StreamsStub
@@ -53,6 +55,7 @@ class ESClient:
 
         self.__channel = channel_func(target, credentials) if credentials else channel_func(target)
         self.streams = Streams(StreamsStub(self.__channel))
+        self.subscriptions = PersistentSubscriptions(PersistentSubscriptionsStub(self.__channel))
 
 
 class AsyncESClient:
