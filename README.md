@@ -89,3 +89,26 @@ async def append():
 
 asyncio.run(append())
 ```
+
+Subscriptions:
+```py
+stream = "stream-name"
+group = "group-name"
+
+responses = []
+
+# emit some events to the same stream
+for _ in range(10):
+    client.streams.append(stream, "foobar", b"data")
+
+# create a subscription
+client.subscriptions.create_stream_subscription(stream=stream, group_name=group)
+
+
+def handler(response, reader):
+    # do stuff with the event
+    ...
+
+# This will block, until reader exits
+client.subscriptions.subscribe_to_stream(stream, group, handler)
+```
