@@ -70,3 +70,12 @@ def test_read_from_projection(client):
     events = list(client.streams.read(stream=f"$et-{event_type}", count=500))
     assert events
     assert all(e.metadata["type"] == event_type for e in events)
+
+
+def test_read_and_write_stream_with_tls_and_basic_auth(client_tls):
+    stream = str(uuid.uuid4())
+    for _ in range(10):
+        client_tls.streams.append(stream=stream, event_type="foobar", data={})
+
+    events = list(client_tls.streams.read(stream=stream, count=500))
+    assert len(events) == 10

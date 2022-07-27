@@ -1,11 +1,25 @@
-import pytest
+from functools import lru_cache
 
-from esclient import ESClient, AsyncESClient
+import pytest
+from grpc import ssl_channel_credentials
+
+from esclient import AsyncESClient, ESClient
+
+
+@lru_cache
+def root_cert():
+    with open("./certs/ca/ca.crt", "rb") as fh:
+        return fh.read()
 
 
 @pytest.fixture
 def client() -> ESClient:
-    return ESClient("localhost:2113")
+    return ESClient("localhost:2113", tls=False)
+
+
+@pytest.fixture
+def client_tls() -> ESClient:
+    return ESClient("localhost:2111", root_certificates=root_cert(), username="admin", password="changeit")
 
 
 @pytest.fixture
