@@ -38,7 +38,12 @@ import uuid
 
 from esclient import ESClient
 
-client = ESClient("localhost:2113")
+# For insecure connection without basic auth:
+# client = ESClient("localhost:2113")
+with open("certs/ca/ca.crt", "rb") as fh:
+  root_cert = fh.read()
+  
+client = ESClient("localhost:2111", root_certificates=root_cert, username="admin", password="changeit")
 
 stream = f"test-{str(uuid.uuid4())}"
 
