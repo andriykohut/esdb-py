@@ -13,6 +13,7 @@ exclude = ["EventStore", "certs", "es_config", "protos"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+grpcio = "^1.47.0"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = "^1.47.0"
