@@ -22,10 +22,9 @@ jobs:
       - name: black 
         run: poetry run black --check .
       - name: Run eventstore
-        run: mkdir certs && docker-compose up -d
-      - name: ps
-        run: docker ps
-      - name: logs
-        run: docker-compose logs
+        run: docker-compose up -d
       - name: tests
-        run: docker-compose cp setup:certs certs && poetry run pytest tests
+        run: poetry run pytest tests
+      - name: logs
+        if: always()
+        run: docker-compose logs
