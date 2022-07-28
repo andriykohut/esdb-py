@@ -24,4 +24,4 @@ jobs:
       - name: Run eventstore
         run: docker-compose up -d
       - name: tests
-        run: poetry run pytest tests
+        run: ./scripts/wait_for_cert.sh && poetry run pytest tests
