@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import re
 import fileinput
+import re
 
 regex = re.compile(r"^import (.*_pb2) as")
 

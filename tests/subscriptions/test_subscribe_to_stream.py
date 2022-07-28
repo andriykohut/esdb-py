@@ -3,6 +3,7 @@ import uuid
 from unittest import mock
 
 import pytest
+
 from esdb.client.persistent_subscriptions import Event
 
 

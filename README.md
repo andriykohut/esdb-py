@@ -80,6 +80,7 @@ Async example:
 
 ```py
 import asyncio
+
 from esdb.client.client import AsyncESClient
 
 
