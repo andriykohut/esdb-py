@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from esdb.client.persistent_subscriptions import Event
+from esdb.client.subscriptions.base import Event
 
 
 def test_subscribe_to_stream(client):

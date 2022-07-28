@@ -7,9 +7,9 @@ from typing import Optional
 
 import grpc
 
-from esdb.client.persistent_subscriptions import PersistentSubscriptions
 from esdb.client.streams.aio import Streams as StreamsAsync
 from esdb.client.streams.streams import Streams
+from esdb.client.subscriptions.subscriptions import PersistentSubscriptions
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
 

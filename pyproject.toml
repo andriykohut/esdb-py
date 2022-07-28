@@ -34,3 +34,9 @@ exclude = "esdb/generated"
 [tool.isort]
 profile = "black"
 skip_glob = "esdb/generated/*"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:::.*grpc.aio._channel:287",
+    "ignore:::.*grpc.aio._channel:288",
+]
