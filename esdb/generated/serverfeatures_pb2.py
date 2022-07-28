@@ -12,7 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import shared_pb2 as shared__pb2
+from . import shared_pb2 as shared__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14serverfeatures.proto\x12\"event_store.client.server_features\x1a\x0cshared.proto\"|\n\x10SupportedMethods\x12\x44\n\x07methods\x18\x01 \x03(\x0b\x32\x33.event_store.client.server_features.SupportedMethod\x12\"\n\x1a\x65vent_store_server_version\x18\x02 \x01(\t\"N\n\x0fSupportedMethod\x12\x13\n\x0bmethod_name\x18\x01 \x01(\t\x12\x14\n\x0cservice_name\x18\x02 \x01(\t\x12\x10\n\x08\x66\x65\x61tures\x18\x03 \x03(\t2x\n\x0eServerFeatures\x12\x66\n\x13GetSupportedMethods\x12\x19.event_store.client.Empty\x1a\x34.event_store.client.server_features.SupportedMethodsB.\n,com.eventstore.dbclient.proto.serverfeaturesb\x06proto3')

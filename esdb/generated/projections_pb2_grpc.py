@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import projections_pb2 as projections__pb2
-import shared_pb2 as shared__pb2
+from . import projections_pb2 as projections__pb2
+from . import shared_pb2 as shared__pb2
 
 
 class ProjectionsStub(object):

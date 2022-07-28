@@ -3,7 +3,7 @@ import uuid
 from unittest import mock
 
 import pytest
-from client.persistent_subscriptions import Event
+from esdb.client.persistent_subscriptions import Event
 
 
 def test_subscribe_to_stream(client):

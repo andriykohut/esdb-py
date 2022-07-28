@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import persistent_pb2 as persistent__pb2
-import shared_pb2 as shared__pb2
+from . import persistent_pb2 as persistent__pb2
+from . import shared_pb2 as shared__pb2
 
 
 class PersistentSubscriptionsStub(object):

@@ -112,7 +112,7 @@ class PersistentSubscriptions:
             )
         )
         response: CreateResp = self._stub.Create(create_request)
-        assert isinstance(response, CreateResp)
+        assert isinstance(response, CreateResp), f"Expected {CreateResp} got {response.__class__}"
 
     def subscribe_to_stream(
         self,

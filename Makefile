@@ -8,6 +8,8 @@ protoc:
 		--grpc_python_out=esdb/generated \
 		--mypy_out=esdb/generated protos/*.proto
 
+	./scripts/fix_protoc_imports.py esdb/generated/*.py*
+
 
 pretty:
 	black .
