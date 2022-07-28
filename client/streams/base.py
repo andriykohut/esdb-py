@@ -5,7 +5,7 @@ import enum
 import json
 import uuid
 from dataclasses import dataclass, field
-from typing import Iterable, Iterator, Optional, Type, TypeVar
+from typing import Iterable, Optional, Type, TypeVar
 
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty

@@ -1,15 +1,15 @@
 import time
 import uuid
+from unittest import mock
 
-import grpc
 import pytest
+
+from client.persistent_subscriptions import Event
 
 
 def test_subscribe_to_stream(client):
     stream = f"stream-{str(uuid.uuid4())}"
     group = f"group-{str(uuid.uuid4())}"
-
-    responses = []
 
     # emit some events to the same stream
     for _ in range(10):
@@ -18,20 +18,25 @@ def test_subscribe_to_stream(client):
     # create a subscription
     client.subscriptions.create_stream_subscription(stream=stream, group_name=group, revision=1)
 
-    deadline = time.time() + 3
-
     # wait for 10 responses or stop after 3 seconds
-    def handler(response, reader):
-        responses.append(response)
-        if len(responses) == 10:
-            reader.cancel()
+    deadline = time.time() + 3
+    events = []
+    subscription = client.subscriptions.subscribe_to_stream(stream, group)
+    for event in subscription:
+        events.append(event)
+        subscription.ack([event])
         if time.time() >= deadline:
-            reader.cancel()
-            pytest.fail("Deadline exceeded")
+            pytest.fail("Didn't read all events")
+        if len(events) == 10:
+            break
 
-    with pytest.raises(grpc._channel._MultiThreadedRendezvous) as err:
-        client.subscriptions.subscribe_to_stream(stream, group, handler)
-
-    assert "Locally cancelled by application!" in str(err.value)
-
-    assert len(responses) == 10
+    for evt in events:
+        assert isinstance(evt, Event)
+        assert evt.stream == stream
+        assert evt.data == b"data"
+        assert evt.type == "foobar"
+        assert evt.metadata == {
+            "content-type": "application/octet-stream",
+            "type": "foobar",
+            "created": mock.ANY,
+        }

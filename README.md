@@ -96,23 +96,24 @@ asyncio.run(append())
 
 Subscriptions:
 ```py
+from client.client import ESClient
+
+client = ESClient("localhost:2113", tls=False)
 stream = "stream-name"
 group = "group-name"
-
-responses = []
 
 # emit some events to the same stream
 for _ in range(10):
     client.streams.append(stream, "foobar", b"data")
 
 # create a subscription
-client.subscriptions.create_stream_subscription(stream=stream, group_name=group)
+client.subscriptions.create_stream_subscription(stream=stream, group_name=group, revision=1)
 
-
-def handler(response, reader):
-    # do stuff with the event
-    ...
-
-# This will block, until reader exits
-client.subscriptions.subscribe_to_stream(stream, group, handler)
+# Read from subscription
+# This will block and wait for messages
+subscription = client.subscriptions.subscribe_to_stream(stream, group)
+for event in subscription:
+    # ... do work with the event ...
+    # ack the event
+    subscription.ack([event])
 ```

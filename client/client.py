@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import base64
+from contextlib import contextmanager
 from typing import Optional
 
 import grpc
@@ -60,8 +61,15 @@ class ESClient(BaseClient):
             credentials = call_credentials
 
         self.__channel = channel_func(target, credentials) if credentials else channel_func(target)
+        self.__channel_builder = lambda: channel_func(target, credentials) if credentials else channel_func(target)
         self.streams = Streams(StreamsStub(self.__channel))
         self.subscriptions = PersistentSubscriptions(PersistentSubscriptionsStub(self.__channel))
+
+    @contextmanager
+    def streams_channel(self):
+        with self.__channel_builder() as channel:
+            self.streams = Streams(StreamsStub(self.__channel))
+            yield self
 
 
 class AsyncESClient(BaseClient):
