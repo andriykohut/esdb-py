@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "es-client"
+name = "esdb"
 version = "0.1.0"
 description = "gRPC client for EventStore DB"
 authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
