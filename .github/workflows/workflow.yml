@@ -23,5 +23,9 @@ jobs:
         run: poetry run black --check .
       - name: Run eventstore
         run: docker-compose up -d
+      - name: ps
+        run: docker ps
+      - name: logs
+        run: docker-compose logs
       - name: tests
         run: docker-compose cp setup:certs certs && poetry run pytest tests
