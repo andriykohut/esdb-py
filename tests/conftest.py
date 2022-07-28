@@ -1,3 +1,4 @@
+import asyncio
 from functools import lru_cache
 
 import pytest
@@ -23,4 +24,9 @@ def client_tls() -> ESClient:
 
 @pytest.fixture
 def async_client() -> AsyncESClient:
-    return AsyncESClient("localhost:2113")
+    return AsyncESClient("localhost:2113", tls=False)
+
+
+@pytest.fixture
+def async_client_tls() -> AsyncESClient:
+    return AsyncESClient("localhost:2111", root_certificates=root_cert(), username="admin", password="changeit")

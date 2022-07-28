@@ -239,11 +239,10 @@ class StreamsBase(abc.ABC):
         )
 
     @staticmethod
-    def _process_read_responses(reader: Iterable[ReadResp]) -> Iterable[ReadResult]:
-        for response in reader:
-            if response.HasField("stream_not_found"):
-                raise Exception("TODO: Stream not found")
-            yield ReadResult.from_response(response)
+    def _process_read_response(response: ReadResp) -> ReadResult:
+        if response.HasField("stream_not_found"):
+            raise Exception("TODO: Stream not found")
+        return ReadResult.from_response(response)
 
     @abc.abstractmethod
     def read(
@@ -346,8 +345,7 @@ class StreamsBase(abc.ABC):
         )
 
     @staticmethod
-    def _process_batch_append_responses(responses: Iterator[BatchAppendResp]) -> BatchAppendResult:
-        response = next(responses)
+    def _process_batch_append_response(response: BatchAppendResp) -> BatchAppendResult:
         if response.HasField("error"):
             raise Exception(f"TODO: got error {response.error}")
         if not response.HasField("success"):

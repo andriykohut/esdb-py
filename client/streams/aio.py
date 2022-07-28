@@ -51,8 +51,8 @@ class Streams(StreamsBase):
             backwards=backwards,
             revision=revision,
         )
-        response = await self._stub.Read(request)
-        return self._process_read_responses(response)
+        async for response in self._stub.Read(request):
+            yield self._process_read_response(response)
 
     async def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
@@ -85,5 +85,5 @@ class Streams(StreamsBase):
             correlation_id=correlation_id,
             deadline_ms=deadline_ms,
         )
-        responses = await self._stub.BatchAppend(requests)
-        return self._process_batch_append_responses(responses)
+        async for response in self._stub.BatchAppend(requests):
+            return self._process_batch_append_response(response)
