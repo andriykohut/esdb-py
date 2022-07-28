@@ -1,5 +1,7 @@
 # esdb-py
 
+[![PyPI version](https://badge.fury.io/py/esdb.svg)](https://pypi.org/project/esdb/)
+
 EventStoreDB Python gRPC client
 > NOTE: This project is still work in progress
 
