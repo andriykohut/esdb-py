@@ -65,6 +65,12 @@ services:
     networks:
       cluster-network:
         ipv4_address: 172.30.240.11
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --insecure https://localhost:2111/health/live || exit 1",
+        ]
 
 volumes:
   eventstore-volume-data:
