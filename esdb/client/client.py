@@ -65,12 +65,6 @@ class ESClient(BaseClient):
         self.streams = Streams(StreamsStub(self.__channel))
         self.subscriptions = PersistentSubscriptions(PersistentSubscriptionsStub(self.__channel))
 
-    @contextmanager
-    def streams_channel(self):
-        with self.__channel_builder() as channel:
-            self.streams = Streams(StreamsStub(self.__channel))
-            yield self
-
 
 class AsyncESClient(BaseClient):
     def __init__(
