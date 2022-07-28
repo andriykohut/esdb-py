@@ -41,7 +41,7 @@ Usage:
 import datetime
 import uuid
 
-from client.client import ESClient
+from esdb.client.client import ESClient
 
 # For insecure connection without basic auth:
 # client = ESClient("localhost:2113", tls=False)
@@ -80,7 +80,7 @@ Async example:
 
 ```py
 import asyncio
-from client.client import AsyncESClient
+from esdb.client.client import AsyncESClient
 
 
 async def append():
@@ -96,7 +96,7 @@ asyncio.run(append())
 
 Subscriptions:
 ```py
-from client.client import ESClient
+from esdb.client.client import ESClient
 
 client = ESClient("localhost:2113", tls=False)
 stream = "stream-name"
@@ -107,7 +107,7 @@ for _ in range(10):
     client.streams.append(stream, "foobar", b"data")
 
 # create a subscription
-client.subscriptions.create_stream_subscription(stream=stream, group_name=group, revision=1)
+client.subscriptions.create_stream_subscription(stream=stream, group_name=group)
 
 # Read from subscription
 # This will block and wait for messages
