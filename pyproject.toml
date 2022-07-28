@@ -12,7 +12,7 @@ packages = [
 exclude = ["EventStore", "certs", "es_config", "protos"]
 
 [tool.poetry.dependencies]
-python = "3.10"
+python = "^3.10"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = "^1.47.0"

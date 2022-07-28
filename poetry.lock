@@ -285,8 +285,8 @@ python-versions = ">=3.7"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "3.10"
-content-hash = "566ba1744d5d2b61d5fb7bbb1e30bae8ca9fcfa01459334187d5ab135e3f1f0f"
+python-versions = "^3.10"
+content-hash = "3508855e221b51021383acf10b5850b8bba1e78a06dd5d115310bdb9a696c79b"
 
 [metadata.files]
 atomicwrites = [
