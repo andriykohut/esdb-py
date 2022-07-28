@@ -9,6 +9,8 @@ packages = [
     { include = "**/*.py" },
 ]
 
+exclude = ["EventStore", "certs", "es_config", "protos"]
+
 [tool.poetry.dependencies]
 python = "3.10"
 

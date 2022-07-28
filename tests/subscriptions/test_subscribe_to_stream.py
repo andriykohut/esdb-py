@@ -16,7 +16,7 @@ def test_subscribe_to_stream(client):
         client.streams.append(stream, "foobar", b"data")
 
     # create a subscription
-    client.subscriptions.create_stream_subscription(stream=stream, group_name=group, revision=1)
+    client.subscriptions.create_stream_subscription(stream=stream, group_name=group)
 
     # wait for 10 responses or stop after 3 seconds
     deadline = time.time() + 3

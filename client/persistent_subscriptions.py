@@ -82,26 +82,24 @@ class PersistentSubscriptions:
     def __init__(self, stub: PersistentSubscriptionsStub) -> None:
         self._stub = stub
 
-    def create_stream_subscription(self, stream: str, group_name: str, revision: int, backwards: bool = False) -> None:
+    def create_stream_subscription(self, stream: str, group_name: str, backwards: bool = False) -> None:
         stream_identifier = StreamIdentifier(stream_name=stream.encode())
         create_request = CreateReq(
             options=CreateReq.Options(
                 stream=CreateReq.StreamOptions(
                     stream_identifier=stream_identifier,
-                    revision=revision,
                     start=None if backwards else Empty(),
                     end=Empty() if backwards else None,
                 ),
                 stream_identifier=stream_identifier,
                 group_name=group_name,
                 settings=CreateReq.Settings(
-                    # revision=revision,
                     # max_retry_count=2,
                     # min_checkpoint_count=1,
                     # max_checkpoint_count=1,
                     # max_subscriber_count=5,
                     # extra_statistics=False,
-                    # resolve_links=True,
+                    resolve_links=True,
                     consumer_strategy="RoundRobin",  # TODO,
                     read_batch_size=2,
                     live_buffer_size=10,
