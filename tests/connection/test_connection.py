@@ -1,10 +1,9 @@
-import sys
 import uuid
 
 import grpc
 import pytest
 
-from esclient import ESClient
+from client.client import ESClient
 from tests.conftest import root_cert
 
 

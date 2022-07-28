@@ -1,9 +1,8 @@
 from functools import lru_cache
 
 import pytest
-from grpc import ssl_channel_credentials
 
-from esclient import AsyncESClient, ESClient
+from client.client import AsyncESClient, ESClient
 
 
 @lru_cache

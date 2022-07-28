@@ -5,10 +5,10 @@ from typing import Optional
 
 import grpc
 
+from client.persistent_subscriptions import PersistentSubscriptions
+from client.streams.aio import Streams as StreamsAsync
+from client.streams.streams import Streams
 from persistent_pb2_grpc import PersistentSubscriptionsStub
-from persistent_subscriptions import PersistentSubscriptions
-from streams import Streams
-from streams_async import Streams as StreamsAsync
 from streams_pb2_grpc import StreamsStub
 
 

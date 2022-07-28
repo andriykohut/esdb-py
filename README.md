@@ -9,7 +9,7 @@ EventStoreDB Python gRPC client
 - [ ] other connection options
   - [ ] multi-node gossip
   - [ ] keepalive
-- [ ] async client [wip]
+- [x] async client
 - [ ] streams
   - [x] append
   - [x] batch append
@@ -36,55 +36,57 @@ pyenv local esdb-py
 5. Run the tests: `pytest tests`
 
 Usage:
+
 ```py
 import datetime
 import uuid
 
-from esclient import ESClient
+from client.client import ESClient
 
 # For insecure connection without basic auth:
 # client = ESClient("localhost:2113", tls=False)
 with open("certs/ca/ca.crt", "rb") as fh:
   root_cert = fh.read()
-  
+
 client = ESClient("localhost:2111", root_certificates=root_cert, username="admin", password="changeit")
 
 stream = f"test-{str(uuid.uuid4())}"
 
 for i in range(10):
-    append_result = client.streams.append(
-        stream=stream,
-        event_type="test_event",
-        data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
-    )
+  append_result = client.streams.append(
+    stream=stream,
+    event_type="test_event",
+    data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
+  )
 
 print("Forwards!")
 for result in client.streams.read(stream=stream, count=10):
-    print(result.data)
+  print(result.data)
 
 print("Backwards!")
 for result in client.streams.read(stream=stream, count=10, backwards=True):
-    print(result.data)
+  print(result.data)
 
 print("Forwards start from middle!")
 for result in client.streams.read(stream=stream, count=10, revision=5):
-    print(result.data)
+  print(result.data)
 
 print("Backwards start from middle!")
 for result in client.streams.read(stream=stream, count=10, backwards=True, revision=5):
-    print(result.data)
+  print(result.data)
 ```
 
 Async example:
+
 ```py
 import asyncio
-from esclient import AsyncESClient
+from client.client import AsyncESClient
 
 
 async def append():
-    client = AsyncESClient("localhost:2113")
-    result = await client.streams.append("stream", "type", {"x": 1})
-    assert result.commit_position > 0
+  client = AsyncESClient("localhost:2113")
+  result = await client.streams.append("stream", "type", {"x": 1})
+  assert result.commit_position > 0
 
 
 asyncio.run(append())

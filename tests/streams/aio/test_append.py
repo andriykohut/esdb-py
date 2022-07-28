@@ -6,10 +6,11 @@ import pytest
 from client.streams.base import AppendResult, StreamState
 
 
-def test_appending_to_unknown_stream_with_stream_exists_state(client):
+@pytest.mark.asyncio
+async def test_appending_to_unknown_stream_with_stream_exists_state(async_client):
     now = datetime.datetime.utcnow().isoformat()
     with pytest.raises(Exception) as e:
-        client.streams.append(
+        await async_client.streams.append(
             stream=str(uuid.uuid4()),
             event_type="test_event",
             data={"now": now},
@@ -20,9 +21,10 @@ def test_appending_to_unknown_stream_with_stream_exists_state(client):
 
 
 @pytest.mark.parametrize("stream_state", [StreamState.NO_STREAM, StreamState.ANY])
-def test_appending_to_unknown_stream(client, stream_state):
+@pytest.mark.asyncio
+async def test_appending_to_unknown_stream(async_client, stream_state):
     now = datetime.datetime.utcnow().isoformat()
-    result = client.streams.append(
+    result = await async_client.streams.append(
         stream=str(uuid.uuid4()),
         event_type="test_event",
         data={"now": now},
@@ -33,16 +35,17 @@ def test_appending_to_unknown_stream(client, stream_state):
 
 
 @pytest.mark.parametrize("data", [b"some bytes", {"x": 1, "y": 2}])
-def test_appending_content_types(client, data):
-    result = client.streams.append(stream=str(uuid.uuid4()), event_type="test_event", data=data)
-
+@pytest.mark.asyncio
+async def test_appending_content_types(async_client, data):
+    result = await async_client.streams.append(stream=str(uuid.uuid4()), event_type="test_event", data=data)
     assert isinstance(result, AppendResult)
 
 
-def test_appending_at_wrong_revision(client):
+@pytest.mark.asyncio
+async def test_appending_at_wrong_revision(async_client):
     # initialize stream
     stream = str(uuid.uuid4())
-    client.streams.append(
+    await async_client.streams.append(
         stream=stream,
         event_type="test_event",
         data=b"",
@@ -50,7 +53,7 @@ def test_appending_at_wrong_revision(client):
 
     # try to append at unknown position
     with pytest.raises(Exception) as e:
-        client.streams.append(
+        await async_client.streams.append(
             stream=stream,
             event_type="test_event",
             data=b"",
@@ -60,23 +63,24 @@ def test_appending_at_wrong_revision(client):
     assert "TODO: wrong expected version" in str(e)
 
 
-def test_appending_at_correct_revision(client):
+@pytest.mark.asyncio
+async def test_appending_at_correct_revision(async_client):
     stream = str(uuid.uuid4())
     # Publish 0th event
-    client.streams.append(
+    await async_client.streams.append(
         stream=stream,
         event_type="test_event",
         data=b"",
     )
     # Publish 1th event
-    client.streams.append(
+    await async_client.streams.append(
         stream=stream,
         event_type="test_event",
         data=b"",
     )
 
     # Publishing from 1th should work
-    client.streams.append(
+    await async_client.streams.append(
         stream=stream,
         event_type="test_event",
         data=b"",

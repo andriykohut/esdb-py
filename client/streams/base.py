@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import abc
 import enum
 import json
 import uuid
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Type, TypeVar
+from typing import Iterable, Iterator, Optional, Type, TypeVar
 
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
@@ -148,10 +149,50 @@ class BatchAppendResult:
         )
 
 
-class Streams:
-    def __init__(self, streams_stub: StreamsStub) -> None:
-        self._stub = streams_stub
+class StreamsBase(abc.ABC):
 
+    _stub: StreamsStub
+
+    @staticmethod
+    def _append_requests(
+        stream: str,
+        event_type: str,
+        data: dict | bytes,
+        stream_state: StreamState = StreamState.ANY,
+        revision: None | int = None,
+        custom_metadata: None | dict = None,
+    ) -> Iterable[AppendReq]:
+        if revision is not None:
+            # Append at specified revision
+            options = {"revision": revision}
+        else:
+            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
+            options[stream_state.value] = Empty()
+
+        yield AppendReq(
+            options=AppendReq.Options(
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+                **options,
+            )
+        )
+
+        yield AppendReq(
+            proposed_message=Message(
+                event_type=event_type,
+                data=data,
+                custom_metadata=custom_metadata,
+            ).to_protobuf(AppendReq.ProposedMessage)
+        )
+
+    @staticmethod
+    def _process_append_response(response: AppendResp) -> AppendResult:
+        if response.HasField("wrong_expected_version"):
+            raise Exception(f"TODO: wrong expected version: {response.wrong_expected_version}")
+        if not response.HasField("success"):
+            raise Exception(f"TODO: {response}")
+        return AppendResult.from_response(response)
+
+    @abc.abstractmethod
     def append(
         self,
         stream: str,
@@ -160,44 +201,16 @@ class Streams:
         stream_state: StreamState = StreamState.ANY,
         revision: None | int = None,
         custom_metadata: None | dict = None,
-    ) -> AppendResult:
-        if revision is not None:
-            # Append at specified revision
-            options = {"revision": revision}
-        else:
-            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
-            options[stream_state.value] = Empty()
+    ) -> Iterable[AppendReq]:
+        ...
 
-        options = AppendReq(
-            options=AppendReq.Options(
-                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                **options,
-            )
-        )
-
-        proposed_message = AppendReq(
-            proposed_message=Message(
-                event_type=event_type,
-                data=data,
-                custom_metadata=custom_metadata,
-            ).to_protobuf(AppendReq.ProposedMessage)
-        )
-
-        append_response: AppendResp = self._stub.Append(iter([options, proposed_message]))
-
-        if append_response.HasField("wrong_expected_version"):
-            raise Exception(f"TODO: wrong expected version: {append_response.wrong_expected_version}")
-        if not append_response.HasField("success"):
-            raise Exception(f"TODO: {append_response}")
-        return AppendResult.from_response(append_response)
-
-    def read(
-        self,
+    @staticmethod
+    def _read_request(
         stream: str,
         count: int,
         backwards: bool = False,
         revision: int | None = None,
-    ) -> Iterable[ReadResult]:
+    ) -> ReadReq:
         options = {}
         if revision is not None:
             options["revision"] = revision
@@ -208,7 +221,7 @@ class Streams:
                     "end": Empty() if backwards else None,
                 }
             )
-        read_request = ReadReq(
+        return ReadReq(
             options=ReadReq.Options(
                 stream=ReadReq.Options.StreamOptions(
                     stream_identifier=StreamIdentifier(stream_name=stream.encode()),
@@ -224,58 +237,87 @@ class Streams:
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
             )
         )
-        for response in self._stub.Read(read_request):
-            response: ReadResp
+
+    @staticmethod
+    def _process_read_responses(reader: Iterable[ReadResp]) -> Iterable[ReadResult]:
+        for response in reader:
             if response.HasField("stream_not_found"):
                 raise Exception("TODO: Stream not found")
             yield ReadResult.from_response(response)
 
-    def delete(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
-    ) -> DeleteResult:
+    @abc.abstractmethod
+    def read(
+        self,
+        stream: str,
+        count: int,
+        backwards: bool = False,
+        revision: int | None = None,
+    ) -> ReadResult:
+        ...
+
+    @staticmethod
+    def _delete_request(
+        stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+    ) -> DeleteReq:
         if revision is not None:
             options = {"revision": revision}
         else:
             options: dict[str, None | Empty] = {v.value: None for v in StreamState}
             options[stream_state.value] = Empty()
 
-        delete_request = DeleteReq(
+        return DeleteReq(
             options=DeleteReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 **options,
             )
         )
 
-        response = self._stub.Delete(delete_request)
+    @staticmethod
+    def _process_delete_response(response: DeleteResp) -> DeleteResult:
         return DeleteResult.from_response(response)
 
-    def tombstone(
+    @abc.abstractmethod
+    def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
-    ) -> TombstoneResult:
+    ) -> DeleteResult:
+        ...
+
+    @staticmethod
+    def _tombstone_request(
+        stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+    ) -> TombstoneReq:
         if revision is not None:
             options = {"revision": revision}
         else:
             options: dict[str, None | Empty] = {v.value: None for v in StreamState}
             options[stream_state.value] = Empty()
 
-        tombstone_request = TombstoneReq(
+        return TombstoneReq(
             options=TombstoneReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 **options,
             )
         )
-        response = self._stub.Tombstone(tombstone_request)
+
+    @staticmethod
+    def _process_tombstone_response(response: TombstoneResp) -> TombstoneResult:
         return TombstoneResult.from_response(response)
 
-    def batch_append(
-        self,
+    @abc.abstractmethod
+    def tombstone(
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+    ) -> TombstoneResult:
+        ...
+
+    @staticmethod
+    def _batch_append_requests(
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
         revision: int | None = None,
         correlation_id: None | uuid.UUID = None,
         deadline_ms: None | int = None,
-    ) -> BatchAppendResult:
+    ) -> Iterable[BatchAppendReq]:
         correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
         options: dict[str, int | GEmpty | None]
         if revision is not None:
@@ -288,7 +330,7 @@ class Streams:
         if deadline_ms is not None:
             options["deadline"] = Duration(nanos=deadline_ms * 1000000)
 
-        options_req = BatchAppendReq(
+        yield BatchAppendReq(
             correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
                 # stream_position=0,  # TODO: wtf is this? probably expected position
@@ -297,15 +339,29 @@ class Streams:
             ),
             is_final=False,  # This needs to be off for options
         )
-        proposed_messages = BatchAppendReq(
+        yield BatchAppendReq(
             correlation_id=correlation_id_,
             proposed_messages=(m.to_protobuf(BatchAppendReq.ProposedMessage) for m in messages),
             is_final=True,
         )
 
-        append_response: BatchAppendResp = next(self._stub.BatchAppend(iter([options_req, proposed_messages])))
-        if append_response.HasField("error"):
-            raise Exception(f"TODO: got error {append_response.error}")
-        if not append_response.HasField("success"):
-            raise Exception(f"TODO: {append_response}")
-        return BatchAppendResult.from_response(append_response)
+    @staticmethod
+    def _process_batch_append_responses(responses: Iterator[BatchAppendResp]) -> BatchAppendResult:
+        response = next(responses)
+        if response.HasField("error"):
+            raise Exception(f"TODO: got error {response.error}")
+        if not response.HasField("success"):
+            raise Exception(f"TODO: {response}")
+        return BatchAppendResult.from_response(response)
+
+    @abc.abstractmethod
+    def batch_append(
+        self,
+        stream: str,
+        messages: Iterable[Message],
+        stream_state: StreamState = StreamState.ANY,
+        revision: int | None = None,
+        correlation_id: None | uuid.UUID = None,
+        deadline_ms: None | int = None,
+    ) -> BatchAppendResult:
+        ...
