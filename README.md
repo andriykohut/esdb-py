@@ -87,6 +87,8 @@ async def append():
   client = AsyncESClient("localhost:2113")
   result = await client.streams.append("stream", "type", {"x": 1})
   assert result.commit_position > 0
+  async for event in client.streams.read("stream", count=10):
+    print(event)
 
 
 asyncio.run(append())

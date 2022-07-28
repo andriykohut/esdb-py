@@ -6,6 +6,7 @@ import pytest
 from client.streams.base import ReadResult
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ["data", "expected_content_type"],
     (
@@ -13,10 +14,12 @@ from client.streams.base import ReadResult
         ({"foo": "bar"}, "application/json"),
     ),
 )
-def test_append_and_read(data, client, expected_content_type):
+async def test_append_and_read(data, async_client, expected_content_type):
     stream = str(uuid.uuid4())
-    client.streams.append(stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"})
-    [response] = client.streams.read(stream=stream, count=1)
+    await async_client.streams.append(
+        stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"}
+    )
+    [response] = [e async for e in async_client.streams.read(stream=stream, count=1)]
 
     assert isinstance(response, ReadResult)
     assert response.data == data
@@ -28,20 +31,23 @@ def test_append_and_read(data, client, expected_content_type):
     assert response.custom_metadata == {"raisedBy": "me"}
 
 
-def test_read_count(client):
+@pytest.mark.asyncio
+async def test_read_count(async_client):
     stream = str(uuid.uuid4())
     for i in range(20):
-        client.streams.append(stream=stream, event_type="foobar", data={"i": i})
+        await async_client.streams.append(stream=stream, event_type="foobar", data={"i": i})
 
     expected_events = list(range(20))
     reversed_events = list(reversed(expected_events))
 
-    all_events = [e for e in client.streams.read(stream=stream, count=20)]
-    all_events_backwards = [e for e in client.streams.read(stream=stream, count=20, backwards=True)]
-    first_ten = [e for e in client.streams.read(stream=stream, count=10)]
-    first_ten_backwards = [e for e in client.streams.read(stream=stream, count=10, backwards=True)]
-    last_ten = [e for e in client.streams.read(stream=stream, count=10, revision=10)]
-    last_ten_backwards = [e for e in client.streams.read(stream=stream, count=10, revision=9, backwards=True)]
+    all_events = [e async for e in async_client.streams.read(stream=stream, count=20)]
+    all_events_backwards = [e async for e in async_client.streams.read(stream=stream, count=20, backwards=True)]
+    first_ten = [e async for e in async_client.streams.read(stream=stream, count=10)]
+    first_ten_backwards = [e async for e in async_client.streams.read(stream=stream, count=10, backwards=True)]
+    last_ten = [e async for e in async_client.streams.read(stream=stream, count=10, revision=10)]
+    last_ten_backwards = [
+        e async for e in async_client.streams.read(stream=stream, count=10, revision=9, backwards=True)
+    ]
 
     assert len(all_events) == 20
     assert [e.data["i"] for e in all_events] == expected_events
@@ -62,11 +68,12 @@ def test_read_count(client):
     assert [e.data["i"] for e in last_ten_backwards] == reversed_events[10:]
 
 
-def test_read_from_projection(client):
+@pytest.mark.asyncio
+async def test_read_from_projection(async_client):
     event_type = str(uuid.uuid4())
     for _ in range(10):
-        client.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
+        await async_client.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
 
-    events = list(client.streams.read(stream=f"$et-{event_type}", count=500))
+    events = [e async for e in async_client.streams.read(stream=f"$et-{event_type}", count=500)]
     assert events
     assert all(e.metadata["type"] == event_type for e in events)
