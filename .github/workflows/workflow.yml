@@ -20,8 +20,8 @@ jobs:
       - name: Install deps
         run: poetry install
       - name: black 
-        run: black --check .
+        run: poetry run black --check .
       - name: Run eventstore
         run: docker-compose up -d
       - name: tests
-        run: pytest tests
+        run: poetry run pytest tests
