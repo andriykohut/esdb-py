@@ -3,10 +3,10 @@ run-esdb:
 
 protoc:
 	python -m grpc_tools.protoc \
-		-I=protos --python_out=. \
-		--grpc_python_out=. \
-		--mypy_out=. \
-		protos/*.proto
+		-I=protos \
+		--python_out=esdb/generated \
+		--grpc_python_out=esdb/generated \
+		--mypy_out=esdb/generated protos/*.proto
 
 
 pretty:
