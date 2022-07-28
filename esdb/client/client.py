@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import base64
-from contextlib import contextmanager
 from typing import Optional
 
 import grpc
