@@ -5,10 +5,10 @@ import queue
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from client.streams.base import ContentType
-from persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
-from persistent_pb2_grpc import PersistentSubscriptionsStub
-from shared_pb2 import UUID, Empty, StreamIdentifier
+from esdb.client.streams.base import ContentType
+from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
+from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
+from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
 
 
 @dataclass

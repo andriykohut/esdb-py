@@ -3,7 +3,7 @@ import uuid
 import grpc
 import pytest
 
-from client.streams.base import DeleteResult, StreamState
+from esdb.client.streams.base import DeleteResult, StreamState
 
 
 @pytest.mark.asyncio

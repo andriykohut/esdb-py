@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from client.streams.base import AppendResult, StreamState
+from esdb.client.streams.base import AppendResult, StreamState
 
 
 def test_appending_to_unknown_stream_with_stream_exists_state(client):

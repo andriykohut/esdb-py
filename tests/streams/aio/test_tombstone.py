@@ -3,7 +3,7 @@ import uuid
 import grpc
 import pytest
 
-from client.streams.base import TombstoneResult
+from esdb.client.streams.base import TombstoneResult
 
 
 @pytest.mark.asyncio

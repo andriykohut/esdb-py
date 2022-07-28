@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from client.streams.base import ReadResult
+from esdb.client.streams.base import ReadResult
 
 
 @pytest.mark.parametrize(

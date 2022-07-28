@@ -3,7 +3,7 @@ import uuid
 import grpc
 import pytest
 
-from client.client import ESClient
+from esdb.client.client import ESClient
 from tests.conftest import root_cert
 
 

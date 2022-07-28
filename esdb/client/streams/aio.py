@@ -1,7 +1,7 @@
 import uuid
 from typing import Iterable, Optional
 
-from client.streams.base import (
+from esdb.client.streams.base import (
     AppendResult,
     BatchAppendResult,
     DeleteResult,
@@ -11,7 +11,7 @@ from client.streams.base import (
     StreamState,
     TombstoneResult,
 )
-from streams_pb2_grpc import StreamsStub
+from esdb.generated.streams_pb2_grpc import StreamsStub
 
 
 class Streams(StreamsBase):

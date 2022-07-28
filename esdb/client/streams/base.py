@@ -10,8 +10,8 @@ from typing import Iterable, Optional, Type, TypeVar
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
 
-from shared_pb2 import UUID, Empty, StreamIdentifier
-from streams_pb2 import (
+from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
+from esdb.generated.streams_pb2 import (
     AppendReq,
     AppendResp,
     BatchAppendReq,
@@ -23,7 +23,7 @@ from streams_pb2 import (
     TombstoneReq,
     TombstoneResp,
 )
-from streams_pb2_grpc import StreamsStub
+from esdb.generated.streams_pb2_grpc import StreamsStub
 
 
 @enum.unique

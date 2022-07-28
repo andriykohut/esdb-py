@@ -6,7 +6,7 @@ authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
 license = "MIT"
 
 packages = [
-    { include = "**/*.py" },
+    { include = "esdb" },
 ]
 
 exclude = ["EventStore", "certs", "es_config", "protos"]
@@ -29,8 +29,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 119
-exclude = ".+pb2.+"
+exclude = "esdb/generated"
 
 [tool.isort]
 profile = "black"
-skip_glob = "*pb2*"
+skip_glob = "esdb/generated/*"

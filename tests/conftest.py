@@ -1,9 +1,8 @@
-import asyncio
 from functools import lru_cache
 
 import pytest
 
-from client.client import AsyncESClient, ESClient
+from esdb.client.client import AsyncESClient, ESClient
 
 
 @lru_cache

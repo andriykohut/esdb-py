@@ -7,11 +7,11 @@ from typing import Optional
 
 import grpc
 
-from client.persistent_subscriptions import PersistentSubscriptions
-from client.streams.aio import Streams as StreamsAsync
-from client.streams.streams import Streams
-from persistent_pb2_grpc import PersistentSubscriptionsStub
-from streams_pb2_grpc import StreamsStub
+from esdb.client.persistent_subscriptions import PersistentSubscriptions
+from esdb.client.streams.aio import Streams as StreamsAsync
+from esdb.client.streams.streams import Streams
+from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
+from esdb.generated.streams_pb2_grpc import StreamsStub
 
 
 class BasicAuthPlugin(grpc.AuthMetadataPlugin):

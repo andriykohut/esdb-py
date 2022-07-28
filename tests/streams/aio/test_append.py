@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from client.streams.base import AppendResult, StreamState
+from esdb.client.streams.base import AppendResult, StreamState
 
 
 @pytest.mark.asyncio
