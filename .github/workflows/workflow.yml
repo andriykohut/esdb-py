@@ -22,7 +22,7 @@ jobs:
       - name: black 
         run: poetry run black --check .
       - name: Run eventstore
-        run: docker-compose up -d
+        run: mkdir certs && docker-compose up -d
       - name: ps
         run: docker ps
       - name: logs
