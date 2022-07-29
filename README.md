@@ -54,28 +54,29 @@ client = ESClient("localhost:2111", root_certificates=root_cert, username="admin
 
 stream = f"test-{str(uuid.uuid4())}"
 
-for i in range(10):
-  append_result = client.streams.append(
-    stream=stream,
-    event_type="test_event",
-    data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
-  )
+with client.connect() as conn:
+    for i in range(10):
+        append_result = conn.streams.append(
+            stream=stream,
+            event_type="test_event",
+            data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
+        )
 
-print("Forwards!")
-for result in client.streams.read(stream=stream, count=10):
-  print(result.data)
+    print("Forwards!")
+    for result in conn.streams.read(stream=stream, count=10):
+        print(result.data)
 
-print("Backwards!")
-for result in client.streams.read(stream=stream, count=10, backwards=True):
-  print(result.data)
+    print("Backwards!")
+    for result in conn.streams.read(stream=stream, count=10, backwards=True):
+        print(result.data)
 
-print("Forwards start from middle!")
-for result in client.streams.read(stream=stream, count=10, revision=5):
-  print(result.data)
+    print("Forwards start from middle!")
+    for result in conn.streams.read(stream=stream, count=10, revision=5):
+        print(result.data)
 
-print("Backwards start from middle!")
-for result in client.streams.read(stream=stream, count=10, backwards=True, revision=5):
-  print(result.data)
+    print("Backwards start from middle!")
+    for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
+        print(result.data)
 ```
 
 Async example:
@@ -87,11 +88,12 @@ from esdb.client.client import AsyncESClient
 
 
 async def append():
-  client = AsyncESClient("localhost:2113", tls=False)
-  result = await client.streams.append("stream", "type", {"x": 1})
-  assert result.commit_position > 0
-  async for event in client.streams.read("stream", count=10):
-    print(event)
+    client = AsyncESClient("localhost:2113", tls=False)
+    async with client.connect() as conn:
+        result = await conn.streams.append("stream", "type", {"x": 1})
+        assert result.commit_position > 0
+        async for event in conn.streams.read("stream", count=10):
+            print(event)
 
 
 asyncio.run(append())
@@ -106,12 +108,13 @@ client = ESClient("localhost:2113", tls=False)
 stream = "stream-name"
 group = "group-name"
 
-# emit some events to the same stream
-for _ in range(10):
-    client.streams.append(stream, "foobar", b"data")
+with client.connect() as conn:
+    # emit some events to the same stream
+    for _ in range(10):
+        conn.streams.append(stream, "foobar", b"data")
 
-# create a subscription
-client.subscriptions.create_stream_subscription(
+    # create a subscription
+    conn.subscriptions.create_stream_subscription(
         stream=stream,
         group_name=group,
         settings=SubscriptionSettings(
@@ -123,13 +126,13 @@ client.subscriptions.create_stream_subscription(
                 value=10000,
             ),
         ),
-)
+    )
 
-# Read from subscription
-# This will block and wait for messages
-subscription = client.subscriptions.subscribe_to_stream(stream, group, buffer_size=10)
-for event in subscription:
-    # ... do work with the event ...
-    # ack the event
-    subscription.ack([event])
+    # Read from subscription
+    # This will block and wait for messages
+    subscription = conn.subscriptions.subscribe_to_stream(stream, group, buffer_size=10)
+    for event in subscription:
+        # ... do work with the event ...
+        # ack the event
+        subscription.ack([event])
 ```
