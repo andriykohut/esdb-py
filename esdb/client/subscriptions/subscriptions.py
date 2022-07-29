@@ -3,7 +3,7 @@ from __future__ import annotations
 import queue
 from typing import Iterable, Iterator, Optional
 
-from esdb.client.subscriptions.base import Event, SubscriptionSettings
+from esdb.client.subscriptions.base import Event, NackAction, SubscriptionSettings
 from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
@@ -44,6 +44,18 @@ class SubscriptionStream:
                 ack=ReadReq.Ack(
                     id=self.subscription_id.encode(),
                     ids=(UUID(string=evt.id) for evt in events),
+                )
+            )
+        )
+
+    def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
+        self.send_queue.put(
+            ReadReq(
+                nack=ReadReq.Nack(
+                    id=self.subscription_id.encode(),
+                    ids=(UUID(string=evt.id) for evt in events),
+                    action=action.value,
+                    reason=reason,
                 )
             )
         )

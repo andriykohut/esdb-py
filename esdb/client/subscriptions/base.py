@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from esdb.client.streams.base import ContentType
-from esdb.generated.persistent_pb2 import CreateReq, ReadResp
+from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
 
 
 @dataclass
@@ -98,3 +98,11 @@ class SubscriptionSettings:
                 settings.message_timeout_ticks = self.message_timeout.value
 
         return settings
+
+
+class NackAction(enum.Enum):
+    UNKNOWN = ReadReq.Nack.Action.Unknown
+    PARK = ReadReq.Nack.Action.Park
+    RETRY = ReadReq.Nack.Action.Retry
+    SKIP = ReadReq.Nack.Action.Skip
+    STOP = ReadReq.Nack.Action.Stop

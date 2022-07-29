@@ -7,7 +7,7 @@ from unittest import mock
 
 import pytest
 
-from esdb.client.subscriptions.base import Event, SubscriptionSettings
+from esdb.client.subscriptions.base import Event, NackAction, SubscriptionSettings
 
 
 def test_subscribe_to_stream(client):

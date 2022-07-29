@@ -18,11 +18,10 @@ EventStoreDB Python gRPC client
   - [x] delete
   - [x] read
   - [x] tombstone
-  - [ ] filtering
+  - [x] filtering
   - [ ] exception handling
 - [ ] subscriptions
 - [ ] users
-- [ ] tbd
 
 
 # Setting things up
@@ -102,7 +101,7 @@ asyncio.run(append())
 Subscriptions:
 ```py
 from esdb.client.client import ESClient
-from esdb.client.subscriptions.base import SubscriptionSettings
+from esdb.client.subscriptions.base import SubscriptionSettings, NackAction
 
 client = ESClient("localhost:2113", tls=False)
 stream = "stream-name"
@@ -132,7 +131,12 @@ with client.connect() as conn:
     # This will block and wait for messages
     subscription = conn.subscriptions.subscribe_to_stream(stream, group, buffer_size=10)
     for event in subscription:
-        # ... do work with the event ...
-        # ack the event
-        subscription.ack([event])
+        try:
+            # ... do work with the event ...
+            # ack the event
+            subscription.ack([event])
+        except Exception as err:
+            subscription.nack([event], NackAction.RETRY, reason=str(err))
+          
+        
 ```
