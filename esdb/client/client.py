@@ -40,10 +40,17 @@ class ESClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
         root_certificates: Optional[bytes] = None,
+        keepalive_time_ms: int = 10000,
+        keepalive_timeout_ms: int = 10000,
     ) -> None:
         credentials = None
         channel_credentials = None
         call_credentials = None
+
+        options = [
+            ("grpc.keepalive_time_ms", keepalive_time_ms),
+            ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
+        ]
 
         if tls:
             if not root_certificates:
@@ -64,7 +71,11 @@ class ESClient:
             credentials = channel_credentials
         elif call_credentials:
             credentials = call_credentials
-        self.__channel_builder = lambda: channel_func(target, credentials) if credentials else channel_func(target)
+        self.__channel_builder = (
+            lambda: channel_func(target, credentials, options=options)
+            if credentials
+            else channel_func(target, options=options)
+        )
 
     @contextlib.contextmanager
     def connect(self) -> ContextManager[Connection]:
@@ -91,10 +102,16 @@ class AsyncESClient:
         username: Optional[str] = None,
         password: Optional[str] = None,
         root_certificates: Optional[bytes] = None,
+        keepalive_time_ms: int = 10000,
+        keepalive_timeout_ms: int = 10000,
     ) -> None:
         credentials = None
         channel_credentials = None
         call_credentials = None
+        options = [
+            ("grpc.keepalive_time_ms", keepalive_time_ms),
+            ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
+        ]
 
         if tls:
             if not root_certificates:
@@ -116,7 +133,11 @@ class AsyncESClient:
         elif call_credentials:
             credentials = call_credentials
 
-        self.__channel_builder = lambda: channel_func(target, credentials) if credentials else channel_func(target)
+        self.__channel_builder = (
+            lambda: channel_func(target, credentials, options=options)
+            if credentials
+            else channel_func(target, options=options)
+        )
 
     @contextlib.asynccontextmanager
     async def connect(self) -> AsyncContextManager[AsyncConnection]:
