@@ -49,7 +49,14 @@ from esdb.client.client import ESClient
 with open("certs/ca/ca.crt", "rb") as fh:
   root_cert = fh.read()
 
-client = ESClient("localhost:2111", root_certificates=root_cert, username="admin", password="changeit")
+client = ESClient(
+    "localhost:2111",
+    root_certificates=root_cert,
+    username="admin",
+    password="changeit",
+    keepalive_time_ms=5000,
+    keepalive_timeout_ms=10000,
+)
 
 stream = f"test-{str(uuid.uuid4())}"
 
