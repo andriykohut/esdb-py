@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "esdb"
-version = "0.1.3"
+version = "0.1.4"
 description = "gRPC client for EventStore DB"
 authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/andriykohut/esdb-py"
 repository = "https://github.com/andriykohut/esdb-py"
-keywords = ["eventstore", "esdb", "event sourcing", "cqrs", "event-sourcing"]
+keywords = ["eventstore", "esdb", "event sourcing", "cqrs", "event-sourcing", "grpcio", "grpc"]
 
 packages = [
     { include = "esdb" },
