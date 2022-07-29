@@ -20,7 +20,7 @@ EventStoreDB Python gRPC client
   - [x] tombstone
   - [x] filtering
   - [ ] exception handling
-- [ ] subscriptions
+- [x] subscriptions
 - [ ] users
 
 
