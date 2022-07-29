@@ -3,7 +3,7 @@ from __future__ import annotations
 import queue
 from typing import Iterable, Iterator, Optional
 
-from esdb.client.subscriptions.base import Event
+from esdb.client.subscriptions.base import Event, SubscriptionSettings
 from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
@@ -53,7 +53,9 @@ class PersistentSubscriptions:
     def __init__(self, stub: PersistentSubscriptionsStub) -> None:
         self._stub = stub
 
-    def create_stream_subscription(self, stream: str, group_name: str, backwards: bool = False) -> None:
+    def create_stream_subscription(
+        self, stream: str, group_name: str, settings: SubscriptionSettings, backwards: bool = False
+    ) -> None:
         stream_identifier = StreamIdentifier(stream_name=stream.encode())
         create_request = CreateReq(
             options=CreateReq.Options(
@@ -64,22 +66,7 @@ class PersistentSubscriptions:
                 ),
                 stream_identifier=stream_identifier,
                 group_name=group_name,
-                settings=CreateReq.Settings(
-                    # max_retry_count=2,
-                    # min_checkpoint_count=1,
-                    # max_checkpoint_count=1,
-                    # max_subscriber_count=5,
-                    # extra_statistics=False,
-                    resolve_links=True,
-                    consumer_strategy="RoundRobin",  # TODO,
-                    read_batch_size=2,
-                    live_buffer_size=10,
-                    history_buffer_size=10,
-                    # message_timeout_ticks=100,
-                    # message_timeout_ms=1000,
-                    # checkpoint_after_ticks=1,
-                    # checkpoint_after_ms=1,
-                ),
+                settings=settings.to_protobuf(),
             )
         )
         response: CreateResp = self._stub.Create(create_request)
@@ -89,6 +76,6 @@ class PersistentSubscriptions:
         self,
         stream: str,
         group_name: str,
-        buffer_size: int = 10,
+        buffer_size: int,
     ) -> SubscriptionStream:
         return SubscriptionStream(stream=stream, group_name=group_name, buffer_size=buffer_size, stub=self._stub)
