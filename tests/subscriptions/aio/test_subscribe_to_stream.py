@@ -1,7 +1,5 @@
 import asyncio
 import itertools
-import queue
-import threading
 import time
 import uuid
 from collections import defaultdict
@@ -107,7 +105,7 @@ async def test_multiple_consumers(async_client):
             run_consumer(3),
             return_exceptions=False,
         )
-    except:
+    except Exception:
         ...
 
     results_by_consumer = defaultdict(list)
