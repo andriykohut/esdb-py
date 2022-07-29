@@ -87,6 +87,7 @@ class ReadResult:
     prepare_position: int
     commit_position: int
     metadata: dict
+    event_type: str
     custom_metadata: dict | None
     data: dict | bytes
 
@@ -104,6 +105,7 @@ class ReadResult:
             else response.event.event.data,
             prepare_position=response.event.commit_position,
             commit_position=response.event.commit_position,
+            event_type=response.event.event.metadata["type"],
         )
 
 

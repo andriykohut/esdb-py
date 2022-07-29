@@ -9,6 +9,9 @@ import grpc
 
 from esdb.client.streams.aio import Streams as StreamsAsync
 from esdb.client.streams.streams import Streams
+from esdb.client.subscriptions.aio.subscriptions import (
+    PersistentSubscriptions as PersistentSubscriptionsAsync,
+)
 from esdb.client.subscriptions.subscriptions import PersistentSubscriptions
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
@@ -77,6 +80,7 @@ class ESClient:
 class AsyncConnection:
     channel: grpc.aio._base_channel.Channel
     streams: StreamsAsync
+    subscriptions: PersistentSubscriptionsAsync
 
 
 class AsyncESClient:
@@ -120,4 +124,5 @@ class AsyncESClient:
             yield AsyncConnection(
                 channel=channel,
                 streams=StreamsAsync(StreamsStub(channel)),
+                subscriptions=PersistentSubscriptionsAsync(PersistentSubscriptionsStub(channel)),
             )

@@ -140,3 +140,41 @@ with client.connect() as conn:
           
         
 ```
+
+Async subscriptions
+```python
+from esdb.client.client import AsyncESClient
+from esdb.client.subscriptions.base import SubscriptionSettings
+
+client = AsyncESClient("localhost:2113", tls=False)
+
+stream = "stream-foo"
+group = "group-bar"
+
+async with client.connect() as conn:
+    # emit some events to the same stream
+    for i in range(50):
+        await conn.streams.append(stream, "foobar", {"i": i})
+
+    # create a subscription
+    await conn.subscriptions.create_stream_subscription(
+        stream=stream,
+        group_name=group,
+        settings=SubscriptionSettings(
+            max_subscriber_count=50,
+            read_batch_size=5,
+            live_buffer_size=10,
+            history_buffer_size=10,
+            consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
+            checkpoint=SubscriptionSettings.DurationType(
+                type=SubscriptionSettings.DurationType.Type.MS,
+                value=10000,
+            ),
+        ),
+    )
+
+async with client.connect() as conn:
+    subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=5)
+    async for event in subscription:
+        await subscription.ack([event])
+```
