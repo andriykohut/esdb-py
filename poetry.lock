@@ -74,6 +74,17 @@ pycodestyle = ">=2.8.0,<2.9.0"
 pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
+name = "grpc-stubs"
+version = "1.24.11"
+description = "Mypy stubs for gRPC"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+grpcio = "*"
+
+[[package]]
 name = "grpcio"
 version = "1.47.0"
 description = "HTTP/2-based RPC framework"
@@ -323,7 +334,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "c2849a19d9ed9bb6c9da5c59d94d5def9fb1ca260b8955ea28b42fbcd0070433"
+content-hash = "5cc373b5215e764cc91bd415d232a5bf70b286d13168139a488d1d712edb55b5"
 
 [metadata.files]
 atomicwrites = [
@@ -369,6 +380,10 @@ colorama = [
 flake8 = [
     {file = "flake8-4.0.1-py2.py3-none-any.whl", hash = "sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d"},
     {file = "flake8-4.0.1.tar.gz", hash = "sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d"},
+]
+grpc-stubs = [
+    {file = "grpc-stubs-1.24.11.tar.gz", hash = "sha256:b02b0445b264eb3d310a2c14816c440f98f76d4ba2a5746adf148d57cca8b3a5"},
+    {file = "grpc_stubs-1.24.11-py3-none-any.whl", hash = "sha256:56d8f241c4b309c7c712d916be0e0c7b8b72b00cc61c0c08a4b50e1c13fd26e3"},
 ]
 grpcio = [
     {file = "grpcio-1.47.0-cp310-cp310-linux_armv7l.whl", hash = "sha256:544da3458d1d249bb8aed5504adf3e194a931e212017934bf7bfa774dad37fb3"},

@@ -16,10 +16,9 @@ from esdb.client.streams.base import ReadResult
 )
 async def test_append_and_read(data, async_client, expected_content_type):
     stream = str(uuid.uuid4())
-    await async_client.streams.append(
-        stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"}
-    )
-    [response] = [e async for e in async_client.streams.read(stream=stream, count=1)]
+    async with async_client.connect() as conn:
+        await conn.streams.append(stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"})
+        [response] = [e async for e in conn.streams.read(stream=stream, count=1)]
 
     assert isinstance(response, ReadResult)
     assert response.data == data
@@ -34,20 +33,19 @@ async def test_append_and_read(data, async_client, expected_content_type):
 @pytest.mark.asyncio
 async def test_read_count(async_client):
     stream = str(uuid.uuid4())
-    for i in range(20):
-        await async_client.streams.append(stream=stream, event_type="foobar", data={"i": i})
-
     expected_events = list(range(20))
     reversed_events = list(reversed(expected_events))
 
-    all_events = [e async for e in async_client.streams.read(stream=stream, count=20)]
-    all_events_backwards = [e async for e in async_client.streams.read(stream=stream, count=20, backwards=True)]
-    first_ten = [e async for e in async_client.streams.read(stream=stream, count=10)]
-    first_ten_backwards = [e async for e in async_client.streams.read(stream=stream, count=10, backwards=True)]
-    last_ten = [e async for e in async_client.streams.read(stream=stream, count=10, revision=10)]
-    last_ten_backwards = [
-        e async for e in async_client.streams.read(stream=stream, count=10, revision=9, backwards=True)
-    ]
+    async with async_client.connect() as conn:
+        for i in range(20):
+            await conn.streams.append(stream=stream, event_type="foobar", data={"i": i})
+
+        all_events = [e async for e in conn.streams.read(stream=stream, count=20)]
+        all_events_backwards = [e async for e in conn.streams.read(stream=stream, count=20, backwards=True)]
+        first_ten = [e async for e in conn.streams.read(stream=stream, count=10)]
+        first_ten_backwards = [e async for e in conn.streams.read(stream=stream, count=10, backwards=True)]
+        last_ten = [e async for e in conn.streams.read(stream=stream, count=10, revision=10)]
+        last_ten_backwards = [e async for e in conn.streams.read(stream=stream, count=10, revision=9, backwards=True)]
 
     assert len(all_events) == 20
     assert [e.data["i"] for e in all_events] == expected_events
@@ -71,9 +69,10 @@ async def test_read_count(async_client):
 @pytest.mark.asyncio
 async def test_read_from_projection(async_client):
     event_type = str(uuid.uuid4())
-    for _ in range(10):
-        await async_client.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
+    async with async_client.connect() as conn:
+        for _ in range(10):
+            await conn.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
 
-    events = [e async for e in async_client.streams.read(stream=f"$et-{event_type}", count=500)]
-    assert events
-    assert all(e.metadata["type"] == event_type for e in events)
+        events = [e async for e in conn.streams.read(stream=f"$et-{event_type}", count=500)]
+        assert events
+        assert all(e.metadata["type"] == event_type for e in events)

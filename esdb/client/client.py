@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import abc
 import base64
-from typing import Optional
+import contextlib
+from dataclasses import dataclass
+from typing import AsyncContextManager, ContextManager, Optional
 
 import grpc
 
@@ -21,12 +22,14 @@ class BasicAuthPlugin(grpc.AuthMetadataPlugin):
         callback((("authorization", b"Basic " + self.__auth),), None)
 
 
-class BaseClient(abc.ABC):
-    streams: Streams | StreamsAsync
+@dataclass
+class Connection:
+    channel: grpc.Channel
+    streams: Streams
     subscriptions: PersistentSubscriptions
 
 
-class ESClient(BaseClient):
+class ESClient:
     def __init__(
         self,
         target: str,
@@ -58,14 +61,25 @@ class ESClient(BaseClient):
             credentials = channel_credentials
         elif call_credentials:
             credentials = call_credentials
-
-        self.__channel = channel_func(target, credentials) if credentials else channel_func(target)
         self.__channel_builder = lambda: channel_func(target, credentials) if credentials else channel_func(target)
-        self.streams = Streams(StreamsStub(self.__channel))
-        self.subscriptions = PersistentSubscriptions(PersistentSubscriptionsStub(self.__channel))
+
+    @contextlib.contextmanager
+    def connect(self) -> ContextManager[Connection]:
+        with self.__channel_builder() as channel:
+            yield Connection(
+                channel=channel,
+                streams=Streams(StreamsStub(channel)),
+                subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
+            )
 
 
-class AsyncESClient(BaseClient):
+@dataclass
+class AsyncConnection:
+    channel: grpc.aio._base_channel.Channel
+    streams: StreamsAsync
+
+
+class AsyncESClient:
     def __init__(
         self,
         target: str,
@@ -98,5 +112,12 @@ class AsyncESClient(BaseClient):
         elif call_credentials:
             credentials = call_credentials
 
-        self.__channel = channel_func(target, credentials) if credentials else channel_func(target)
-        self.streams = StreamsAsync(StreamsStub(self.__channel))
+        self.__channel_builder = lambda: channel_func(target, credentials) if credentials else channel_func(target)
+
+    @contextlib.asynccontextmanager
+    async def connect(self) -> AsyncContextManager[AsyncConnection]:
+        async with self.__channel_builder() as channel:
+            yield AsyncConnection(
+                channel=channel,
+                streams=StreamsAsync(StreamsStub(channel)),
+            )
