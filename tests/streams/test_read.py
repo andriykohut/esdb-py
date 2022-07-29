@@ -15,8 +15,9 @@ from esdb.client.streams.base import ReadResult
 )
 def test_append_and_read(data, client, expected_content_type):
     stream = str(uuid.uuid4())
-    client.streams.append(stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"})
-    [response] = client.streams.read(stream=stream, count=1)
+    with client.connect() as conn:
+        conn.streams.append(stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"})
+        [response] = conn.streams.read(stream=stream, count=1)
 
     assert isinstance(response, ReadResult)
     assert response.data == data
@@ -30,18 +31,19 @@ def test_append_and_read(data, client, expected_content_type):
 
 def test_read_count(client):
     stream = str(uuid.uuid4())
-    for i in range(20):
-        client.streams.append(stream=stream, event_type="foobar", data={"i": i})
-
     expected_events = list(range(20))
     reversed_events = list(reversed(expected_events))
 
-    all_events = [e for e in client.streams.read(stream=stream, count=20)]
-    all_events_backwards = [e for e in client.streams.read(stream=stream, count=20, backwards=True)]
-    first_ten = [e for e in client.streams.read(stream=stream, count=10)]
-    first_ten_backwards = [e for e in client.streams.read(stream=stream, count=10, backwards=True)]
-    last_ten = [e for e in client.streams.read(stream=stream, count=10, revision=10)]
-    last_ten_backwards = [e for e in client.streams.read(stream=stream, count=10, revision=9, backwards=True)]
+    with client.connect() as conn:
+        for i in range(20):
+            conn.streams.append(stream=stream, event_type="foobar", data={"i": i})
+
+        all_events = [e for e in conn.streams.read(stream=stream, count=20)]
+        all_events_backwards = [e for e in conn.streams.read(stream=stream, count=20, backwards=True)]
+        first_ten = [e for e in conn.streams.read(stream=stream, count=10)]
+        first_ten_backwards = [e for e in conn.streams.read(stream=stream, count=10, backwards=True)]
+        last_ten = [e for e in conn.streams.read(stream=stream, count=10, revision=10)]
+        last_ten_backwards = [e for e in conn.streams.read(stream=stream, count=10, revision=9, backwards=True)]
 
     assert len(all_events) == 20
     assert [e.data["i"] for e in all_events] == expected_events
@@ -64,9 +66,9 @@ def test_read_count(client):
 
 def test_read_from_projection(client):
     event_type = str(uuid.uuid4())
-    for _ in range(10):
-        client.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
-
-    events = list(client.streams.read(stream=f"$et-{event_type}", count=500))
+    with client.connect() as conn:
+        for _ in range(10):
+            conn.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data={})
+        events = list(conn.streams.read(stream=f"$et-{event_type}", count=500))
     assert events
     assert all(e.metadata["type"] == event_type for e in events)

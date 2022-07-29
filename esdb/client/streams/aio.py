@@ -1,5 +1,5 @@
 import uuid
-from typing import Iterable, Optional
+from typing import AsyncIterable, Iterable, Optional
 
 from esdb.client.streams.base import (
     AppendResult,
@@ -44,7 +44,7 @@ class Streams(StreamsBase):
         count: int,
         backwards: bool = False,
         revision: Optional[int] = None,
-    ) -> Iterable[ReadResult]:
+    ) -> AsyncIterable[ReadResult]:
         request = self._read_request(
             stream=stream,
             count=count,
