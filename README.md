@@ -85,7 +85,7 @@ from esdb.client.client import AsyncESClient
 
 
 async def append():
-  client = AsyncESClient("localhost:2113")
+  client = AsyncESClient("localhost:2113", tls=False)
   result = await client.streams.append("stream", "type", {"x": 1})
   assert result.commit_position > 0
   async for event in client.streams.read("stream", count=10):
@@ -98,6 +98,7 @@ asyncio.run(append())
 Subscriptions:
 ```py
 from esdb.client.client import ESClient
+from esdb.client.subscriptions.base import SubscriptionSettings
 
 client = ESClient("localhost:2113", tls=False)
 stream = "stream-name"
@@ -108,11 +109,23 @@ for _ in range(10):
     client.streams.append(stream, "foobar", b"data")
 
 # create a subscription
-client.subscriptions.create_stream_subscription(stream=stream, group_name=group)
+client.subscriptions.create_stream_subscription(
+        stream=stream,
+        group_name=group,
+        settings=SubscriptionSettings(
+            read_batch_size=5,
+            live_buffer_size=10,
+            history_buffer_size=10,
+            checkpoint=SubscriptionSettings.DurationType(
+                type=SubscriptionSettings.DurationType.Type.MS,
+                value=10000,
+            ),
+        ),
+)
 
 # Read from subscription
 # This will block and wait for messages
-subscription = client.subscriptions.subscribe_to_stream(stream, group)
+subscription = client.subscriptions.subscribe_to_stream(stream, group, buffer_size=10)
 for event in subscription:
     # ... do work with the event ...
     # ack the event
