@@ -149,6 +149,32 @@ class BatchAppendResult:
         )
 
 
+@dataclass
+class Filter:
+    class Kind(enum.Enum):
+        STREAM = "stream"
+        EVENT_TYPE = "event_type"
+
+    kind: Kind
+    regex: str
+    prefixes: Optional[list[str]] = None
+
+    def to_protobuf(self) -> ReadReq.Options.FilterOptions:
+        Expression = ReadReq.Options.FilterOptions.Expression
+        stream_identifier = None
+        event_type = None
+        if self.kind == self.Kind.STREAM:
+            stream_identifier = Expression(regex=self.regex, prefix=self.prefixes)
+        elif self.kind == self.Kind.EVENT_TYPE:
+            event_type = Expression(regex=self.regex, prefix=self.prefixes)
+        return ReadReq.Options.FilterOptions(
+            stream_identifier=stream_identifier,
+            event_type=event_type,
+            max=0,  # This apparently does nothing ¯\_(ツ)_/¯
+            count=Empty(),
+        )
+
+
 class StreamsBase(abc.ABC):
 
     _stub: StreamsStub
@@ -207,9 +233,10 @@ class StreamsBase(abc.ABC):
     @staticmethod
     def _read_request(
         stream: str,
-        count: int,
-        backwards: bool = False,
-        revision: int | None = None,
+        count: Optional[int],
+        backwards: bool,
+        revision: Optional[int],
+        subscribe: bool,
     ) -> ReadReq:
         options = {}
         if revision is not None:
@@ -231,9 +258,30 @@ class StreamsBase(abc.ABC):
                 read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
                 resolve_links=True,  # Resolve to actual data instead of a link when reading from projection
                 count=count,
-                subscription=None,  # TODO: Deal with subscriptions
-                filter=None,  # TODO: Deal with filters
+                subscription=ReadReq.Options.SubscriptionOptions() if subscribe else None,
+                filter=None,
                 no_filter=Empty(),
+                uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
+            )
+        )
+
+    @staticmethod
+    def _read_all_request(count: Optional[int], backwards: bool, filter_by: Optional[Filter]) -> ReadReq:
+        return ReadReq(
+            options=ReadReq.Options(
+                stream=None,
+                all=ReadReq.Options.AllOptions(
+                    start=None if backwards else Empty(),
+                    end=Empty() if backwards else None,
+                ),
+                read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
+                # I can get subscription to work with filters, for some reason eventstore complains with
+                # all possible combinations, so for now `read-all` only works with count
+                subscription=None,
+                resolve_links=True,
+                count=count,
+                filter=filter_by.to_protobuf() if filter_by else None,
+                no_filter=None if filter_by else Empty(),
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
             )
         )

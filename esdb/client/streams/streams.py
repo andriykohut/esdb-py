@@ -5,6 +5,7 @@ from esdb.client.streams.base import (
     AppendResult,
     BatchAppendResult,
     DeleteResult,
+    Filter,
     Message,
     ReadResult,
     StreamsBase,
@@ -41,15 +42,27 @@ class Streams(StreamsBase):
     def read(
         self,
         stream: str,
-        count: int,
+        count: Optional[int] = None,
         backwards: bool = False,
         revision: Optional[int] = None,
+        subscribe: bool = False,
     ) -> Iterable[ReadResult]:
+        assert (count is not None) ^ subscribe, "count or subscribe is required"
         request = self._read_request(
             stream=stream,
             count=count,
             backwards=backwards,
             revision=revision,
+            subscribe=subscribe,
+        )
+        for response in self._stub.Read(request):
+            yield self._process_read_response(response)
+
+    def read_all(self, count: int, backwards=False, filter_by: Optional[Filter] = None) -> Iterable[ReadResult]:
+        request = self._read_all_request(
+            count=count,
+            backwards=backwards,
+            filter_by=filter_by,
         )
         for response in self._stub.Read(request):
             yield self._process_read_response(response)
