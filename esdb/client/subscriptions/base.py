@@ -31,7 +31,7 @@ class Event:
             metadata=response.event.event.metadata,
             type=response.event.event.metadata["type"],
             data=json.loads(response.event.event.data)
-            if response.event.event.metadata["content-type"] == ContentType.JSON
+            if response.event.event.metadata["content-type"] == ContentType.JSON.value
             else response.event.event.data,
         )
 
