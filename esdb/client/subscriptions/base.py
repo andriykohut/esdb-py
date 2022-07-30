@@ -21,18 +21,18 @@ class Event:
     data: bytes | dict
 
     @staticmethod
-    def from_read_response(response: ReadResp) -> Event:
+    def from_read_response_event(event: ReadResp.ReadEvent) -> Event:
         return Event(
-            id=response.event.event.id.string,
-            retry_count=response.event.retry_count,
-            stream=response.event.event.stream_identifier.stream_name.decode(),
-            prepare_position=response.event.event.prepare_position,
-            commit_position=response.event.event.commit_position,
-            metadata=response.event.event.metadata,
-            type=response.event.event.metadata["type"],
-            data=json.loads(response.event.event.data)
-            if response.event.event.metadata["content-type"] == ContentType.JSON.value
-            else response.event.event.data,
+            id=event.event.id.string,
+            retry_count=event.retry_count,
+            stream=event.event.stream_identifier.stream_name.decode(),
+            prepare_position=event.event.prepare_position,
+            commit_position=event.event.commit_position,
+            metadata=event.event.metadata,
+            type=event.event.metadata["type"],
+            data=json.loads(event.event.data)
+            if event.event.metadata["content-type"] == ContentType.JSON.value
+            else event.event.data,
         )
 
 

@@ -35,7 +35,7 @@ class SubscriptionStream:
         confirmation: ReadResp = next(reader)
         self.subscription_id = confirmation.subscription_confirmation.subscription_id
         for event in reader:
-            yield Event.from_read_response(event)
+            yield Event.from_read_response_event(event)
 
     def ack(self, events: list[Event]) -> None:
         assert self.subscription_id, "Nothing to ack, not reading from a subscription yet"

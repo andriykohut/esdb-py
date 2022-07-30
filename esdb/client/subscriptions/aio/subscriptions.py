@@ -37,11 +37,11 @@ class SubscriptionStream:
                 yield await self.send_queue.get()
 
         reader: AsyncIterator[ReadResp] = self.stub.Read(queue_iter())
-        async for event in reader:
-            if not self.subscription_id and event.WhichOneof("content") == "subscription_confirmation":
-                self.subscription_id = event.subscription_confirmation.subscription_id
+        async for response in reader:
+            if not self.subscription_id and response.WhichOneof("content") == "subscription_confirmation":
+                self.subscription_id = response.subscription_confirmation.subscription_id
                 continue
-            yield Event.from_read_response(event)
+            yield Event.from_read_response_event(response.event)
 
     async def ack(self, events: list[Event]) -> None:
         assert self.subscription_id, "Nothing to ack, not reading from a subscription yet"
