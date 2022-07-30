@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10"]
 
     steps:
       - uses: actions/checkout@v3
@@ -25,3 +25,7 @@ jobs:
         run: poetry run isort --check-only .
       - name: flake8
         run: poetry run flake8 .
+      - name: start eventstore
+        run: docker-compose up -d
+      - name: run tests
+        run: pytest tests
