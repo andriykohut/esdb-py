@@ -10,7 +10,6 @@ EventStoreDB Python gRPC client
 - [x] basic auth
 - [ ] other connection options
   - [ ] multi-node gossip
-  - [ ] keepalive
 - [x] async client
 - [ ] streams
   - [x] append
