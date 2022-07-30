@@ -1,5 +1,5 @@
 run-esdb:
-	docker-compose up -d eventstore.db
+	docker-compose up -d
 
 protoc:
 	python -m grpc_tools.protoc \

@@ -3,7 +3,9 @@ import uuid
 import grpc
 import pytest
 
-from esdb.client.streams.base import DeleteResult, StreamState
+from esdb.client.exceptions import StreamNotFound
+from esdb.client.streams import StreamState
+from esdb.client.streams.base import DeleteResult
 
 
 def test_delete_stream(client):
@@ -21,10 +23,10 @@ def test_delete_stream(client):
     assert isinstance(result.prepare_position, int)
 
     with client.connect() as conn:
-        with pytest.raises(Exception) as err:
+        with pytest.raises(StreamNotFound) as err:
             next(conn.streams.read(stream=stream, count=20))
 
-    assert "TODO: Stream not found" in str(err.value)
+    assert str(err.value) == f"Stream '{stream}' not found"
 
 
 def test_delete_stream_with_revision(client):

@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from esdb.client.streams.base import ReadResult
+from esdb.client.streams.base import ReadEvent
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ def test_append_and_read(data, client, expected_content_type):
         conn.streams.append(stream=stream, event_type="foobar", data=data, custom_metadata={"raisedBy": "me"})
         [response] = conn.streams.read(stream=stream, count=1)
 
-    assert isinstance(response, ReadResult)
+    assert isinstance(response, ReadEvent)
     assert response.data == data
     assert response.commit_position == 0
     assert response.prepare_position == 0

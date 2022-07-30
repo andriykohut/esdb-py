@@ -1,18 +1,24 @@
+import logging
 import uuid
 from typing import AsyncIterable, Iterable, Optional
 
 from esdb.client.streams.base import (
     AppendResult,
     BatchAppendResult,
+    Checkpoint,
     DeleteResult,
     Filter,
     Message,
-    ReadResult,
+    ReadEvent,
     StreamsBase,
     StreamState,
+    SubscriptionConfirmed,
     TombstoneResult,
 )
+from esdb.generated.streams_pb2 import ReadResp
 from esdb.generated.streams_pb2_grpc import StreamsStub
+
+logger = logging.getLogger(__name__)
 
 
 class Streams(StreamsBase):
@@ -39,9 +45,22 @@ class Streams(StreamsBase):
         response = await self._stub.Append(requests)
         return self._process_append_response(response)
 
+    async def _read_iter(self, responses: AsyncIterable[ReadResp]) -> AsyncIterable[ReadEvent]:
+        async for response in responses:
+            response = self._process_read_response(response)
+            if isinstance(response, ReadEvent):
+                yield response
+            elif isinstance(response, SubscriptionConfirmed):
+                logger.info(f"Subscription {response.subscription_id} confirmed")
+            elif isinstance(response, Checkpoint):
+                logger.info(
+                    f"Checkpoint commit position: {response.commit_position}, "
+                    f"prepare position: {response.prepare_position}"
+                )
+
     async def read(
         self, stream: str, count: int, backwards: bool = False, revision: Optional[int] = None, subscribe: bool = False
-    ) -> AsyncIterable[ReadResult]:
+    ) -> AsyncIterable[ReadEvent]:
         assert (count is not None) ^ subscribe, "count or subscribe is required"
         request = self._read_request(
             stream=stream,
@@ -50,19 +69,19 @@ class Streams(StreamsBase):
             revision=revision,
             subscribe=subscribe,
         )
-        async for response in self._stub.Read(request):
-            yield self._process_read_response(response)
+        async for response in self._read_iter(self._stub.Read(request)):
+            yield response
 
     async def read_all(
         self, count: int, backwards=False, filter_by: Optional[Filter] = None
-    ) -> AsyncIterable[ReadResult]:
+    ) -> AsyncIterable[ReadEvent]:
         request = self._read_all_request(
             count=count,
             backwards=backwards,
             filter_by=filter_by,
         )
-        async for response in self._stub.Read(request):
-            yield self._process_read_response(response)
+        async for response in self._read_iter(self._stub.Read(request)):
+            yield response
 
     async def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None

@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 import enum
 import json
+import logging
 import uuid
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, Type, TypeVar
@@ -10,6 +11,7 @@ from typing import Iterable, Optional, Type, TypeVar
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
 
+from esdb.client.exceptions import ClientException, StreamNotFound, WrongExpectedVersion
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
 from esdb.generated.streams_pb2 import (
     AppendReq,
@@ -24,6 +26,8 @@ from esdb.generated.streams_pb2 import (
     TombstoneResp,
 )
 from esdb.generated.streams_pb2_grpc import StreamsStub
+
+logger = logging.getLogger(__name__)
 
 
 @enum.unique
@@ -81,7 +85,7 @@ class ContentType(enum.Enum):
 
 
 @dataclass
-class ReadResult:
+class ReadEvent:
     id: str
     stream_name: str
     prepare_position: int
@@ -92,8 +96,8 @@ class ReadResult:
     data: dict | bytes
 
     @staticmethod
-    def from_response(response: ReadResp) -> "ReadResult":
-        return ReadResult(
+    def from_response(response: ReadResp) -> ReadEvent:
+        return ReadEvent(
             id=response.event.event.id.string,
             stream_name=response.event.event.stream_identifier.stream_name.decode(),
             metadata=response.event.event.metadata,
@@ -107,6 +111,17 @@ class ReadResult:
             commit_position=response.event.commit_position,
             event_type=response.event.event.metadata["type"],
         )
+
+
+@dataclass
+class SubscriptionConfirmed:
+    subscription_id: str
+
+
+@dataclass
+class Checkpoint:
+    commit_position: int
+    prepare_position: int
 
 
 ProposedMessageType = TypeVar("ProposedMessageType", BatchAppendReq.ProposedMessage, AppendReq.ProposedMessage)
@@ -214,10 +229,8 @@ class StreamsBase(abc.ABC):
 
     @staticmethod
     def _process_append_response(response: AppendResp) -> AppendResult:
-        if response.HasField("wrong_expected_version"):
-            raise Exception(f"TODO: wrong expected version: {response.wrong_expected_version}")
-        if not response.HasField("success"):
-            raise Exception(f"TODO: {response}")
+        if response.WhichOneof("result") == "wrong_expected_version":
+            raise WrongExpectedVersion(response.wrong_expected_version)
         return AppendResult.from_response(response)
 
     @abc.abstractmethod
@@ -289,10 +302,20 @@ class StreamsBase(abc.ABC):
         )
 
     @staticmethod
-    def _process_read_response(response: ReadResp) -> ReadResult:
-        if response.HasField("stream_not_found"):
-            raise Exception("TODO: Stream not found")
-        return ReadResult.from_response(response)
+    def _process_read_response(response: ReadResp) -> ReadEvent | SubscriptionConfirmed | Checkpoint:
+        content = response.WhichOneof("content")
+        if content == "event":
+            return ReadEvent.from_response(response)
+        if content == "confirmation":
+            return SubscriptionConfirmed(response.confirmation.subscription_id)
+        if content == "checkpoint":
+            return Checkpoint(
+                commit_position=response.checkpoint.commit_position,
+                prepare_position=response.checkpoint.prepare_position,
+            )
+        if content == "stream_not_found":
+            raise StreamNotFound(response.stream_not_found)
+        raise ClientException(f"Got unexpected response {content}: {getattr(response, content)}")
 
     @abc.abstractmethod
     def read(
@@ -301,7 +324,7 @@ class StreamsBase(abc.ABC):
         count: int,
         backwards: bool = False,
         revision: int | None = None,
-    ) -> ReadResult:
+    ) -> ReadEvent:
         ...
 
     @staticmethod

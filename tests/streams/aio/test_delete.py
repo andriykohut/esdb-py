@@ -3,7 +3,9 @@ import uuid
 import grpc
 import pytest
 
-from esdb.client.streams.base import DeleteResult, StreamState
+from esdb.client.exceptions import StreamNotFound
+from esdb.client.streams import StreamState
+from esdb.client.streams.base import DeleteResult
 
 
 @pytest.mark.asyncio
@@ -20,11 +22,11 @@ async def test_delete_stream(async_client):
         assert isinstance(result.commit_position, int)
         assert isinstance(result.prepare_position, int)
 
-        with pytest.raises(Exception) as err:
+        with pytest.raises(StreamNotFound) as err:
             async for _ in conn.streams.read(stream=stream, count=20):
                 ...
 
-        assert "TODO: Stream not found" in str(err.value)
+        assert str(err.value) == f"Stream '{stream}' not found"
 
 
 @pytest.mark.asyncio

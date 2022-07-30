@@ -7,7 +7,8 @@ from unittest import mock
 
 import pytest
 
-from esdb.client.subscriptions.base import Event, SubscriptionSettings
+from esdb.client.subscriptions import SubscriptionSettings
+from esdb.client.subscriptions.base import Event
 
 
 @pytest.mark.asyncio

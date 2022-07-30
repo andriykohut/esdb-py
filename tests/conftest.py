@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import pytest
 
-from esdb.client.client import AsyncESClient, ESClient
+from esdb.client import AsyncESClient, ESClient
 
 
 @lru_cache

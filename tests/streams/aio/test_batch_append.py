@@ -2,7 +2,8 @@ import uuid
 
 import pytest
 
-from esdb.client.streams.base import BatchAppendResult, Message, StreamState
+from esdb.client.streams import Message, StreamState
+from esdb.client.streams.base import BatchAppendResult
 
 
 @pytest.mark.asyncio

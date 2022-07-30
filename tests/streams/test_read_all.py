@@ -1,6 +1,6 @@
 import uuid
 
-from esdb.client.streams.base import Filter
+from esdb.client.streams import Filter
 
 
 def test_read_all_filter_by_event_type(client):
