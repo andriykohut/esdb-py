@@ -6,7 +6,7 @@ import json
 import logging
 import uuid
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Type, TypeVar
+from typing import Iterable, Optional, Type, TypeVar, Union
 
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
@@ -92,8 +92,8 @@ class ReadEvent:
     commit_position: int
     metadata: dict
     event_type: str
-    custom_metadata: dict | None
-    data: dict | bytes
+    custom_metadata: Optional[dict]
+    data: Union[dict, bytes]
 
     @staticmethod
     def from_response(response: ReadResp) -> ReadEvent:
@@ -200,7 +200,7 @@ class StreamsBase(abc.ABC):
     def _append_requests(
         stream: str,
         event_type: str,
-        data: dict | bytes,
+        data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
         revision: None | int = None,
         custom_metadata: None | dict = None,
@@ -238,7 +238,7 @@ class StreamsBase(abc.ABC):
         self,
         stream: str,
         event_type: str,
-        data: dict | bytes,
+        data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
         revision: None | int = None,
         custom_metadata: None | dict = None,
@@ -323,13 +323,13 @@ class StreamsBase(abc.ABC):
         stream: str,
         count: int,
         backwards: bool = False,
-        revision: int | None = None,
+        revision: Optional[int] = None,
     ) -> ReadEvent:
         ...
 
     @staticmethod
     def _delete_request(
-        stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> DeleteReq:
         if revision is not None:
             options = {"revision": revision}
@@ -351,13 +351,13 @@ class StreamsBase(abc.ABC):
 
     @abc.abstractmethod
     def delete(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> DeleteResult:
         ...
 
     @staticmethod
     def _tombstone_request(
-        stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> TombstoneReq:
         if revision is not None:
             options = {"revision": revision}
@@ -379,7 +379,7 @@ class StreamsBase(abc.ABC):
 
     @abc.abstractmethod
     def tombstone(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> TombstoneResult:
         ...
 
@@ -388,8 +388,8 @@ class StreamsBase(abc.ABC):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        correlation_id: None | uuid.UUID = None,
-        deadline_ms: None | int = None,
+        correlation_id: Optional[uuid.UUID] = None,
+        deadline_ms: Optional[int] = None,
         stream_position: Optional[int] = None,
     ) -> Iterable[BatchAppendReq]:
         correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
@@ -427,8 +427,8 @@ class StreamsBase(abc.ABC):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: int | None = None,
-        correlation_id: None | uuid.UUID = None,
-        deadline_ms: None | int = None,
+        revision: Optional[int] = None,
+        correlation_id: Optional[uuid.UUID] = None,
+        deadline_ms: Optional[int] = None,
     ) -> BatchAppendResult:
         ...
