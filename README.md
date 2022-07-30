@@ -10,7 +10,6 @@ EventStoreDB Python gRPC client
 - [x] basic auth
 - [ ] other connection options
   - [ ] multi-node gossip
-  - [ ] keepalive
 - [x] async client
 - [ ] streams
   - [x] append
@@ -20,11 +19,28 @@ EventStoreDB Python gRPC client
   - [x] tombstone
   - [x] filtering
   - [ ] exception handling
-- [x] subscriptions
+- [x] persistent subscriptions
+    - [x] create
+    - [x] read
+    - [ ] update
+    - [ ] delete
+    - [ ] list
+    - [ ] info
+    - [ ] reply parked events 
+- [ ] CRUD for projections
 - [ ] users
 
+# Installation
+Using pip:
+```sh
+pip install esdb
+```
+Using poetry:
+```sh
+poetry add esdb
+```
 
-# Setting things up
+# Development
 1. Install [poetry](https://python-poetry.org/docs/#installation)
 2. Create virtualenv (i.e. using pyenv):
 ```sh
