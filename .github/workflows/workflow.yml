@@ -28,4 +28,4 @@ jobs:
       - name: start eventstore
         run: docker-compose up -d
       - name: run tests
-        run: pytest tests
+        run: poetry run pytest tests
