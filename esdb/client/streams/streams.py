@@ -116,5 +116,6 @@ class Streams(StreamsBase):
             correlation_id=correlation_id,
             deadline_ms=deadline_ms,
         )
+        # TODO: Implement streaming append iterator, for now we always deal with one batch
         response = next(self._stub.BatchAppend(requests))
         return self._process_batch_append_response(response)

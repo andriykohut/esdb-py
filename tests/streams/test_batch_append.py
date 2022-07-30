@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 
+from esdb.client.exceptions import ClientException
 from esdb.client.streams import Message, StreamState
 
 
@@ -27,17 +28,17 @@ def test_batch_append_to_unknown_stream_expecting_it_exists(client):
     stream = str(uuid.uuid4())
     messages = [Message(event_type="foo", data=b"") for _ in range(3)]
     with client.connect() as conn:
-        with pytest.raises(Exception) as err:
+        with pytest.raises(ClientException) as err:
             conn.streams.batch_append(stream, messages, stream_state=StreamState.STREAM_EXISTS)
 
-    assert 'message: "WrongExpectedVersion"' in str(err.value)
+    assert "Append failed with WrongExpectedVersion and code 6" in str(err.value)
 
 
 def test_batch_append_deadline(client):
     stream = str(uuid.uuid4())
     messages = [Message(event_type="foo", data=b"") for _ in range(3)]
     with client.connect() as conn:
-        with pytest.raises(Exception) as err:
+        with pytest.raises(ClientException) as err:
             conn.streams.batch_append(stream, messages, deadline_ms=0)
 
-    assert "TODO: got error code: DEADLINE_EXCEEDED" in str(err.value)
+    assert "Append failed with Timeout" in str(err.value)

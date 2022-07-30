@@ -345,8 +345,9 @@ class StreamsBase(abc.ABC):
         )
 
     @staticmethod
-    def _process_delete_response(response: DeleteResp) -> DeleteResult:
-        return DeleteResult.from_response(response)
+    def _process_delete_response(response: DeleteResp) -> Optional[DeleteResult]:
+        has_position = response.WhichOneof("position_option") == "position"
+        return DeleteResult.from_response(response) if has_position else None
 
     @abc.abstractmethod
     def delete(
@@ -372,8 +373,9 @@ class StreamsBase(abc.ABC):
         )
 
     @staticmethod
-    def _process_tombstone_response(response: TombstoneResp) -> TombstoneResult:
-        return TombstoneResult.from_response(response)
+    def _process_tombstone_response(response: TombstoneResp) -> Optional[TombstoneResult]:
+        has_position = response.WhichOneof("position_option") == "position"
+        return TombstoneResult.from_response(response) if has_position else None
 
     @abc.abstractmethod
     def tombstone(
@@ -419,10 +421,10 @@ class StreamsBase(abc.ABC):
 
     @staticmethod
     def _process_batch_append_response(response: BatchAppendResp) -> BatchAppendResult:
-        if response.HasField("error"):
-            raise Exception(f"TODO: got error {response.error}")
-        if not response.HasField("success"):
-            raise Exception(f"TODO: {response}")
+        result = response.WhichOneof("result")
+        if result == "error":
+            # For some reason ES uses google.rpc.Status here instead of more meaningful error.
+            raise ClientException(f"Append failed with {response.error.message} and code {response.error.code}")
         return BatchAppendResult.from_response(response)
 
     @abc.abstractmethod
