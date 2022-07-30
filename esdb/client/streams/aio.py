@@ -85,14 +85,14 @@ class Streams(StreamsBase):
 
     async def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
-    ) -> DeleteResult:
+    ) -> Optional[DeleteResult]:
         request = self._delete_request(stream=stream, stream_state=stream_state, revision=revision)
         response = await self._stub.Delete(request)
         return self._process_delete_response(response)
 
     async def tombstone(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
-    ) -> TombstoneResult:
+    ) -> Optional[TombstoneResult]:
         request = self._tombstone_request(stream=stream, stream_state=stream_state, revision=revision)
         response = await self._stub.Tombstone(request)
         return self._process_tombstone_response(response)
@@ -110,7 +110,6 @@ class Streams(StreamsBase):
             stream=stream,
             messages=messages,
             stream_state=stream_state,
-            revision=revision,
             correlation_id=correlation_id,
             deadline_ms=deadline_ms,
         )

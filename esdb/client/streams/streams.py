@@ -104,17 +104,17 @@ class Streams(StreamsBase):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: int | None = None,
         correlation_id: None | uuid.UUID = None,
         deadline_ms: None | int = None,
+        stream_position: Optional[int] = None,
     ) -> BatchAppendResult:
         requests = self._batch_append_requests(
             stream=stream,
             messages=messages,
             stream_state=stream_state,
-            revision=revision,
             correlation_id=correlation_id,
             deadline_ms=deadline_ms,
+            stream_position=stream_position,
         )
         # TODO: Implement streaming append iterator, for now we always deal with one batch
         response = next(self._stub.BatchAppend(requests))

@@ -388,30 +388,24 @@ class StreamsBase(abc.ABC):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: int | None = None,
         correlation_id: None | uuid.UUID = None,
         deadline_ms: None | int = None,
+        stream_position: Optional[int] = None,
     ) -> Iterable[BatchAppendReq]:
         correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
-        options: dict[str, int | GEmpty | None]
-        if revision is not None:
-            # Append at specified revision
-            options = {"revision": revision}
-        else:
-            options = {v.value: None for v in StreamState}
-            options[stream_state.value] = GEmpty()
-
+        options = {v.value: None for v in StreamState}
+        options[stream_state.value] = GEmpty()
         if deadline_ms is not None:
             options["deadline"] = Duration(nanos=deadline_ms * 1000000)
 
         yield BatchAppendReq(
             correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
-                # stream_position=0,  # TODO: wtf is this? probably expected position
+                stream_position=stream_position,  # this doesn't seem to do anything
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 **options,
             ),
-            is_final=False,  # This needs to be off for options
+            is_final=False,
         )
         yield BatchAppendReq(
             correlation_id=correlation_id_,
