@@ -16,14 +16,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: start eventstore
-        run: docker-compose up -d
+        run: mkdir ./certs && docker-compose up -d
       - name: "Where am I?"
         run: pwd && ls
       - name: "Home?"
         run: echo $HOME && ls $HOME
       - name: cleanup
         if: always()
-        run: docker compose logs && docker-compose down -v
+        run: ls certs && docker compose logs && docker-compose down -v
 #      - name: Install poetry
 #        run: curl -sSL https://install.python-poetry.org | python -
 #      - name: Install deps
