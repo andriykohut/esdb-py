@@ -8,17 +8,14 @@ EventStoreDB Python gRPC client
 **Implemented parts**
 - [x] secure connection
 - [x] basic auth
-- [ ] other connection options
-  - [ ] multi-node gossip
 - [x] async client
-- [ ] streams
+- [x] streams
   - [x] append
   - [x] batch append
   - [x] delete
   - [x] read
   - [x] tombstone
   - [x] filtering
-  - [ ] exception handling
 - [x] persistent subscriptions
     - [x] create
     - [x] read
@@ -29,6 +26,8 @@ EventStoreDB Python gRPC client
     - [ ] reply parked events 
 - [ ] CRUD for projections
 - [ ] users
+- [ ] other connection options
+  - [ ] multi-node gossip
 
 # Installation
 Using pip:

@@ -1,7 +1,10 @@
 import logging
 import uuid
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
+import grpc
+
+from esdb.client.exceptions import ClientException
 from esdb.client.streams.base import (
     AppendResult,
     BatchAppendResult,
@@ -29,7 +32,7 @@ class Streams(StreamsBase):
         self,
         stream: str,
         event_type: str,
-        data: dict | bytes,
+        data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
         revision: Optional[int] = None,
         custom_metadata: Optional[dict] = None,
@@ -86,14 +89,17 @@ class Streams(StreamsBase):
         yield from self._read_iter(self._stub.Read(request))
 
     def delete(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> DeleteResult:
         request = self._delete_request(stream=stream, stream_state=stream_state, revision=revision)
-        response = self._stub.Delete(request)
+        try:
+            response = self._stub.Delete(request)
+        except grpc._channel._InactiveRpcError as err:
+            raise ClientException(f"Delete failed: {err.details()}") from err
         return self._process_delete_response(response)
 
     def tombstone(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> TombstoneResult:
         request = self._tombstone_request(stream=stream, stream_state=stream_state, revision=revision)
         response = self._stub.Tombstone(request)
@@ -104,8 +110,8 @@ class Streams(StreamsBase):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        correlation_id: None | uuid.UUID = None,
-        deadline_ms: None | int = None,
+        correlation_id: Optional[uuid.UUID] = None,
+        deadline_ms: Optional[int] = None,
         stream_position: Optional[int] = None,
     ) -> BatchAppendResult:
         requests = self._batch_append_requests(

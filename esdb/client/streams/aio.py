@@ -1,7 +1,10 @@
 import logging
 import uuid
-from typing import AsyncIterable, Iterable, Optional
+from typing import AsyncIterable, Iterable, Optional, Union
 
+import grpc
+
+from esdb.client.exceptions import ClientException
 from esdb.client.streams.base import (
     AppendResult,
     BatchAppendResult,
@@ -29,7 +32,7 @@ class Streams(StreamsBase):
         self,
         stream: str,
         event_type: str,
-        data: dict | bytes,
+        data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
         revision: Optional[int] = None,
         custom_metadata: Optional[dict] = None,
@@ -84,14 +87,17 @@ class Streams(StreamsBase):
             yield response
 
     async def delete(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> Optional[DeleteResult]:
         request = self._delete_request(stream=stream, stream_state=stream_state, revision=revision)
-        response = await self._stub.Delete(request)
+        try:
+            response = await self._stub.Delete(request)
+        except grpc.aio._call.AioRpcError as err:
+            raise ClientException(f"Delete failed: {err.details()}") from err
         return self._process_delete_response(response)
 
     async def tombstone(
-        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: int | None = None
+        self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> Optional[TombstoneResult]:
         request = self._tombstone_request(stream=stream, stream_state=stream_state, revision=revision)
         response = await self._stub.Tombstone(request)
@@ -102,9 +108,9 @@ class Streams(StreamsBase):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: int | None = None,
-        correlation_id: None | uuid.UUID = None,
-        deadline_ms: None | int = None,
+        revision: Optional[int] = None,
+        correlation_id: Optional[uuid.UUID] = None,
+        deadline_ms: Optional[int] = None,
     ) -> BatchAppendResult:
         requests = self._batch_append_requests(
             stream=stream,
