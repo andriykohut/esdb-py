@@ -53,8 +53,6 @@ class ESClient:
         ]
 
         if tls:
-            if not root_certificates:
-                raise ValueError("root_certificates is required for TLS")
             channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
 
         if any([username, password]) and not all([username, password]):
@@ -114,8 +112,6 @@ class AsyncESClient:
         ]
 
         if tls:
-            if not root_certificates:
-                raise ValueError("root_certificates is required for TLS")
             channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
 
         if any([username, password]) and not all([username, password]):
