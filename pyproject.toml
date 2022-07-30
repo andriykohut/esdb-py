@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "esdb"
-version = "0.1.6"
+version = "0.1.7"
 description = "gRPC client for EventStore DB"
 authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
 license = "MIT"
