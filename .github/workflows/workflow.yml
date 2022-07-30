@@ -15,17 +15,19 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      - name: "Where am I?"
+        run: pwd && echo $HOME && ls
+      - name: start eventstore
+        run: docker-compose up -d
       - name: Install poetry
         run: curl -sSL https://install.python-poetry.org | python -
       - name: Install deps
         run: poetry install
-      - name: black 
+      - name: run tests
+        run: poetry run pytest tests
+      - name: black
         run: poetry run black --check .
       - name: isort
         run: poetry run isort --check-only .
       - name: flake8
         run: poetry run flake8 .
-      - name: start eventstore
-        run: docker-compose up -d
-      - name: run tests
-        run: poetry run pytest tests
