@@ -3,13 +3,15 @@ import uuid
 
 import pytest
 
-from esdb.client.streams.base import AppendResult, StreamState
+from esdb.client.exceptions import WrongExpectedVersion
+from esdb.client.streams import StreamState
+from esdb.client.streams.base import AppendResult
 
 
 def test_appending_to_unknown_stream_with_stream_exists_state(client):
     now = datetime.datetime.utcnow().isoformat()
     with client.connect() as conn:
-        with pytest.raises(Exception) as e:
+        with pytest.raises(WrongExpectedVersion) as err:
             conn.streams.append(
                 stream=str(uuid.uuid4()),
                 event_type="test_event",
@@ -17,7 +19,7 @@ def test_appending_to_unknown_stream_with_stream_exists_state(client):
                 stream_state=StreamState.STREAM_EXISTS,
             )
 
-    assert "TODO: wrong expected version" in str(e.value)
+    assert str(err.value) == "Expected state 'stream_exists', got 'no_stream'"
 
 
 @pytest.mark.parametrize("stream_state", [StreamState.NO_STREAM, StreamState.ANY])
@@ -53,7 +55,7 @@ def test_appending_at_wrong_revision(client):
         )
 
         # try to append at unknown position
-        with pytest.raises(Exception) as e:
+        with pytest.raises(WrongExpectedVersion) as e:
             conn.streams.append(
                 stream=stream,
                 event_type="test_event",
@@ -61,7 +63,7 @@ def test_appending_at_wrong_revision(client):
                 revision=100,
             )
 
-    assert "TODO: wrong expected version" in str(e)
+    assert str(e.value) == "Expected state 'revision=100', got 'revision=0'"
 
 
 def test_appending_at_correct_revision(client):

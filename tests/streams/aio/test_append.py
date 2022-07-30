@@ -3,14 +3,16 @@ import uuid
 
 import pytest
 
-from esdb.client.streams.base import AppendResult, StreamState
+from esdb.client.exceptions import WrongExpectedVersion
+from esdb.client.streams import StreamState
+from esdb.client.streams.base import AppendResult
 
 
 @pytest.mark.asyncio
 async def test_appending_to_unknown_stream_with_stream_exists_state(async_client):
     now = datetime.datetime.utcnow().isoformat()
     async with async_client.connect() as conn:
-        with pytest.raises(Exception) as e:
+        with pytest.raises(WrongExpectedVersion) as e:
             await conn.streams.append(
                 stream=str(uuid.uuid4()),
                 event_type="test_event",
@@ -18,7 +20,7 @@ async def test_appending_to_unknown_stream_with_stream_exists_state(async_client
                 stream_state=StreamState.STREAM_EXISTS,
             )
 
-    assert "TODO: wrong expected version" in str(e.value)
+    assert str(e.value) == "Expected state 'stream_exists', got 'no_stream'"
 
 
 @pytest.mark.parametrize("stream_state", [StreamState.NO_STREAM, StreamState.ANY])
@@ -52,7 +54,7 @@ async def test_appending_at_wrong_revision(async_client):
         await conn.streams.append(stream=stream, event_type="test_event", data=b"")
 
         # try to append at unknown position
-        with pytest.raises(Exception) as e:
+        with pytest.raises(WrongExpectedVersion) as e:
             await conn.streams.append(
                 stream=stream,
                 event_type="test_event",
@@ -60,7 +62,7 @@ async def test_appending_at_wrong_revision(async_client):
                 revision=100,
             )
 
-        assert "TODO: wrong expected version" in str(e)
+        assert str(e.value) == "Expected state 'revision=100', got 'revision=0'"
 
 
 @pytest.mark.asyncio

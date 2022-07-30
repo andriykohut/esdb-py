@@ -3,7 +3,7 @@ import uuid
 import grpc
 import pytest
 
-from esdb.client.client import AsyncESClient
+from esdb.client import AsyncESClient
 from tests.conftest import root_cert
 
 

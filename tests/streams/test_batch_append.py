@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from esdb.client.streams.base import Message, StreamState
+from esdb.client.streams import Message, StreamState
 
 
 def test_batch_append(client):
