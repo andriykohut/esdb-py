@@ -69,8 +69,8 @@ class ESClient:
         )
         return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
 
-    @contextlib.asynccontextmanager
-    async def connect(self) -> AsyncContextManager[Connection]:
+    @contextlib.asynccontextmanager  # type: ignore
+    async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
         async with self._channel_builder() as channel:
             yield Connection(
                 channel=channel,
