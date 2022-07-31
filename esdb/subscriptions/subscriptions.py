@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 from typing import AsyncIterable, AsyncIterator, Optional
 
-from esdb.client.subscriptions.types import Event, NackAction, SubscriptionSettings
 from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
+from esdb.subscriptions.types import Event, NackAction, SubscriptionSettings
 
 
 class SubscriptionStream:

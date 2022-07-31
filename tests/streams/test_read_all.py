@@ -2,7 +2,7 @@ import uuid
 
 import pytest
 
-from esdb.client.streams import Filter
+from esdb.streams import Filter
 
 
 @pytest.mark.asyncio

@@ -7,10 +7,10 @@ from typing import AsyncContextManager, Optional
 
 import grpc
 
-from esdb.client.streams.streams import Streams
-from esdb.client.subscriptions.subscriptions import PersistentSubscriptions
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
+from esdb.streams import Streams
+from esdb.subscriptions import PersistentSubscriptions
 
 
 class BasicAuthPlugin(grpc.AuthMetadataPlugin):

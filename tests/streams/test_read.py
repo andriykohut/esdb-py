@@ -3,7 +3,7 @@ from unittest.mock import ANY
 
 import pytest
 
-from esdb.client.streams.types import ReadEvent
+from esdb.streams.types import ReadEvent
 
 
 @pytest.mark.asyncio

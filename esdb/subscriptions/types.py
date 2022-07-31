@@ -5,8 +5,8 @@ import json
 from dataclasses import dataclass
 from typing import Mapping, Optional, Union
 
-from esdb.client.streams.types import ContentType
 from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
+from esdb.streams.types import ContentType
 
 
 @dataclass

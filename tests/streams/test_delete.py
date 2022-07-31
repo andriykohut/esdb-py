@@ -2,9 +2,9 @@ import uuid
 
 import pytest
 
-from esdb.client.exceptions import ClientException, StreamNotFound
-from esdb.client.streams import StreamState
-from esdb.client.streams.types import DeleteResult
+from esdb.exceptions import ClientException, StreamNotFound
+from esdb.streams import StreamState
+from esdb.streams.types import DeleteResult
 
 
 @pytest.mark.asyncio

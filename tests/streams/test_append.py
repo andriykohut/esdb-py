@@ -3,9 +3,9 @@ import uuid
 
 import pytest
 
-from esdb.client.exceptions import WrongExpectedVersion
-from esdb.client.streams import StreamState
-from esdb.client.streams.types import AppendResult
+from esdb.exceptions import WrongExpectedVersion
+from esdb.streams import StreamState
+from esdb.streams.types import AppendResult
 
 
 @pytest.mark.asyncio

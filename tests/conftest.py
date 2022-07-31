@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import pytest
 
-from esdb.client import ESClient
+from esdb import ESClient
 
 
 @lru_cache

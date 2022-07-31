@@ -2,9 +2,9 @@ import uuid
 
 import pytest
 
-from esdb.client.exceptions import ClientException
-from esdb.client.streams import Message, StreamState
-from esdb.client.streams.types import BatchAppendResult
+from esdb.exceptions import ClientException
+from esdb.streams import Message, StreamState
+from esdb.streams.types import BatchAppendResult
 
 
 @pytest.mark.asyncio

@@ -6,19 +6,7 @@ import grpc
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
 
-from esdb.client.exceptions import ClientException, StreamNotFound, WrongExpectedVersion
-from esdb.client.streams.types import (
-    AppendResult,
-    BatchAppendResult,
-    Checkpoint,
-    DeleteResult,
-    Filter,
-    Message,
-    ReadEvent,
-    StreamState,
-    SubscriptionConfirmed,
-    TombstoneResult,
-)
+from esdb.exceptions import ClientException, StreamNotFound, WrongExpectedVersion
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
 from esdb.generated.streams_pb2 import (
     AppendReq,
@@ -32,6 +20,18 @@ from esdb.generated.streams_pb2 import (
     TombstoneResp,
 )
 from esdb.generated.streams_pb2_grpc import StreamsStub
+from esdb.streams.types import (
+    AppendResult,
+    BatchAppendResult,
+    Checkpoint,
+    DeleteResult,
+    Filter,
+    Message,
+    ReadEvent,
+    StreamState,
+    SubscriptionConfirmed,
+    TombstoneResult,
+)
 
 logger = logging.getLogger(__name__)
 
