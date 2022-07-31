@@ -119,10 +119,11 @@ from esdb.client.streams import Filter
 async def main():
     async with AsyncESClient("localhost:2113", tls=False).connect() as conn:
         async for event in conn.streams.read_all(
-            subscribe=True,
+            subscribe=True,  # subscribe will wait for events, use count=<n> to read <n> events and stop
             filter_by=Filter(
                 kind=Filter.Kind.EVENT_TYPE,
                 regex="^prefix-",
+                # Checkpoint only required when subscribe=True, it's not needed when using count=<int>
                 checkpoint_interval_multiplier=1000,
             ),
         ):
