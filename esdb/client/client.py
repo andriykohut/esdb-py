@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import contextlib
 from dataclasses import dataclass
-from typing import AsyncIterator, Optional
+from typing import AsyncContextManager, Optional
 
 import grpc
 
@@ -69,8 +69,8 @@ class ESClient:
         )
         return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
 
-    @contextlib.asynccontextmanager
-    async def connect(self) -> AsyncIterator[Connection]:
+    @contextlib.asynccontextmanager  # type: ignore
+    async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
         async with self._channel_builder() as channel:
             yield Connection(
                 channel=channel,

@@ -19,11 +19,5 @@ jobs:
         run: curl -sSL https://install.python-poetry.org | python -
       - name: Install deps
         run: poetry install
-      - name: black 
-        run: poetry run black --check .
-      - name: isort
-        run: poetry run isort --check-only .
-      - name: flake8
-        run: poetry run flake8 .
-      - name: mypy
-        run: poetry run mypy esdb
+      - name: Lint
+        run: make lint

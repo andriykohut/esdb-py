@@ -8,7 +8,43 @@ from unittest import mock
 import pytest
 
 from esdb.client.subscriptions import SubscriptionSettings
-from esdb.client.subscriptions.types import Event
+from esdb.client.subscriptions.types import Event, NackAction
+
+
+@pytest.mark.asyncio
+async def test_create_a_subscription(client):
+    stream = str(uuid.uuid4())
+    async with client.connect() as conn:
+        await conn.streams.append(
+            stream=str(uuid.uuid4()),
+            event_type="some_event",
+            data={},
+        )
+
+        await conn.subscriptions.create_stream_subscription(
+            stream=stream,
+            group_name="me",
+            settings=SubscriptionSettings(
+                live_buffer_size=15,
+                read_batch_size=10,
+                history_buffer_size=15,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.TICKS,
+                    value=1000,
+                ),
+                resolve_links=False,
+                extra_statistics=True,
+                max_retry_count=5,
+                min_checkpoint_count=20,
+                max_checkpoint_count=30,
+                max_subscriber_count=10,
+                message_timeout=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=1000,
+                ),
+                consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
+            ),
+        )
 
 
 @pytest.mark.asyncio
@@ -121,3 +157,44 @@ async def test_multiple_consumers(client):
 
     all_events = list(itertools.chain.from_iterable(results_by_consumer.values()))
     assert sorted(all_events) == list(range(50))
+
+
+@pytest.mark.asyncio
+async def test_nack(client):
+    stream = f"stream-{str(uuid.uuid4())}"
+    group = f"group-{str(uuid.uuid4())}"
+
+    async with client.connect() as conn:
+        # emit some events to the same stream
+        for i in range(10):
+            await conn.streams.append(stream, "foobar", {"i": i})
+
+        # create a subscription
+        await conn.subscriptions.create_stream_subscription(
+            stream=stream,
+            group_name=group,
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=2,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
+
+    # wait for 10 responses or stop after 3 seconds
+    expected_count = 10 * 2  # number of events * retry count
+    count = 0
+    async with client.connect() as conn:
+        deadline = time.time() + 3
+        subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=100)
+        async for event in subscription:
+            count += 1
+            await subscription.nack([event], NackAction.RETRY)
+            if time.time() >= deadline:
+                pytest.fail("Didn't read all events")
+            if count == expected_count:
+                break
