@@ -35,6 +35,9 @@ grpc-stubs = "^1.24.11"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.mypy]
+exclude = ["esdb/generated"]
+
 [tool.black]
 line-length = 119
 exclude = "esdb/generated"

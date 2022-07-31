@@ -50,15 +50,15 @@ class Streams(StreamsBase):
 
     def _read_iter(self, responses: Iterable[ReadResp]) -> Iterable[ReadEvent]:
         for response in responses:
-            response = self._process_read_response(response)
-            if isinstance(response, ReadEvent):
-                yield response
-            elif isinstance(response, SubscriptionConfirmed):
-                logger.info(f"Subscription {response.subscription_id} confirmed")
-            elif isinstance(response, Checkpoint):
+            result = self._process_read_response(response)
+            if isinstance(result, ReadEvent):
+                yield result
+            elif isinstance(result, SubscriptionConfirmed):
+                logger.info(f"Subscription {result.subscription_id} confirmed")
+            elif isinstance(result, Checkpoint):
                 logger.info(
-                    f"Checkpoint commit position: {response.commit_position}, "
-                    f"prepare position: {response.prepare_position}"
+                    f"Checkpoint commit position: {result.commit_position}, "
+                    f"prepare position: {result.prepare_position}"
                 )
 
     def read(
@@ -90,17 +90,17 @@ class Streams(StreamsBase):
 
     def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
-    ) -> DeleteResult:
+    ) -> Optional[DeleteResult]:
         request = self._delete_request(stream=stream, stream_state=stream_state, revision=revision)
         try:
             response = self._stub.Delete(request)
-        except grpc._channel._InactiveRpcError as err:
+        except grpc._channel._InactiveRpcError as err:  # type: ignore
             raise ClientException(f"Delete failed: {err.details()}") from err
         return self._process_delete_response(response)
 
     def tombstone(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
-    ) -> TombstoneResult:
+    ) -> Optional[TombstoneResult]:
         request = self._tombstone_request(stream=stream, stream_state=stream_state, revision=revision)
         response = self._stub.Tombstone(request)
         return self._process_tombstone_response(response)

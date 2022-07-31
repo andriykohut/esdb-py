@@ -25,3 +25,5 @@ jobs:
         run: poetry run isort --check-only .
       - name: flake8
         run: poetry run flake8 .
+      - name: mypy
+        run: poetry run mypy esdb

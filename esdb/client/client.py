@@ -3,9 +3,10 @@ from __future__ import annotations
 import base64
 import contextlib
 from dataclasses import dataclass
-from typing import AsyncContextManager, ContextManager, Optional
+from typing import AsyncIterator, Optional
 
 import grpc
+from black import Iterator
 
 from esdb.client.streams.aio import Streams as StreamsAsync
 from esdb.client.streams.streams import Streams
@@ -43,41 +44,39 @@ class ESClient:
         keepalive_time_ms: int = 10000,
         keepalive_timeout_ms: int = 10000,
     ) -> None:
-        credentials = None
-        channel_credentials = None
-        call_credentials = None
+        self.channel_credentials = None
+        self.call_credentials = None
+        self.tls = tls
+        self.target = target
 
-        options = [
+        self.options = [
             ("grpc.keepalive_time_ms", keepalive_time_ms),
             ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
         ]
 
         if tls:
-            channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
+            self.channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
 
         if any([username, password]) and not all([username, password]):
             raise ValueError("Both username and password are required")
 
         if username and password:
-            call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
+            self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
 
-        channel_func = grpc.secure_channel if tls else grpc.insecure_channel
-
-        if channel_credentials and call_credentials:
-            credentials = grpc.composite_channel_credentials(channel_credentials, call_credentials)
-        elif channel_credentials:
-            credentials = channel_credentials
-        elif call_credentials:
-            credentials = call_credentials
-        self.__channel_builder = (
-            lambda: channel_func(target, credentials, options=options)
-            if credentials
-            else channel_func(target, options=options)
+    def _channel_builder(self) -> grpc.Channel:
+        if not self.tls:
+            return grpc.insecure_channel(self.target, options=self.options)
+        assert self.channel_credentials
+        credentials = (
+            grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
+            if self.call_credentials
+            else self.channel_credentials
         )
+        return grpc.secure_channel(self.target, credentials, self.options)
 
     @contextlib.contextmanager
-    def connect(self) -> ContextManager[Connection]:
-        with self.__channel_builder() as channel:
+    def connect(self) -> Iterator[Connection]:
+        with self._channel_builder() as channel:
             yield Connection(
                 channel=channel,
                 streams=Streams(StreamsStub(channel)),
@@ -87,57 +86,26 @@ class ESClient:
 
 @dataclass
 class AsyncConnection:
-    channel: grpc.aio._base_channel.Channel
+    channel: grpc.aio._base_channel.Channel  # type: ignore
     streams: StreamsAsync
     subscriptions: PersistentSubscriptionsAsync
 
 
-class AsyncESClient:
-    def __init__(
-        self,
-        target: str,
-        tls: bool = True,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        root_certificates: Optional[bytes] = None,
-        keepalive_time_ms: int = 10000,
-        keepalive_timeout_ms: int = 10000,
-    ) -> None:
-        credentials = None
-        channel_credentials = None
-        call_credentials = None
-        options = [
-            ("grpc.keepalive_time_ms", keepalive_time_ms),
-            ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
-        ]
-
-        if tls:
-            channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
-
-        if any([username, password]) and not all([username, password]):
-            raise ValueError("Both username and password are required")
-
-        if username and password:
-            call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
-
-        channel_func = grpc.aio.secure_channel if tls else grpc.aio.insecure_channel
-
-        if channel_credentials and call_credentials:
-            credentials = grpc.composite_channel_credentials(channel_credentials, call_credentials)
-        elif channel_credentials:
-            credentials = channel_credentials
-        elif call_credentials:
-            credentials = call_credentials
-
-        self.__channel_builder = (
-            lambda: channel_func(target, credentials, options=options)
-            if credentials
-            else channel_func(target, options=options)
+class AsyncESClient(ESClient):
+    def _channel_builder(self) -> grpc.aio.Channel:  # type: ignore
+        if not self.tls:
+            return grpc.aio.insecure_channel(self.target, options=self.options)  # type: ignore
+        assert self.channel_credentials
+        credentials = (
+            grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
+            if self.call_credentials
+            else self.channel_credentials
         )
+        return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
 
     @contextlib.asynccontextmanager
-    async def connect(self) -> AsyncContextManager[AsyncConnection]:
-        async with self.__channel_builder() as channel:
+    async def connect(self) -> AsyncIterator[AsyncConnection]:  # type: ignore
+        async with self._channel_builder() as channel:
             yield AsyncConnection(
                 channel=channel,
                 streams=StreamsAsync(StreamsStub(channel)),

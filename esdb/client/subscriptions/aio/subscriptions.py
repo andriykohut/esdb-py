@@ -14,7 +14,7 @@ class SubscriptionStream:
         self.stream = stream
         self.group_name = group_name
         self.buffer_size = buffer_size
-        self.send_queue = asyncio.Queue()
+        self.send_queue: asyncio.Queue = asyncio.Queue()
         self.stub = stub
         self.subscription_id: Optional[str] = None
 
@@ -35,6 +35,7 @@ class SubscriptionStream:
         async def queue_iter():
             while True:
                 yield await self.send_queue.get()
+                self.send_queue.task_done()
 
         reader: AsyncIterator[ReadResp] = self.stub.Read(queue_iter())
         async for response in reader:
@@ -55,13 +56,14 @@ class SubscriptionStream:
         )
 
     async def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
+        assert self.subscription_id, "Nothing to nack, not reading from a subscription yet"
         await self.send_queue.put(
             ReadReq(
                 nack=ReadReq.Nack(
                     id=self.subscription_id.encode(),
                     ids=(UUID(string=evt.id) for evt in events),
                     action=action.value,
-                    reason=reason,
+                    reason=reason or "",
                 )
             )
         )

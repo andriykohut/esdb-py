@@ -1,3 +1,5 @@
+from typing import cast
+
 from esdb.generated.shared_pb2 import Empty
 from esdb.generated.streams_pb2 import AppendResp, ReadResp
 
@@ -7,10 +9,10 @@ class ClientException(Exception):
 
 
 class WrongExpectedVersion(ClientException):
-    def __init__(self, error: AppendResp.wrong_expected_version):
-        expected_revision = error.WhichOneof("expected_revision_option")
+    def __init__(self, error: AppendResp.WrongExpectedVersion) -> None:
+        expected_revision = cast(str, error.WhichOneof("expected_revision_option"))
         expected_val = getattr(error, expected_revision)
-        current_revision = error.WhichOneof("current_revision_option")
+        current_revision = cast(str, error.WhichOneof("current_revision_option"))
         current_val = getattr(error, current_revision)
 
         expected = (
