@@ -5,28 +5,30 @@ import pytest
 
 from esdb.client.exceptions import WrongExpectedVersion
 from esdb.client.streams import StreamState
-from esdb.client.streams.base import AppendResult
+from esdb.client.streams.types import AppendResult
 
 
-def test_appending_to_unknown_stream_with_stream_exists_state(client):
+@pytest.mark.asyncio
+async def test_appending_to_unknown_stream_with_stream_exists_state(client):
     now = datetime.datetime.utcnow().isoformat()
-    with client.connect() as conn:
-        with pytest.raises(WrongExpectedVersion) as err:
-            conn.streams.append(
+    async with client.connect() as conn:
+        with pytest.raises(WrongExpectedVersion) as e:
+            await conn.streams.append(
                 stream=str(uuid.uuid4()),
                 event_type="test_event",
                 data={"now": now},
                 stream_state=StreamState.STREAM_EXISTS,
             )
 
-    assert str(err.value) == "Expected state 'stream_exists', got 'no_stream'"
+    assert str(e.value) == "Expected state 'stream_exists', got 'no_stream'"
 
 
 @pytest.mark.parametrize("stream_state", [StreamState.NO_STREAM, StreamState.ANY])
-def test_appending_to_unknown_stream(client, stream_state):
+@pytest.mark.asyncio
+async def test_appending_to_unknown_stream(client, stream_state):
     now = datetime.datetime.utcnow().isoformat()
-    with client.connect() as conn:
-        result = conn.streams.append(
+    async with client.connect() as conn:
+        result = await conn.streams.append(
             stream=str(uuid.uuid4()),
             event_type="test_event",
             data={"now": now},
@@ -37,55 +39,39 @@ def test_appending_to_unknown_stream(client, stream_state):
 
 
 @pytest.mark.parametrize("data", [b"some bytes", {"x": 1, "y": 2}])
-def test_appending_content_types(client, data):
-    with client.connect() as conn:
-        result = conn.streams.append(stream=str(uuid.uuid4()), event_type="test_event", data=data)
-
+@pytest.mark.asyncio
+async def test_appending_content_types(client, data):
+    async with client.connect() as conn:
+        result = await conn.streams.append(stream=str(uuid.uuid4()), event_type="test_event", data=data)
     assert isinstance(result, AppendResult)
 
 
-def test_appending_at_wrong_revision(client):
+@pytest.mark.asyncio
+async def test_appending_at_wrong_revision(client):
     # initialize stream
     stream = str(uuid.uuid4())
-    with client.connect() as conn:
-        conn.streams.append(
-            stream=stream,
-            event_type="test_event",
-            data=b"",
-        )
+    async with client.connect() as conn:
+        await conn.streams.append(stream=stream, event_type="test_event", data=b"")
 
         # try to append at unknown position
         with pytest.raises(WrongExpectedVersion) as e:
-            conn.streams.append(
+            await conn.streams.append(
                 stream=stream,
                 event_type="test_event",
                 data=b"",
                 revision=100,
             )
 
-    assert str(e.value) == "Expected state 'revision=100', got 'revision=0'"
+        assert str(e.value) == "Expected state 'revision=100', got 'revision=0'"
 
 
-def test_appending_at_correct_revision(client):
+@pytest.mark.asyncio
+async def test_appending_at_correct_revision(client):
     stream = str(uuid.uuid4())
-    with client.connect() as conn:
-        # Publish first event
-        conn.streams.append(
-            stream=stream,
-            event_type="test_event",
-            data=b"",
-        )
-        # Publish second event
-        conn.streams.append(
-            stream=stream,
-            event_type="test_event",
-            data=b"",
-        )
-
-        # Publishing from second should work
-        conn.streams.append(
-            stream=stream,
-            event_type="test_event",
-            data=b"",
-            revision=1,
-        )
+    async with client.connect() as conn:
+        # Publish 0th event
+        await conn.streams.append(stream=stream, event_type="test_event", data=b"")
+        # Publish 1th event
+        await conn.streams.append(stream=stream, event_type="test_event", data=b"")
+        # Publishing from 1th should work
+        await conn.streams.append(stream=stream, event_type="test_event", data=b"", revision=1)

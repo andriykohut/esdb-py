@@ -1,3 +1,3 @@
-from esdb.client.client import AsyncESClient, ESClient
+from esdb.client.client import ESClient
 
-__all__ = ["AsyncESClient", "ESClient"]
+__all__ = ["ESClient"]

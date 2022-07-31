@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import queue
-from typing import Iterable, Iterator, Optional
+import asyncio
+from typing import AsyncIterable, AsyncIterator, Optional
 
-from esdb.client.subscriptions.base import Event, NackAction, SubscriptionSettings
+from esdb.client.subscriptions.types import Event, NackAction, SubscriptionSettings
 from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
@@ -14,11 +14,11 @@ class SubscriptionStream:
         self.stream = stream
         self.group_name = group_name
         self.buffer_size = buffer_size
-        self.send_queue: queue.SimpleQueue = queue.SimpleQueue()
+        self.send_queue: asyncio.Queue = asyncio.Queue()
         self.stub = stub
         self.subscription_id: Optional[str] = None
 
-    def __iter__(self) -> Iterable[Event]:
+    async def __aiter__(self) -> AsyncIterable[Event]:
         read_request = ReadReq(
             options=ReadReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=self.stream.encode()),
@@ -30,16 +30,23 @@ class SubscriptionStream:
             ack=None,
             nack=None,
         )
-        self.send_queue.put(read_request)
-        reader: Iterator[ReadResp] = self.stub.Read(iter(self.send_queue.get, None))
-        confirmation: ReadResp = next(reader)
-        self.subscription_id = confirmation.subscription_confirmation.subscription_id
-        for response in reader:
+        await self.send_queue.put(read_request)
+
+        async def queue_iter():
+            while True:
+                yield await self.send_queue.get()
+                self.send_queue.task_done()
+
+        reader: AsyncIterator[ReadResp] = self.stub.Read(queue_iter())
+        async for response in reader:
+            if not self.subscription_id and response.WhichOneof("content") == "subscription_confirmation":
+                self.subscription_id = response.subscription_confirmation.subscription_id
+                continue
             yield Event.from_read_response_event(response.event)
 
-    def ack(self, events: list[Event]) -> None:
+    async def ack(self, events: list[Event]) -> None:
         assert self.subscription_id, "Nothing to ack, not reading from a subscription yet"
-        self.send_queue.put(
+        await self.send_queue.put(
             ReadReq(
                 ack=ReadReq.Ack(
                     id=self.subscription_id.encode(),
@@ -48,9 +55,9 @@ class SubscriptionStream:
             )
         )
 
-    def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
+    async def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
         assert self.subscription_id, "Nothing to nack, not reading from a subscription yet"
-        self.send_queue.put(
+        await self.send_queue.put(
             ReadReq(
                 nack=ReadReq.Nack(
                     id=self.subscription_id.encode(),
@@ -66,7 +73,7 @@ class PersistentSubscriptions:
     def __init__(self, stub: PersistentSubscriptionsStub) -> None:
         self._stub = stub
 
-    def create_stream_subscription(
+    async def create_stream_subscription(
         self, stream: str, group_name: str, settings: SubscriptionSettings, backwards: bool = False
     ) -> None:
         stream_identifier = StreamIdentifier(stream_name=stream.encode())
@@ -82,7 +89,7 @@ class PersistentSubscriptions:
                 settings=settings.to_protobuf(),
             )
         )
-        response: CreateResp = self._stub.Create(create_request)
+        response: CreateResp = await self._stub.Create(create_request)
         assert isinstance(response, CreateResp), f"Expected {CreateResp} got {response.__class__}"
 
     def subscribe_to_stream(

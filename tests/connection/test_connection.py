@@ -7,24 +7,27 @@ from esdb.client import ESClient
 from tests.conftest import root_cert
 
 
-def test_read_and_write_stream_with_tls_and_basic_auth(client_tls):
+@pytest.mark.asyncio
+async def test_read_and_write_stream_with_tls_and_basic_auth(client_tls):
     stream = str(uuid.uuid4())
-    with client_tls.connect() as conn:
+    events = []
+    async with client_tls.connect() as conn:
         for _ in range(10):
-            conn.streams.append(stream=stream, event_type="foobar", data={})
+            await conn.streams.append(stream=stream, event_type="foobar", data={})
+        async for event in conn.streams.read(stream=stream, count=500):
+            events.append(event)
+    assert len(list(events)) == 10
 
-        events = list(conn.streams.read(stream=stream, count=500))
 
-    assert len(events) == 10
-
-
-def test_invalid_cert():
+@pytest.mark.asyncio
+async def test_invalid_cert():
     client = ESClient("localhost:2111", root_certificates=b"foo", username="admin", password="changeit")
-    with client.connect() as conn:
-        with pytest.raises(grpc._channel._InactiveRpcError):
-            conn.streams.append("foo", "test_event", b"data")
+    async with client.connect() as conn:
+        with pytest.raises(grpc.aio._call.AioRpcError):
+            await conn.streams.append("foo", "test_event", b"data")
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     ["user", "password"],
     (
@@ -32,10 +35,10 @@ def test_invalid_cert():
         ("foobar", "changeit"),
     ),
 )
-def test_invalid_user_pass(user, password):
+async def test_invalid_user_pass(user, password):
     client = ESClient("localhost:2111", root_certificates=root_cert(), username=user, password=password)
-    with client.connect() as conn:
-        with pytest.raises(grpc._channel._InactiveRpcError) as err:
-            conn.streams.append("foo", "test_event", b"data")
+    async with client.connect() as conn:
+        with pytest.raises(grpc.aio._call.AioRpcError) as err:
+            await conn.streams.append("foo", "test_event", b"data")
 
     assert "UNAUTHENTICATED" in str(err.value)

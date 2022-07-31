@@ -1,5 +1,5 @@
-import queue
-import threading
+import asyncio
+import itertools
 import time
 import uuid
 from collections import defaultdict
@@ -8,20 +8,21 @@ from unittest import mock
 import pytest
 
 from esdb.client.subscriptions import SubscriptionSettings
-from esdb.client.subscriptions.base import Event
+from esdb.client.subscriptions.types import Event
 
 
-def test_subscribe_to_stream(client):
+@pytest.mark.asyncio
+async def test_subscribe_to_stream(client):
     stream = f"stream-{str(uuid.uuid4())}"
     group = f"group-{str(uuid.uuid4())}"
 
-    with client.connect() as conn:
+    async with client.connect() as conn:
         # emit some events to the same stream
         for _ in range(10):
-            conn.streams.append(stream, "foobar", b"data")
+            await conn.streams.append(stream, "foobar", b"data")
 
         # create a subscription
-        conn.subscriptions.create_stream_subscription(
+        await conn.subscriptions.create_stream_subscription(
             stream=stream,
             group_name=group,
             settings=SubscriptionSettings(
@@ -36,13 +37,13 @@ def test_subscribe_to_stream(client):
         )
 
     # wait for 10 responses or stop after 3 seconds
-    with client.connect() as conn:
+    async with client.connect() as conn:
         deadline = time.time() + 3
         events = []
         subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=10)
-        for event in subscription:
+        async for event in subscription:
             events.append(event)
-            subscription.ack([event])
+            await subscription.ack([event])
             if time.time() >= deadline:
                 pytest.fail("Didn't read all events")
             if len(events) == 10:
@@ -60,17 +61,18 @@ def test_subscribe_to_stream(client):
         }
 
 
-def test_multiple_consumers(client):
+@pytest.mark.asyncio
+async def test_multiple_consumers(client):
     stream = f"stream-{str(uuid.uuid4())}"
     group = f"group-{str(uuid.uuid4())}"
 
-    with client.connect() as conn:
+    async with client.connect() as conn:
         # emit some events to the same stream
         for i in range(50):
-            conn.streams.append(stream, "foobar", {"i": i})
+            await conn.streams.append(stream, "foobar", {"i": i})
 
         # create a subscription
-        conn.subscriptions.create_stream_subscription(
+        await conn.subscriptions.create_stream_subscription(
             stream=stream,
             group_name=group,
             settings=SubscriptionSettings(
@@ -86,39 +88,36 @@ def test_multiple_consumers(client):
             ),
         )
 
-    result_queues = [queue.Queue(), queue.Queue(), queue.Queue()]
+    result_queue = asyncio.Queue()
 
-    def run_consumer(num: int, q: queue.SimpleQueue):
-        with client.connect() as conn:
+    async def run_consumer(id: int):
+        async with client.connect() as conn:
             subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=5)
-            for event in subscription:
-                q.put((num, event.data["i"]))
-                subscription.ack([event])
+            async for event in subscription:
+                await subscription.ack([event])
+                await result_queue.put((id, event.data["i"]))
+                if result_queue.qsize() == 50:
+                    raise Exception("I'm done")
 
-    # Spawn multiple consumers
-    for idx, q in enumerate(result_queues):
-        threading.Thread(target=lambda: run_consumer(idx, q), daemon=True).start()
+    try:
+        await asyncio.gather(
+            run_consumer(1),
+            run_consumer(2),
+            run_consumer(3),
+            return_exceptions=False,
+        )
+    except Exception:
+        ...
 
-    count = 0
-    result = defaultdict(list)
+    results_by_consumer = defaultdict(list)
 
-    while True:
-        if count == 50:
-            break
-        for q in result_queues:
-            try:
-                num, data = q.get_nowait()
-                count += 1
-                result[num].append(data)
-            except queue.Empty:
-                ...
+    while not result_queue.empty():
+        consumer, evt_num = await result_queue.get()
+        results_by_consumer[consumer].append(evt_num)
 
-    all_jobs = []
-    for worker, results in result.items():
-        # ensure all threads consumed events
-        assert len(results) > 0
-        all_jobs.extend(results)
+    for events in results_by_consumer.values():
+        # ensure each consume did some work
+        assert events
 
-    # ensure all events were processed
-    assert len(all_jobs) == 50
-    assert sorted(all_jobs) == list(range(50))
+    all_events = list(itertools.chain.from_iterable(results_by_consumer.values()))
+    assert sorted(all_events) == list(range(50))

@@ -6,13 +6,8 @@ from dataclasses import dataclass
 from typing import AsyncIterator, Optional
 
 import grpc
-from black import Iterator
 
-from esdb.client.streams.aio import Streams as StreamsAsync
 from esdb.client.streams.streams import Streams
-from esdb.client.subscriptions.aio.subscriptions import (
-    PersistentSubscriptions as PersistentSubscriptionsAsync,
-)
 from esdb.client.subscriptions.subscriptions import PersistentSubscriptions
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
@@ -22,13 +17,13 @@ class BasicAuthPlugin(grpc.AuthMetadataPlugin):
     def __init__(self, user: str, password: str) -> None:
         self.__auth = base64.b64encode(f"{user}:{password}".encode())
 
-    def __call__(self, context, callback):
+    def __call__(self, context: grpc.AuthMetadataContext, callback: grpc.AuthMetadataPluginCallback) -> None:
         callback((("authorization", b"Basic " + self.__auth),), None)
 
 
 @dataclass
 class Connection:
-    channel: grpc.Channel
+    channel: grpc.aio._base_channel.Channel  # type: ignore
     streams: Streams
     subscriptions: PersistentSubscriptions
 
@@ -63,35 +58,6 @@ class ESClient:
         if username and password:
             self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
 
-    def _channel_builder(self) -> grpc.Channel:
-        if not self.tls:
-            return grpc.insecure_channel(self.target, options=self.options)
-        assert self.channel_credentials
-        credentials = (
-            grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
-            if self.call_credentials
-            else self.channel_credentials
-        )
-        return grpc.secure_channel(self.target, credentials, self.options)
-
-    @contextlib.contextmanager
-    def connect(self) -> Iterator[Connection]:
-        with self._channel_builder() as channel:
-            yield Connection(
-                channel=channel,
-                streams=Streams(StreamsStub(channel)),
-                subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
-            )
-
-
-@dataclass
-class AsyncConnection:
-    channel: grpc.aio._base_channel.Channel  # type: ignore
-    streams: StreamsAsync
-    subscriptions: PersistentSubscriptionsAsync
-
-
-class AsyncESClient(ESClient):
     def _channel_builder(self) -> grpc.aio.Channel:  # type: ignore
         if not self.tls:
             return grpc.aio.insecure_channel(self.target, options=self.options)  # type: ignore
@@ -104,10 +70,10 @@ class AsyncESClient(ESClient):
         return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
 
     @contextlib.asynccontextmanager
-    async def connect(self) -> AsyncIterator[AsyncConnection]:  # type: ignore
+    async def connect(self) -> AsyncIterator[Connection]:  # type: ignore
         async with self._channel_builder() as channel:
-            yield AsyncConnection(
+            yield Connection(
                 channel=channel,
-                streams=StreamsAsync(StreamsStub(channel)),
-                subscriptions=PersistentSubscriptionsAsync(PersistentSubscriptionsStub(channel)),
+                streams=Streams(StreamsStub(channel)),
+                subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
             )
