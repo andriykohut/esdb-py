@@ -110,7 +110,26 @@ with client.connect() as conn:
 
 # Transient subscription to all events with filtering
 ```py
+import asyncio
 
+from esdb.client import AsyncESClient
+from esdb.client.streams import Filter
+
+
+async def main():
+    async with AsyncESClient("localhost:2113", tls=False).connect() as conn:
+        async for event in conn.streams.read_all(
+            subscribe=True,
+            filter_by=Filter(
+                kind=Filter.Kind.EVENT_TYPE,
+                regex="^prefix-",
+                checkpoint_interval_multiplier=1000,
+            ),
+        ):
+            print(event)
+
+
+asyncio.run(main())
 ```
 
 Async example:
