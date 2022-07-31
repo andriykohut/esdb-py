@@ -47,7 +47,6 @@ class SubscriptionSettings:
         type: Type
         value: int
 
-    @enum.unique
     class ConsumerStrategy(enum.Enum):
         DISPATCH_TO_SINGLE = "DispatchToSingle"
         ROUND_ROBIN = "RoundRobin"
