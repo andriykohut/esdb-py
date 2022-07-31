@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 import json
 from dataclasses import dataclass
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Union
 
 from esdb.client.streams.base import ContentType
 from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
@@ -18,7 +18,7 @@ class Event:
     commit_position: int
     metadata: Mapping[str, str]
     type: str
-    data: bytes | dict
+    data: Union[bytes, dict]
 
     @staticmethod
     def from_read_response_event(event: ReadResp.ReadEvent) -> Event:

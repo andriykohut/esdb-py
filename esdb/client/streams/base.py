@@ -130,7 +130,7 @@ ProposedMessageType = TypeVar("ProposedMessageType", BatchAppendReq.ProposedMess
 @dataclass
 class Message:
     event_type: str
-    data: bytes | dict
+    data: Union[bytes, dict]
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     custom_metadata: Optional[dict] = None
 
@@ -202,8 +202,8 @@ class StreamsBase(abc.ABC):
         event_type: str,
         data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
-        revision: None | int = None,
-        custom_metadata: None | dict = None,
+        revision: Optional[int] = None,
+        custom_metadata: Optional[dict] = None,
     ) -> Iterable[AppendReq]:
         options = AppendReq.Options(
             stream_identifier=StreamIdentifier(stream_name=stream.encode()),
@@ -235,8 +235,8 @@ class StreamsBase(abc.ABC):
         event_type: str,
         data: Union[dict, bytes],
         stream_state: StreamState = StreamState.ANY,
-        revision: None | int = None,
-        custom_metadata: None | dict = None,
+        revision: Optional[int] = None,
+        custom_metadata: Optional[dict] = None,
     ) -> AppendResult:
         ...
 
@@ -293,7 +293,7 @@ class StreamsBase(abc.ABC):
         return req
 
     @staticmethod
-    def _process_read_response(response: ReadResp) -> ReadEvent | SubscriptionConfirmed | Checkpoint:
+    def _process_read_response(response: ReadResp) -> Union[ReadEvent, SubscriptionConfirmed, Checkpoint]:
         content = response.WhichOneof("content")
         if content == "event":
             return ReadEvent.from_response(response)
