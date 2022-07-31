@@ -12,11 +12,19 @@ protoc:
 
 
 pretty:
-	black .
-	isort .
+	poetry run black .
+	poetry run isort .
 
 lint:
-	black --check .
-	isort --check-only .
-	flake8 .
-	mypy ./esdb
+	poetry run black --check .
+	poetry run isort --check-only .
+	poetry run flake8 .
+	poetry run mypy ./esdb
+
+test:
+	poetry run pytest --cov esdb
+
+
+html-cov: test
+	poetry run coverage html
+	open htmlcov/index.html
