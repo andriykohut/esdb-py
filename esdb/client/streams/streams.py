@@ -80,9 +80,12 @@ class Streams(StreamsBase):
 
         yield from self._read_iter(self._stub.Read(request))
 
-    def read_all(self, count: int, backwards=False, filter_by: Optional[Filter] = None) -> Iterable[ReadEvent]:
+    def read_all(
+        self, count: Optional[int] = None, subscribe=False, backwards=False, filter_by: Optional[Filter] = None
+    ) -> Iterable[ReadEvent]:
         request = self._read_all_request(
             count=count,
+            subscribe=subscribe,
             backwards=backwards,
             filter_by=filter_by,
         )

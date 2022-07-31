@@ -175,6 +175,7 @@ class Filter:
     kind: Kind
     regex: str
     prefixes: Optional[list[str]] = None
+    checkpoint_interval_multiplier: Optional[int] = None
 
     def to_protobuf(self) -> ReadReq.Options.FilterOptions:
         Expression = ReadReq.Options.FilterOptions.Expression
@@ -184,12 +185,15 @@ class Filter:
             stream_identifier = Expression(regex=self.regex, prefix=self.prefixes)
         elif self.kind == self.Kind.EVENT_TYPE:
             event_type = Expression(regex=self.regex, prefix=self.prefixes)
-        return ReadReq.Options.FilterOptions(
+        options = ReadReq.Options.FilterOptions(
             stream_identifier=stream_identifier,
             event_type=event_type,
             max=0,  # This apparently does nothing ¯\_(ツ)_/¯
             count=Empty(),
         )
+        if self.checkpoint_interval_multiplier:
+            options.checkpointIntervalMultiplier = self.checkpoint_interval_multiplier
+        return options
 
 
 class StreamsBase(abc.ABC):
@@ -270,19 +274,24 @@ class StreamsBase(abc.ABC):
         return ReadReq(options=options)
 
     @staticmethod
-    def _read_all_request(count: Optional[int], backwards: bool, filter_by: Optional[Filter]) -> ReadReq:
+    def _read_all_request(
+        count: Optional[int],
+        subscribe: bool,
+        backwards: bool,
+        filter_by: Optional[Filter],
+    ) -> ReadReq:
+        assert subscribe ^ (count is not None), "subscribe and count are mutually exclusive arguments"
         req = ReadReq(
             options=ReadReq.Options(
                 stream=None,
                 all=ReadReq.Options.AllOptions(
                     start=None if backwards else Empty(),
                     end=Empty() if backwards else None,
+                    # position=ReadReq.Options.Position()  # TODO: implement position
                 ),
                 read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
-                # I can get subscription to work with filters, for some reason eventstore complains with
-                # all possible combinations, so for now `read-all` only works with count
-                subscription=None,
                 resolve_links=True,
+                subscription=ReadReq.Options.SubscriptionOptions() if subscribe else None,
                 filter=filter_by.to_protobuf() if filter_by else None,
                 no_filter=None if filter_by else Empty(),
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
@@ -290,6 +299,10 @@ class StreamsBase(abc.ABC):
         )
         if count is not None:
             req.options.count = count
+        if subscribe and filter_by:
+            assert (
+                filter_by.checkpoint_interval_multiplier is not None
+            ), "checkpoint_interval_multiplier is required when subscribing"
         return req
 
     @staticmethod

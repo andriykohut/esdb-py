@@ -13,7 +13,9 @@ EventStoreDB Python gRPC client
   - [x] append
   - [x] batch append
   - [x] delete
-  - [x] read
+  - [x] read stream
+  - [x] read all with stream/event type filters
+  - [x] transient subscriptions
   - [x] tombstone
   - [x] filtering
 - [x] persistent subscriptions
@@ -53,6 +55,8 @@ pyenv local esdb-py
 
 Usage:
 
+
+Append/Read
 ```py
 import datetime
 import uuid
@@ -98,6 +102,15 @@ with client.connect() as conn:
     print("Backwards start from middle!")
     for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
         print(result.data)
+    
+    # Create a transient subscription to a stream
+    for result in conn.streams.read(stream=stream, subscribe=True):
+        print(result.data)
+```
+
+# Transient subscription to all events with filtering
+```py
+
 ```
 
 Async example:
@@ -120,6 +133,29 @@ async def append():
 asyncio.run(append())
 ```
 
+Read all events with filters:
+```python
+import asyncio
+
+from esdb.client import AsyncESClient
+from esdb.client.streams import Filter
+
+
+async def main():
+    async with AsyncESClient("localhost:2113", tls=False).connect() as conn:
+        async for event in conn.streams.read_all(
+            subscribe=True,  # creates a transient subscription
+            filter_by=Filter(
+                kind=Filter.Kind.EVENT_TYPE,
+                regex="^prefix-",
+                checkpoint_interval_multiplier=1000,
+            ),
+        ):
+            print(event)
+
+
+asyncio.run(main())
+```
 Subscriptions:
 ```py
 from esdb.client import ESClient

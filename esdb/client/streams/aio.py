@@ -76,10 +76,11 @@ class Streams(StreamsBase):
             yield response
 
     async def read_all(
-        self, count: int, backwards=False, filter_by: Optional[Filter] = None
+        self, count: Optional[int] = None, backwards=False, subscribe=False, filter_by: Optional[Filter] = None
     ) -> AsyncIterable[ReadEvent]:
         request = self._read_all_request(
             count=count,
+            subscribe=subscribe,
             backwards=backwards,
             filter_by=filter_by,
         )
