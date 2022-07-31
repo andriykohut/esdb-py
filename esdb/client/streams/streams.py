@@ -130,7 +130,7 @@ class Streams:
             no_filter=Empty(),
             uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
         )
-        if count:
+        if count is not None:
             options.count = count
 
         async for response in self._get_events(self._stub.Read(ReadReq(options=options))):
