@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 import json
 from dataclasses import dataclass
-from typing import Optional
+from typing import Mapping, Optional
 
 from esdb.client.streams.base import ContentType
 from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
@@ -16,7 +16,7 @@ class Event:
     stream: str
     prepare_position: int
     commit_position: int
-    metadata: dict
+    metadata: Mapping[str, str]
     type: str
     data: bytes | dict
 
@@ -74,17 +74,25 @@ class SubscriptionSettings:
             self.read_batch_size < self.history_buffer_size
         ), "read_batch_size may not be greater than or equal to history_buffer_size"
         settings = CreateReq.Settings(
-            resolve_links=self.resolve_links,
-            extra_statistics=self.extra_statistics,
-            max_retry_count=self.max_retry_count,
-            min_checkpoint_count=self.min_checkpoint_count,
-            max_checkpoint_count=self.max_checkpoint_count,
-            max_subscriber_count=self.max_subscriber_count,
             live_buffer_size=self.live_buffer_size,
             read_batch_size=self.read_batch_size,
             history_buffer_size=self.history_buffer_size,
-            consumer_strategy=self.consumer_strategy.value if self.consumer_strategy else None,
         )
+
+        if self.resolve_links is not None:
+            settings.resolve_links = self.resolve_links
+        if self.extra_statistics is not None:
+            settings.extra_statistics = self.extra_statistics
+        if self.max_retry_count is not None:
+            settings.max_retry_count = self.max_retry_count
+        if self.min_checkpoint_count is not None:
+            settings.min_checkpoint_count = self.min_checkpoint_count
+        if self.max_checkpoint_count is not None:
+            settings.max_checkpoint_count = self.max_checkpoint_count
+        if self.max_subscriber_count is not None:
+            settings.max_subscriber_count = self.max_subscriber_count
+        if self.consumer_strategy:
+            settings.consumer_strategy = self.consumer_strategy.value
 
         if self.checkpoint.type == self.DurationType.Type.MS:
             settings.checkpoint_after_ms = self.checkpoint.value

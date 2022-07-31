@@ -6,7 +6,7 @@ import json
 import logging
 import uuid
 from dataclasses import dataclass, field
-from typing import Iterable, Optional, Type, TypeVar, Union
+from typing import Iterable, Mapping, Optional, Type, TypeVar, Union
 
 from google.protobuf.duration_pb2 import Duration
 from google.protobuf.empty_pb2 import Empty as GEmpty
@@ -90,7 +90,7 @@ class ReadEvent:
     stream_name: str
     prepare_position: int
     commit_position: int
-    metadata: dict
+    metadata: Mapping[str, str]
     event_type: str
     custom_metadata: Optional[dict]
     data: Union[dict, bytes]
@@ -205,19 +205,14 @@ class StreamsBase(abc.ABC):
         revision: None | int = None,
         custom_metadata: None | dict = None,
     ) -> Iterable[AppendReq]:
+        options = AppendReq.Options(
+            stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+            **{stream_state.value: Empty()},  # type: ignore
+        )
         if revision is not None:
             # Append at specified revision
-            options = {"revision": revision}
-        else:
-            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
-            options[stream_state.value] = Empty()
-
-        yield AppendReq(
-            options=AppendReq.Options(
-                stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                **options,
-            )
-        )
+            options.revision = revision
+        yield AppendReq(options=options)
 
         yield AppendReq(
             proposed_message=Message(
@@ -242,47 +237,41 @@ class StreamsBase(abc.ABC):
         stream_state: StreamState = StreamState.ANY,
         revision: None | int = None,
         custom_metadata: None | dict = None,
-    ) -> Iterable[AppendReq]:
+    ) -> AppendResult:
         ...
 
     @staticmethod
     def _read_request(
         stream: str,
         count: Optional[int],
-        backwards: bool,
         revision: Optional[int],
+        backwards: bool,
         subscribe: bool,
     ) -> ReadReq:
-        options = {}
-        if revision is not None:
-            options["revision"] = revision
-        else:
-            options.update(
-                {
-                    "start": None if backwards else Empty(),
-                    "end": Empty() if backwards else None,
-                }
-            )
-        return ReadReq(
-            options=ReadReq.Options(
-                stream=ReadReq.Options.StreamOptions(
-                    stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                    **options,
-                ),
-                all=None,
-                read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
-                resolve_links=True,  # Resolve to actual data instead of a link when reading from projection
-                count=count,
-                subscription=ReadReq.Options.SubscriptionOptions() if subscribe else None,
-                filter=None,
-                no_filter=Empty(),
-                uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
-            )
+        stream_options = ReadReq.Options.StreamOptions(
+            stream_identifier=StreamIdentifier(stream_name=stream.encode()),
+            start=None if backwards else Empty(),
+            end=Empty() if backwards else None,
         )
+        if revision is not None:
+            stream_options.revision = revision
+        options = ReadReq.Options(
+            stream=stream_options,
+            all=None,
+            read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
+            resolve_links=True,  # Resolve to actual data instead of a link when reading from projection
+            subscription=ReadReq.Options.SubscriptionOptions() if subscribe else None,
+            filter=None,
+            no_filter=Empty(),
+            uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
+        )
+        if count:
+            options.count = count
+        return ReadReq(options=options)
 
     @staticmethod
     def _read_all_request(count: Optional[int], backwards: bool, filter_by: Optional[Filter]) -> ReadReq:
-        return ReadReq(
+        req = ReadReq(
             options=ReadReq.Options(
                 stream=None,
                 all=ReadReq.Options.AllOptions(
@@ -294,12 +283,14 @@ class StreamsBase(abc.ABC):
                 # all possible combinations, so for now `read-all` only works with count
                 subscription=None,
                 resolve_links=True,
-                count=count,
                 filter=filter_by.to_protobuf() if filter_by else None,
                 no_filter=None if filter_by else Empty(),
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
             )
         )
+        if count is not None:
+            req.options.count = count
+        return req
 
     @staticmethod
     def _process_read_response(response: ReadResp) -> ReadEvent | SubscriptionConfirmed | Checkpoint:
@@ -315,34 +306,32 @@ class StreamsBase(abc.ABC):
             )
         if content == "stream_not_found":
             raise StreamNotFound(response.stream_not_found)
-        raise ClientException(f"Got unexpected response {content}: {getattr(response, content)}")
+        raise ClientException(f"Got unexpected response {content}: {getattr(response, content)}")  # type: ignore
 
     @abc.abstractmethod
     def read(
         self,
         stream: str,
-        count: int,
+        count: Optional[int] = None,
         backwards: bool = False,
         revision: Optional[int] = None,
-    ) -> ReadEvent:
+        subscribe: bool = False,
+    ) -> Iterable[ReadEvent]:
         ...
 
     @staticmethod
     def _delete_request(
         stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> DeleteReq:
-        if revision is not None:
-            options = {"revision": revision}
-        else:
-            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
-            options[stream_state.value] = Empty()
-
-        return DeleteReq(
+        req = DeleteReq(
             options=DeleteReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                **options,
+                **{stream_state.value: Empty()},  # type: ignore
             )
         )
+        if revision is not None:
+            req.options.revision = revision
+        return req
 
     @staticmethod
     def _process_delete_response(response: DeleteResp) -> Optional[DeleteResult]:
@@ -352,25 +341,22 @@ class StreamsBase(abc.ABC):
     @abc.abstractmethod
     def delete(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
-    ) -> DeleteResult:
+    ) -> Optional[DeleteResult]:
         ...
 
     @staticmethod
     def _tombstone_request(
         stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> TombstoneReq:
-        if revision is not None:
-            options = {"revision": revision}
-        else:
-            options: dict[str, None | Empty] = {v.value: None for v in StreamState}
-            options[stream_state.value] = Empty()
-
-        return TombstoneReq(
+        req = TombstoneReq(
             options=TombstoneReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                **options,
+                **{stream_state.value: Empty()},  # type: ignore
             )
         )
+        if revision is not None:
+            req.options.revision = revision
+        return req
 
     @staticmethod
     def _process_tombstone_response(response: TombstoneResp) -> Optional[TombstoneResult]:
@@ -380,7 +366,7 @@ class StreamsBase(abc.ABC):
     @abc.abstractmethod
     def tombstone(
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
-    ) -> TombstoneResult:
+    ) -> Optional[TombstoneResult]:
         ...
 
     @staticmethod
@@ -393,20 +379,18 @@ class StreamsBase(abc.ABC):
         stream_position: Optional[int] = None,
     ) -> Iterable[BatchAppendReq]:
         correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
-        options = {v.value: None for v in StreamState}
-        options[stream_state.value] = GEmpty()
-        if deadline_ms is not None:
-            options["deadline"] = Duration(nanos=deadline_ms * 1000000)
-
-        yield BatchAppendReq(
+        options_req = BatchAppendReq(
             correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
-                stream_position=stream_position,  # this doesn't seem to do anything
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
-                **options,
+                deadline=Duration(nanos=deadline_ms * 1000000) if deadline_ms is not None else None,
+                **{stream_state.value: GEmpty()},  # type: ignore
             ),
             is_final=False,
         )
+        if stream_position is not None:
+            options_req.options.stream_position = stream_position
+        yield options_req
         yield BatchAppendReq(
             correlation_id=correlation_id_,
             proposed_messages=(m.to_protobuf(BatchAppendReq.ProposedMessage) for m in messages),
@@ -427,8 +411,8 @@ class StreamsBase(abc.ABC):
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: Optional[int] = None,
         correlation_id: Optional[uuid.UUID] = None,
         deadline_ms: Optional[int] = None,
+        stream_position: Optional[int] = None,
     ) -> BatchAppendResult:
         ...

@@ -28,7 +28,7 @@ class Streams(StreamsBase):
     def __init__(self, stub: StreamsStub) -> None:
         self._stub = stub
 
-    async def append(
+    async def append(  # type: ignore
         self,
         stream: str,
         event_type: str,
@@ -50,18 +50,18 @@ class Streams(StreamsBase):
 
     async def _read_iter(self, responses: AsyncIterable[ReadResp]) -> AsyncIterable[ReadEvent]:
         async for response in responses:
-            response = self._process_read_response(response)
-            if isinstance(response, ReadEvent):
-                yield response
-            elif isinstance(response, SubscriptionConfirmed):
-                logger.info(f"Subscription {response.subscription_id} confirmed")
-            elif isinstance(response, Checkpoint):
+            result = self._process_read_response(response)
+            if isinstance(result, ReadEvent):
+                yield result
+            elif isinstance(result, SubscriptionConfirmed):
+                logger.info(f"Subscription {result.subscription_id} confirmed")
+            elif isinstance(result, Checkpoint):
                 logger.info(
-                    f"Checkpoint commit position: {response.commit_position}, "
-                    f"prepare position: {response.prepare_position}"
+                    f"Checkpoint commit position: {result.commit_position}, "
+                    f"prepare position: {result.prepare_position}"
                 )
 
-    async def read(
+    async def read(  # type: ignore
         self, stream: str, count: int, backwards: bool = False, revision: Optional[int] = None, subscribe: bool = False
     ) -> AsyncIterable[ReadEvent]:
         assert (count is not None) ^ subscribe, "count or subscribe is required"
@@ -86,29 +86,28 @@ class Streams(StreamsBase):
         async for response in self._read_iter(self._stub.Read(request)):
             yield response
 
-    async def delete(
+    async def delete(  # type: ignore
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> Optional[DeleteResult]:
         request = self._delete_request(stream=stream, stream_state=stream_state, revision=revision)
         try:
             response = await self._stub.Delete(request)
-        except grpc.aio._call.AioRpcError as err:
+        except grpc.aio._call.AioRpcError as err:  # type: ignore
             raise ClientException(f"Delete failed: {err.details()}") from err
         return self._process_delete_response(response)
 
-    async def tombstone(
+    async def tombstone(  # type: ignore
         self, stream: str, stream_state: StreamState = StreamState.ANY, revision: Optional[int] = None
     ) -> Optional[TombstoneResult]:
         request = self._tombstone_request(stream=stream, stream_state=stream_state, revision=revision)
         response = await self._stub.Tombstone(request)
         return self._process_tombstone_response(response)
 
-    async def batch_append(
+    async def batch_append(  # type: ignore
         self,
         stream: str,
         messages: Iterable[Message],
         stream_state: StreamState = StreamState.ANY,
-        revision: Optional[int] = None,
         correlation_id: Optional[uuid.UUID] = None,
         deadline_ms: Optional[int] = None,
     ) -> BatchAppendResult:
@@ -120,4 +119,6 @@ class Streams(StreamsBase):
             deadline_ms=deadline_ms,
         )
         async for response in self._stub.BatchAppend(requests):
-            return self._process_batch_append_response(response)
+            result = self._process_batch_append_response(response)
+
+        return result
