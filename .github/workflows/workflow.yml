@@ -17,16 +17,19 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Start EventStore
-        run: mkdir certs && docker-compose up -d
+        run: mkdir -p certs/ca && docker-compose up -d
 
       - name: Check certs
-        run: ls certs
+        run: ls -l certs
 
       - name: Install poetry
         run: curl -sSL https://install.python-poetry.org | python -
 
       - name: Install deps
         run: poetry install
+      
+      - name: Tests
+        run:  make test
   
       - name: Lint
         run: make lint
