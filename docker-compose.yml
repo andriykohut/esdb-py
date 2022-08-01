@@ -1,6 +1,6 @@
 services:
   eventstore.db:
-    image: eventstore/eventstore
+    image: eventstore/eventstore:21.10.6-buster-slim
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
@@ -37,7 +37,7 @@ services:
       - ./certs:/certs
 
   eventstore.db.secure:
-    image: eventstore/eventstore
+    image: eventstore/eventstore:21.10.6-buster-slim
     environment:
       - EVENTSTORE_INT_IP=172.30.240.11
       - EVENTSTORE_ADVERTISE_HTTP_PORT_TO_CLIENT_AS=2111

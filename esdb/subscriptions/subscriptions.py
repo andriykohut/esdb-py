@@ -3,26 +3,29 @@ from __future__ import annotations
 import asyncio
 from typing import AsyncIterable, AsyncIterator, Optional
 
-from esdb.client.subscriptions.base import Event, NackAction, SubscriptionSettings
 from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
+from esdb.shared import Filter
+from esdb.subscriptions.types import Event, NackAction, SubscriptionSettings
 
 
-class SubscriptionStream:
-    def __init__(self, stream: str, group_name: str, buffer_size: int, stub: PersistentSubscriptionsStub) -> None:
+class Subscription:
+    def __init__(
+        self, group_name: str, buffer_size: int, stream: Optional[str], stub: PersistentSubscriptionsStub
+    ) -> None:
         self.stream = stream
         self.group_name = group_name
         self.buffer_size = buffer_size
-        self.send_queue = asyncio.Queue()
+        self.send_queue: asyncio.Queue = asyncio.Queue()
         self.stub = stub
         self.subscription_id: Optional[str] = None
 
     async def __aiter__(self) -> AsyncIterable[Event]:
         read_request = ReadReq(
             options=ReadReq.Options(
-                stream_identifier=StreamIdentifier(stream_name=self.stream.encode()),
-                all=None,
+                stream_identifier=StreamIdentifier(stream_name=self.stream.encode()) if self.stream else None,
+                all=Empty() if self.stream is None else None,
                 group_name=self.group_name,
                 buffer_size=self.buffer_size,
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
@@ -35,6 +38,7 @@ class SubscriptionStream:
         async def queue_iter():
             while True:
                 yield await self.send_queue.get()
+                self.send_queue.task_done()
 
         reader: AsyncIterator[ReadResp] = self.stub.Read(queue_iter())
         async for response in reader:
@@ -55,13 +59,14 @@ class SubscriptionStream:
         )
 
     async def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
+        assert self.subscription_id, "Nothing to nack, not reading from a subscription yet"
         await self.send_queue.put(
             ReadReq(
                 nack=ReadReq.Nack(
                     id=self.subscription_id.encode(),
                     ids=(UUID(string=evt.id) for evt in events),
                     action=action.value,
-                    reason=reason,
+                    reason=reason or "",
                 )
             )
         )
@@ -90,10 +95,33 @@ class PersistentSubscriptions:
         response: CreateResp = await self._stub.Create(create_request)
         assert isinstance(response, CreateResp), f"Expected {CreateResp} got {response.__class__}"
 
-    def subscribe_to_stream(
+    async def create_all_subscription(
         self,
-        stream: str,
+        group_name: str,
+        settings: SubscriptionSettings,
+        backwards: bool = False,
+        filter_by: Optional[Filter] = None,
+    ) -> None:
+        create_request = CreateReq(
+            options=CreateReq.Options(
+                group_name=group_name,
+                settings=settings.to_protobuf(),
+                all=CreateReq.AllOptions(
+                    # position=CreateReq.Position(), TODO: deal with position
+                    start=None if backwards else Empty(),
+                    end=Empty() if backwards else None,
+                    no_filter=Empty() if filter_by is None else None,
+                    filter=filter_by.to_protobuf(CreateReq.AllOptions.FilterOptions) if filter_by else None,
+                ),
+            )
+        )
+        response: CreateResp = await self._stub.Create(create_request)
+        assert isinstance(response, CreateResp), f"Expected {CreateResp} got {response.__class__}"
+
+    def subscribe(
+        self,
         group_name: str,
         buffer_size: int,
-    ) -> SubscriptionStream:
-        return SubscriptionStream(stream=stream, group_name=group_name, buffer_size=buffer_size, stub=self._stub)
+        stream: Optional[str] = None,
+    ) -> Subscription:
+        return Subscription(stream=stream, group_name=group_name, buffer_size=buffer_size, stub=self._stub)

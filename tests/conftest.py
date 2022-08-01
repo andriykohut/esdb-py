@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import pytest
 
-from esdb.client import AsyncESClient, ESClient
+from esdb import ESClient
 
 
 @lru_cache
@@ -19,13 +19,3 @@ def client() -> ESClient:
 @pytest.fixture
 def client_tls() -> ESClient:
     return ESClient("localhost:2111", root_certificates=root_cert(), username="admin", password="changeit")
-
-
-@pytest.fixture
-def async_client() -> AsyncESClient:
-    return AsyncESClient("localhost:2113", tls=False)
-
-
-@pytest.fixture
-def async_client_tls() -> AsyncESClient:
-    return AsyncESClient("localhost:2111", root_certificates=root_cert(), username="admin", password="changeit")

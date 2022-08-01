@@ -2,34 +2,48 @@
 
 [![PyPI version](https://badge.fury.io/py/esdb.svg)](https://pypi.org/project/esdb/)
 
-EventStoreDB Python gRPC client
+**EventStoreDB Python gRPC client**
 > NOTE: This project is still work in progress
 
-**Implemented parts**
+<!-- TOC -->
+* [Completed features](#completed-features)
+* [Installation](#installation)
+* [Development](#development)
+* [Usage](#usage)
+    * [Append/Read](#appendread)
+    * [Batch append](#batch-append)
+    * [Transient subscription to all events with filtering](#transient-subscription-to-all-events-with-filtering)
+    * [Persistent subscriptions](#persistent-subscriptions)
+<!-- TOC -->
+
+## Completed features
 - [x] secure connection
 - [x] basic auth
-- [x] async client
+- [ ] connection string parsing
 - [x] streams
-  - [x] append
-  - [x] batch append
-  - [x] delete
-  - [x] read
-  - [x] tombstone
-  - [x] filtering
+    - [x] append
+    - [x] batch append (v21.10+)
+    - [x] delete
+    - [x] read stream
+    - [x] read all with stream/event type filters (v21.10+)
+    - [x] transient subscriptions
+    - [x] tombstone
+    - [x] filtering
 - [x] persistent subscriptions
     - [x] create
-    - [x] read
+    - [x] read stream
+    - [x] read all with filter (v21.10+)
     - [ ] update
     - [ ] delete
     - [ ] list
     - [ ] info
-    - [ ] reply parked events 
+    - [ ] reply parked events
 - [ ] CRUD for projections
 - [ ] users
 - [ ] other connection options
-  - [ ] multi-node gossip
+    - [ ] multi-node gossip
 
-# Installation
+## Installation
 Using pip:
 ```sh
 pip install esdb
@@ -51,18 +65,23 @@ pyenv local esdb-py
 4. Start eventstore in docker: `make run-esdb`
 5. Run the tests: `pytest tests`
 
-Usage:
+# Usage
+
+Have a look at [tests](https://github.com/andriykohut/esdb-py/tree/main/tests) for more examples.
+
+## Append/Read
 
 ```py
+import asyncio
 import datetime
 import uuid
 
-from esdb.client import ESClient
+from esdb import ESClient
 
 # For insecure connection without basic auth:
 # client = ESClient("localhost:2113", tls=False)
 with open("certs/ca/ca.crt", "rb") as fh:
-  root_cert = fh.read()
+    root_cert = fh.read()
 
 client = ESClient(
     "localhost:2111",
@@ -75,128 +94,163 @@ client = ESClient(
 
 stream = f"test-{str(uuid.uuid4())}"
 
-with client.connect() as conn:
-    for i in range(10):
-        append_result = conn.streams.append(
-            stream=stream,
-            event_type="test_event",
-            data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
-        )
 
-    print("Forwards!")
-    for result in conn.streams.read(stream=stream, count=10):
-        print(result.data)
+async def streams():
+    async with client.connect() as conn:
+        for i in range(10):
+            append_result = await conn.streams.append(
+                stream=stream,
+                event_type="test_event",
+                data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
+            )
 
-    print("Backwards!")
-    for result in conn.streams.read(stream=stream, count=10, backwards=True):
-        print(result.data)
+        print("Forwards!")
+        async for result in conn.streams.read(stream=stream, count=10):
+            print(result.data)
 
-    print("Forwards start from middle!")
-    for result in conn.streams.read(stream=stream, count=10, revision=5):
-        print(result.data)
+        print("Backwards!")
+        async for result in conn.streams.read(stream=stream, count=10, backwards=True):
+            print(result.data)
 
-    print("Backwards start from middle!")
-    for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
-        print(result.data)
+        print("Forwards start from middle!")
+        async for result in conn.streams.read(stream=stream, count=10, revision=5):
+            print(result.data)
+
+        print("Backwards start from middle!")
+        async for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
+            print(result.data)
+
+        # Create a transient subscription to a stream
+        async for result in conn.streams.read(stream=stream, subscribe=True):
+            print(result.data)
+
+
+asyncio.run(streams())
 ```
 
-Async example:
+## Batch append
 
 ```py
 import asyncio
+import uuid
 
-from esdb.client import AsyncESClient
+from esdb import ESClient
+from esdb.streams import Message
 
 
-async def append():
-    client = AsyncESClient("localhost:2113", tls=False)
-    async with client.connect() as conn:
-        result = await conn.streams.append("stream", "type", {"x": 1})
-        assert result.commit_position > 0
-        async for event in conn.streams.read("stream", count=10):
+async def batch_append():
+    # Batch append is not supported on EventStore < v21.10
+    stream = str(uuid.uuid4())
+    messages: list[Message] = [
+        Message(event_type="one", data={"item": 1}),
+        Message(event_type="one", data={"item": 2}),
+        Message(event_type="one", data={"item": 3}),
+        Message(event_type="two", data={"item": 1}),
+        Message(event_type="two", data={"item": 2}),
+        Message(event_type="two", data={"item": 3}),
+    ]
+    async with ESClient("localhost:2113", tls=False).connect() as conn:
+        response = await conn.streams.batch_append(stream=stream, messages=messages)
+        assert response.current_revision == 5
+        events = [e async for e in conn.streams.read(stream=stream, count=50)]
+        assert len(events) == 6
+
+
+asyncio.run(batch_append())
+```
+
+## Transient subscription to all events with filtering
+
+```py
+import uuid
+import asyncio
+
+from esdb import ESClient
+from esdb.shared import Filter
+
+
+async def filters():
+    async with ESClient("localhost:2113", tls=False).connect() as conn:
+        for i in range(10):
+            await conn.streams.append(stream=str(uuid.uuid4()), event_type=f"prefix-{i}", data=b"")
+        async for event in conn.streams.read_all(
+                subscribe=True,  # subscribe will wait for events, use count=<n> to read <n> events and stop
+                filter_by=Filter(
+                    kind=Filter.Kind.EVENT_TYPE,
+                    regex="^prefix-",
+                    # Checkpoint only required when subscribe=True, it's not needed when using count=<int>
+                    checkpoint_interval_multiplier=1000,
+                ),
+        ):
             print(event)
 
 
-asyncio.run(append())
+asyncio.run(filters())
 ```
 
-Subscriptions:
-```py
-from esdb.client import ESClient
-from esdb.client.subscriptions import SubscriptionSettings, NackAction
+## Persistent subscriptions
+
+```python
+import asyncio
+from esdb import ESClient
+from esdb.shared import Filter
+from esdb.subscriptions import SubscriptionSettings, NackAction
 
 client = ESClient("localhost:2113", tls=False)
-stream = "stream-name"
-group = "group-name"
-
-with client.connect() as conn:
-    # emit some events to the same stream
-    for _ in range(10):
-        conn.streams.append(stream, "foobar", b"data")
-
-    # create a subscription
-    conn.subscriptions.create_stream_subscription(
-        stream=stream,
-        group_name=group,
-        settings=SubscriptionSettings(
-            read_batch_size=5,
-            live_buffer_size=10,
-            history_buffer_size=10,
-            checkpoint=SubscriptionSettings.DurationType(
-                type=SubscriptionSettings.DurationType.Type.MS,
-                value=10000,
-            ),
-        ),
-    )
-
-    # Read from subscription
-    # This will block and wait for messages
-    subscription = conn.subscriptions.subscribe_to_stream(stream, group, buffer_size=10)
-    for event in subscription:
-        try:
-            # ... do work with the event ...
-            # ack the event
-            subscription.ack([event])
-        except Exception as err:
-            subscription.nack([event], NackAction.RETRY, reason=str(err))
-          
-        
-```
-
-Async subscriptions
-```python
-from esdb.client import AsyncESClient
-from esdb.client.subscriptions import SubscriptionSettings
-
-client = AsyncESClient("localhost:2113", tls=False)
 
 stream = "stream-foo"
 group = "group-bar"
 
-async with client.connect() as conn:
-    # emit some events to the same stream
-    for i in range(50):
-        await conn.streams.append(stream, "foobar", {"i": i})
 
-    # create a subscription
-    await conn.subscriptions.create_stream_subscription(
-        stream=stream,
-        group_name=group,
-        settings=SubscriptionSettings(
-            max_subscriber_count=50,
-            read_batch_size=5,
-            live_buffer_size=10,
-            history_buffer_size=10,
-            consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
-            checkpoint=SubscriptionSettings.DurationType(
-                type=SubscriptionSettings.DurationType.Type.MS,
-                value=10000,
+async def persistent():
+    async with client.connect() as conn:
+        # emit some events to the same stream
+        for i in range(50):
+            await conn.streams.append(stream, "foobar", {"i": i})
+
+        # create a subscription
+        await conn.subscriptions.create_stream_subscription(
+            stream=stream,
+            group_name=group,
+            settings=SubscriptionSettings(
+                max_subscriber_count=50,
+                read_batch_size=5,
+                live_buffer_size=10,
+                history_buffer_size=10,
+                consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
             ),
-        ),
-    )
+        )
 
-async with client.connect() as conn:
-    subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=5)
-    async for event in subscription:
-        await subscription.ack([event])
+        # Only supported on EventStore v21.10+
+        await conn.subscriptions.create_all_subscription(
+            group_name="subscription_group",
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex="^some_type$", checkpoint_interval_multiplier=200),
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=2,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
+
+    async with client.connect() as conn:
+        sub = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=5)
+        async for event in sub:
+            try:
+                # do work with event
+                print(event)
+                await sub.ack([event])
+            except Exception as err:
+                await sub.nack([event], NackAction.RETRY, reason=str(err))
+
+
+asyncio.run(persistent())
 ```

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "esdb"
-version = "0.1.7"
+version = "0.2.2"
 description = "gRPC client for EventStore DB"
 authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
 license = "MIT"
@@ -30,10 +30,14 @@ pytest-asyncio = "^0.19.0"
 flake8 = "^4.0.1"
 grpcio-tools = "^1.47.0"
 grpc-stubs = "^1.24.11"
+pytest-cov = "^3.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+exclude = ["esdb/generated"]
 
 [tool.black]
 line-length = 119
@@ -47,4 +51,18 @@ skip_glob = "esdb/generated/*"
 filterwarnings = [
     "ignore:::.*grpc.aio._channel:287",
     "ignore:::.*grpc.aio._channel:288",
+]
+
+[tool.coverage.run]
+branch = true
+omit = ["esdb/generated/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc.)?abstractmethod",
 ]
