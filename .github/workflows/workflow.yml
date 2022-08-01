@@ -15,9 +15,18 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Start EventStore
+        run: mkdir certs && docker-compose up -d
+
+      - name: Check certs
+        run: ls certs
+
       - name: Install poetry
         run: curl -sSL https://install.python-poetry.org | python -
+
       - name: Install deps
         run: poetry install
+  
       - name: Lint
         run: make lint
