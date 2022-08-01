@@ -230,4 +230,3 @@ async def test_create_all_subscription(client):
 
         assert events
         assert all(e.type == event_type for e in events)
-
