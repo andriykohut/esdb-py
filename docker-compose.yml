@@ -23,6 +23,14 @@ services:
         source: eventstore-volume-logs
         target: /var/log/eventstore
 
+  volumes-provisioner:
+    image: hasnat/volumes-provisioner
+    environment:
+      PROVISION_DIRECTORIES: "1000:1000:0755:/certs"
+    volumes:
+      - "./certs:/certs"
+    network_mode: none
+
   setup:
     image: eventstore/es-gencert-cli:1.0.2
     entrypoint: bash
@@ -35,6 +43,8 @@ services:
     container_name: setup
     volumes:
       - ./certs:/certs
+    depends_on:
+      - volumes-provisioner
 
   eventstore.db.secure:
     image: eventstore/eventstore:21.10.6-buster-slim
