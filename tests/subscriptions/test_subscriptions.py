@@ -202,10 +202,14 @@ async def test_nack(client):
 
 @pytest.mark.asyncio
 async def test_create_all_subscription(client):
+    event_type = str(uuid.uuid4())
+    group_name = str(uuid.uuid4())
     async with client.connect() as conn:
+        for _ in range(10):
+            await conn.streams.append(stream=str(uuid.uuid4()), event_type=event_type, data=b"")
         await conn.subscriptions.create_all_subscription(
-            group_name=str(uuid.uuid4()),
-            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex="^some_type$", checkpoint_interval_multiplier=200),
+            group_name=group_name,
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex=f"^{event_type}$", checkpoint_interval_multiplier=200),
             settings=SubscriptionSettings(
                 read_batch_size=50,
                 live_buffer_size=100,
@@ -217,3 +221,13 @@ async def test_create_all_subscription(client):
                 ),
             ),
         )
+
+        events = []
+        async for event in conn.subscriptions.subscribe(group_name=group_name, buffer_size=10):
+            events.append(event)
+            if len(events) == 10:
+                break
+
+        assert events
+        assert all(e.type == event_type for e in events)
+
