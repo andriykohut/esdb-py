@@ -24,7 +24,7 @@ lint:
 test:
 	poetry run pytest --cov esdb
 
-test:
+test-ci:
 	poetry run pytest --cov esdb --cov-report=xml
 
 html-cov: test
