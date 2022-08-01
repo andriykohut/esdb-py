@@ -33,4 +33,4 @@ jobs:
 
       - name: Compose logs
         run: docker-compose logs
-        when: always()
+        if: always()
