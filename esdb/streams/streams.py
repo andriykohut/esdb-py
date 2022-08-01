@@ -20,12 +20,12 @@ from esdb.generated.streams_pb2 import (
     TombstoneResp,
 )
 from esdb.generated.streams_pb2_grpc import StreamsStub
+from esdb.shared import Filter
 from esdb.streams.types import (
     AppendResult,
     BatchAppendResult,
     Checkpoint,
     DeleteResult,
-    Filter,
     Message,
     ReadEvent,
     StreamState,
@@ -152,7 +152,7 @@ class Streams:
                 read_direction=ReadReq.Options.Backwards if backwards else ReadReq.Options.Forwards,
                 resolve_links=True,
                 subscription=ReadReq.Options.SubscriptionOptions() if subscribe else None,
-                filter=filter_by.to_protobuf() if filter_by else None,
+                filter=filter_by.to_protobuf(ReadReq.Options.FilterOptions) if filter_by else None,
                 no_filter=None if filter_by else Empty(),
                 uuid_option=ReadReq.Options.UUIDOption(structured=Empty(), string=Empty()),
             )

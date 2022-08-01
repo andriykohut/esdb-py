@@ -163,7 +163,7 @@ import uuid
 import asyncio
 
 from esdb import ESClient
-from esdb.streams import Filter
+from esdb.shared import Filter
 
 
 async def filters():
@@ -190,6 +190,7 @@ asyncio.run(filters())
 ```python
 import asyncio
 from esdb import ESClient
+from esdb.shared import Filter
 from esdb.subscriptions import SubscriptionSettings, NackAction
 
 client = ESClient("localhost:2113", tls=False)
@@ -199,37 +200,52 @@ group = "group-bar"
 
 
 async def persistent():
-  async with client.connect() as conn:
-    # emit some events to the same stream
-    for i in range(50):
-      await conn.streams.append(stream, "foobar", {"i": i})
+    async with client.connect() as conn:
+        # emit some events to the same stream
+        for i in range(50):
+            await conn.streams.append(stream, "foobar", {"i": i})
 
-    # create a subscription
-    await conn.subscriptions.create_stream_subscription(
-      stream=stream,
-      group_name=group,
-      settings=SubscriptionSettings(
-        max_subscriber_count=50,
-        read_batch_size=5,
-        live_buffer_size=10,
-        history_buffer_size=10,
-        consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
-        checkpoint=SubscriptionSettings.DurationType(
-          type=SubscriptionSettings.DurationType.Type.MS,
-          value=10000,
-        ),
-      ),
-    )
+        # create a subscription
+        await conn.subscriptions.create_stream_subscription(
+            stream=stream,
+            group_name=group,
+            settings=SubscriptionSettings(
+                max_subscriber_count=50,
+                read_batch_size=5,
+                live_buffer_size=10,
+                history_buffer_size=10,
+                consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
 
-  async with client.connect() as conn:
-    subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=5)
-    async for event in subscription:
-      try:
-        # do work with event
-        print(event)
-        await subscription.ack([event])
-      except Exception as err:
-        await subscription([event], NackAction.RETRY, reason=str(err))
+        await conn.subscriptions.create_all_subscription(
+            group_name="subscription_group",
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex="^some_type$", checkpoint_interval_multiplier=200),
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=2,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
+
+    async with client.connect() as conn:
+        sub = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=5)
+        async for event in sub:
+            try:
+                # do work with event
+                print(event)
+                await sub.ack([event])
+            except Exception as err:
+                await sub.nack([event], NackAction.RETRY, reason=str(err))
 
 
 asyncio.run(persistent())

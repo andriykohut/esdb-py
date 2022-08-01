@@ -7,14 +7,13 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Mapping, Optional, Type, TypeVar, Union
 
-from esdb.generated.shared_pb2 import UUID, Empty
+from esdb.generated.shared_pb2 import UUID
 from esdb.generated.streams_pb2 import (
     AppendReq,
     AppendResp,
     BatchAppendReq,
     BatchAppendResp,
     DeleteResp,
-    ReadReq,
     ReadResp,
     TombstoneResp,
 )
@@ -156,33 +155,3 @@ class BatchAppendResult:
             commit_position=response.success.position.commit_position,
             prepare_position=response.success.position.prepare_position,
         )
-
-
-@dataclass
-class Filter:
-    class Kind(enum.Enum):
-        STREAM = "stream"
-        EVENT_TYPE = "event_type"
-
-    kind: Kind
-    regex: str
-    prefixes: Optional[list[str]] = None
-    checkpoint_interval_multiplier: Optional[int] = None
-
-    def to_protobuf(self) -> ReadReq.Options.FilterOptions:
-        Expression = ReadReq.Options.FilterOptions.Expression
-        stream_identifier = None
-        event_type = None
-        if self.kind == self.Kind.STREAM:
-            stream_identifier = Expression(regex=self.regex, prefix=self.prefixes)
-        elif self.kind == self.Kind.EVENT_TYPE:
-            event_type = Expression(regex=self.regex, prefix=self.prefixes)
-        options = ReadReq.Options.FilterOptions(
-            stream_identifier=stream_identifier,
-            event_type=event_type,
-            max=0,  # This apparently does nothing ¯\_(ツ)_/¯
-            count=Empty(),
-        )
-        if self.checkpoint_interval_multiplier:
-            options.checkpointIntervalMultiplier = self.checkpoint_interval_multiplier
-        return options

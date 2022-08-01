@@ -28,3 +28,8 @@ test:
 html-cov: test
 	poetry run coverage html
 	open htmlcov/index.html
+
+cleanup:
+	docker-compose down -v
+	rm -rf dist
+	rm -rf htmlcov

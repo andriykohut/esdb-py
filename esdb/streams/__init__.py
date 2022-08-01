@@ -1,4 +1,4 @@
 from esdb.streams.streams import Streams
-from esdb.streams.types import Filter, Message, StreamState
+from esdb.streams.types import Message, StreamState
 
-__all__ = ["Filter", "Message", "StreamState", "Streams"]
+__all__ = ["Message", "StreamState", "Streams"]

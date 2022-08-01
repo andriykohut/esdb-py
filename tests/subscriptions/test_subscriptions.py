@@ -7,11 +7,12 @@ from unittest import mock
 
 import pytest
 
+from esdb.shared import Filter
 from esdb.subscriptions import Event, NackAction, SubscriptionSettings
 
 
 @pytest.mark.asyncio
-async def test_create_a_subscription(client):
+async def test_create_stream_subscription(client):
     stream = str(uuid.uuid4())
     async with client.connect() as conn:
         await conn.streams.append(
@@ -75,7 +76,7 @@ async def test_subscribe_to_stream(client):
     async with client.connect() as conn:
         deadline = time.time() + 3
         events = []
-        subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=10)
+        subscription = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=10)
         async for event in subscription:
             events.append(event)
             await subscription.ack([event])
@@ -127,7 +128,7 @@ async def test_multiple_consumers(client):
 
     async def run_consumer(id: int):
         async with client.connect() as conn:
-            subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=5)
+            subscription = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=5)
             async for event in subscription:
                 await subscription.ack([event])
                 await result_queue.put((id, event.data["i"]))
@@ -189,7 +190,7 @@ async def test_nack(client):
     count = 0
     async with client.connect() as conn:
         deadline = time.time() + 3
-        subscription = conn.subscriptions.subscribe_to_stream(stream=stream, group_name=group, buffer_size=100)
+        subscription = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=100)
         async for event in subscription:
             count += 1
             await subscription.nack([event], NackAction.RETRY)
@@ -197,3 +198,22 @@ async def test_nack(client):
                 pytest.fail("Didn't read all events")
             if count == expected_count:
                 break
+
+
+@pytest.mark.asyncio
+async def test_create_all_subscription(client):
+    async with client.connect() as conn:
+        await conn.subscriptions.create_all_subscription(
+            group_name=str(uuid.uuid4()),
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex="^some_type$", checkpoint_interval_multiplier=200),
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=2,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
