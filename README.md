@@ -224,6 +224,7 @@ async def persistent():
             ),
         )
 
+        # Only supported on EventStore v21.10+
         await conn.subscriptions.create_all_subscription(
             group_name="subscription_group",
             filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex="^some_type$", checkpoint_interval_multiplier=200),
