@@ -21,16 +21,17 @@
 - [x] basic auth
 - [x] streams
     - [x] append
-    - [x] batch append
+    - [x] batch append (v21.10+)
     - [x] delete
     - [x] read stream
-    - [x] read all with stream/event type filters
+    - [x] read all with stream/event type filters (v21.10+)
     - [x] transient subscriptions
     - [x] tombstone
     - [x] filtering
 - [x] persistent subscriptions
     - [x] create
-    - [x] read
+    - [x] read stream
+    - [x] read all with filter (v21.10+)
     - [ ] update
     - [ ] delete
     - [ ] list
@@ -137,6 +138,7 @@ from esdb.streams import Message
 
 
 async def batch_append():
+    # Batch append is not supported on EventStore < v21.10
     stream = str(uuid.uuid4())
     messages: list[Message] = [
         Message(event_type="one", data={"item": 1}),
