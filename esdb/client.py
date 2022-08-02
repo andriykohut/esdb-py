@@ -32,10 +32,12 @@ class ESClient:
     def __init__(
         self,
         target: str,
-        tls: bool = True,
         username: Optional[str] = None,
         password: Optional[str] = None,
+        tls: bool = True,
         root_certificates: Optional[bytes] = None,
+        private_key: Optional[bytes] = None,
+        certificate_chain: Optional[bytes] = None,
         keepalive_time_ms: int = 10000,
         keepalive_timeout_ms: int = 10000,
     ) -> None:
@@ -50,7 +52,11 @@ class ESClient:
         ]
 
         if tls:
-            self.channel_credentials = grpc.ssl_channel_credentials(root_certificates=root_certificates)
+            self.channel_credentials = grpc.ssl_channel_credentials(
+                root_certificates=root_certificates,
+                private_key=private_key,
+                certificate_chain=certificate_chain,
+            )
 
         if any([username, password]) and not all([username, password]):
             raise ValueError("Both username and password are required")
