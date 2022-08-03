@@ -7,8 +7,10 @@ from typing import AsyncContextManager, Optional
 
 import grpc
 
+from esdb.generated.gossip_pb2_grpc import GossipStub
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
+from esdb.gossip import Gossip
 from esdb.streams import Streams
 from esdb.subscriptions import PersistentSubscriptions
 
@@ -26,6 +28,7 @@ class Connection:
     channel: grpc.aio._base_channel.Channel  # type: ignore
     streams: Streams
     subscriptions: PersistentSubscriptions
+    gossip: Gossip
 
 
 class ESClient:
@@ -82,4 +85,5 @@ class ESClient:
                 channel=channel,
                 streams=Streams(StreamsStub(channel)),
                 subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
+                gossip=Gossip(GossipStub(channel)),
             )
