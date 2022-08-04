@@ -1,87 +1,107 @@
-services:
-  eventstore.db:
-    image: eventstore/eventstore:21.10.6-buster-slim
-    environment:
-      - EVENTSTORE_CLUSTER_SIZE=1
-      - EVENTSTORE_RUN_PROJECTIONS=All
-      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-      - EVENTSTORE_EXT_TCP_PORT=1113
-      - EVENTSTORE_HTTP_PORT=2113
-      - EVENTSTORE_INSECURE=true
-      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
-      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
-      - EVENTSTORE_LOG_CONFIG=/opt/eventstore/config/logconfig.json
-    ports:
-      - "1113:1113"
-      - "2113:2113"
-    volumes:
-      - ./es_config:/opt/eventstore/config/
-      - type: volume
-        source: eventstore-volume-data
-        target: /var/lib/eventstore
-      - type: volume
-        source: eventstore-volume-logs
-        target: /var/log/eventstore
+version: "3.5"
 
+services:
   volumes-provisioner:
     image: hasnat/volumes-provisioner
     environment:
-      PROVISION_DIRECTORIES: "1000:1000:0755:/certs"
+      PROVISION_DIRECTORIES: "1000:1000:0755:/tmp/certs"
     volumes:
-      - "./certs:/certs"
+      - "./certs:/tmp/certs"
     network_mode: none
 
-  setup:
+  cert-gen:
     image: eventstore/es-gencert-cli:1.0.2
     entrypoint: bash
     user: "1000:1000"
     command: >
-      -c "mkdir -p /certs && cd /certs
+      -c "mkdir -p ./certs && cd /certs
       && es-gencert-cli create-ca
-      && es-gencert-cli create-node -out ./node -ip-addresses 127.0.0.1,172.30.240.11 -dns-names localhost
+      && es-gencert-cli create-node -out ./node1 -ip-addresses 127.0.0.1,172.30.240.11 -dns-names localhost
+      && es-gencert-cli create-node -out ./node2 -ip-addresses 127.0.0.1,172.30.240.12 -dns-names localhost
+      && es-gencert-cli create-node -out ./node3 -ip-addresses 127.0.0.1,172.30.240.13 -dns-names localhost
       && find . -type f -print0 | xargs -0 chmod 666"
-    container_name: setup
     volumes:
-      - ./certs:/certs
+      - "./certs:/certs"
     depends_on:
       - volumes-provisioner
 
-  eventstore.db.secure:
-    image: eventstore/eventstore:21.10.6-buster-slim
+  esdb-node1:
+    image: eventstore/eventstore:21.10.7-bionic
+    env_file:
+      - shared.env
     environment:
+      - EVENTSTORE_GOSSIP_SEED=172.30.240.12:2113,172.30.240.13:2113
       - EVENTSTORE_INT_IP=172.30.240.11
+      - EVENTSTORE_CERTIFICATE_FILE=/etc/eventstore/certs/node1/node.crt
+      - EVENTSTORE_CERTIFICATE_PRIVATE_KEY_FILE=/etc/eventstore/certs/node1/node.key
+      - EVENTSTORE_ADVERTISE_HOST_TO_CLIENT_AS=127.0.0.1
       - EVENTSTORE_ADVERTISE_HTTP_PORT_TO_CLIENT_AS=2111
       - EVENTSTORE_ADVERTISE_TCP_PORT_TO_CLIENT_AS=1111
-      - EVENTSTORE_HTTP_PORT=2111
-      - EVENTSTORE_TRUSTED_ROOT_CERTIFICATES_PATH=/certs/ca
-      - EVENTSTORE_CERTIFICATE_FILE=/certs/node/node.crt
-      - EVENTSTORE_CERTIFICATE_PRIVATE_KEY_FILE=/certs/node/node.key
-      - EVENTSTORE_CLUSTER_SIZE=1
-      - EVENTSTORE_RUN_PROJECTIONS=All
-      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
-      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
-      - EVENTSTORE_ADVERTISE_HOST_TO_CLIENT_AS=127.0.0.1
-      - EVENTSTORE_LOG_CONFIG=/opt/eventstore/config/logconfig.json
-
     ports:
-      - 1111:1111
-      - 2111:2111
-    volumes:
-      - ./certs:/certs
-      - ./es_config:/opt/eventstore/config/
-    depends_on:
-      - setup
+      - 1111:1113
+      - 2111:2113
     networks:
-      cluster-network:
+      clusternetwork:
         ipv4_address: 172.30.240.11
+    volumes:
+      - ./certs:/etc/eventstore/certs
+      - ./es_config:/opt/eventstore/config/
+    restart: unless-stopped
+    depends_on:
+      - cert-gen
 
-volumes:
-  eventstore-volume-data:
-  eventstore-volume-logs:
+  esdb-node2:
+    image: eventstore/eventstore:21.10.7-bionic
+    env_file:
+      - shared.env
+    environment:
+      - EVENTSTORE_GOSSIP_SEED=172.30.240.11:2113,172.30.240.13:2113
+      - EVENTSTORE_INT_IP=172.30.240.12
+      - EVENTSTORE_CERTIFICATE_FILE=/etc/eventstore/certs/node2/node.crt
+      - EVENTSTORE_CERTIFICATE_PRIVATE_KEY_FILE=/etc/eventstore/certs/node2/node.key
+      - EVENTSTORE_ADVERTISE_HOST_TO_CLIENT_AS=127.0.0.1
+      - EVENTSTORE_ADVERTISE_HTTP_PORT_TO_CLIENT_AS=2112
+      - EVENTSTORE_ADVERTISE_TCP_PORT_TO_CLIENT_AS=1112
+    ports:
+      - 1112:1113
+      - 2112:2113
+    networks:
+      clusternetwork:
+        ipv4_address: 172.30.240.12
+    volumes:
+      - ./certs:/etc/eventstore/certs
+      - ./es_config:/opt/eventstore/config/
+    restart: unless-stopped
+    depends_on:
+      - cert-gen
+
+  esdb-node3:
+    image: eventstore/eventstore:21.10.7-bionic
+    env_file:
+      - shared.env
+    environment:
+      - EVENTSTORE_GOSSIP_SEED=172.30.240.11:2113,172.30.240.12:2113
+      - EVENTSTORE_INT_IP=172.30.240.13
+      - EVENTSTORE_CERTIFICATE_FILE=/etc/eventstore/certs/node3/node.crt
+      - EVENTSTORE_CERTIFICATE_PRIVATE_KEY_FILE=/etc/eventstore/certs/node3/node.key
+      - EVENTSTORE_ADVERTISE_HOST_TO_CLIENT_AS=127.0.0.1
+      - EVENTSTORE_ADVERTISE_HTTP_PORT_TO_CLIENT_AS=2113
+      - EVENTSTORE_ADVERTISE_TCP_PORT_TO_CLIENT_AS=1113
+    ports:
+      - 1113:1113
+      - 2113:2113
+    networks:
+      clusternetwork:
+        ipv4_address: 172.30.240.13
+    volumes:
+      - ./certs:/etc/eventstore/certs
+      - ./es_config:/opt/eventstore/config/
+    restart: unless-stopped
+    depends_on:
+      - cert-gen
 
 networks:
-  cluster-network:
+  clusternetwork:
     name: eventstoredb.local
     driver: bridge
     ipam:

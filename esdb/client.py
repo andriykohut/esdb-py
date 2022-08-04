@@ -37,7 +37,7 @@ class ESClient:
         target: str,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        tls: bool = True,
+        insecure: bool = False,
         root_certificates: Optional[bytes] = None,
         private_key: Optional[bytes] = None,
         certificate_chain: Optional[bytes] = None,
@@ -46,7 +46,7 @@ class ESClient:
     ) -> None:
         self.channel_credentials = None
         self.call_credentials = None
-        self.tls = tls
+        self.insecure = insecure
         self.target = target
 
         self.options = [
@@ -54,7 +54,7 @@ class ESClient:
             ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
         ]
 
-        if tls:
+        if not self.insecure:
             self.channel_credentials = grpc.ssl_channel_credentials(
                 root_certificates=root_certificates,
                 private_key=private_key,
@@ -68,7 +68,7 @@ class ESClient:
             self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
 
     def _channel_builder(self) -> grpc.aio.Channel:  # type: ignore
-        if not self.tls:
+        if self.insecure:
             return grpc.aio.insecure_channel(self.target, options=self.options)  # type: ignore
         assert self.channel_credentials
         credentials = (
