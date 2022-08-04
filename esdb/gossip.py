@@ -47,7 +47,9 @@ class Member:
             timestamp=datetime.datetime.fromtimestamp(m.time_stamp / 10000000, datetime.timezone.utc),
             state=State(m.state),
             is_alive=m.is_alive,
-            endpoint=cls.Endpoint(m.http_end_point.address, m.http_end_point.port) if m.http_end_point.address else None,
+            endpoint=cls.Endpoint(m.http_end_point.address, m.http_end_point.port)
+            if m.http_end_point.address
+            else None,
         )
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import contextlib
+import logging
 from dataclasses import dataclass
 from typing import AsyncContextManager, Optional
 
@@ -10,9 +11,11 @@ import grpc
 from esdb.generated.gossip_pb2_grpc import GossipStub
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
-from esdb.gossip import Gossip
+from esdb.gossip import Gossip, State
 from esdb.streams import Streams
 from esdb.subscriptions import PersistentSubscriptions
+
+logger = logging.getLogger(__name__)
 
 
 class BasicAuthPlugin(grpc.AuthMetadataPlugin):
@@ -43,11 +46,13 @@ class ESClient:
         certificate_chain: Optional[bytes] = None,
         keepalive_time_ms: int = 10000,
         keepalive_timeout_ms: int = 10000,
+        discover: bool = False,
     ) -> None:
         self.channel_credentials = None
         self.call_credentials = None
         self.insecure = insecure
         self.target = target
+        self.discover = discover
 
         self.options = [
             ("grpc.keepalive_time_ms", keepalive_time_ms),
@@ -67,20 +72,30 @@ class ESClient:
         if username and password:
             self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
 
-    def _channel_builder(self) -> grpc.aio.Channel:  # type: ignore
+    def _channel_builder(self, target: str) -> grpc.aio.Channel:  # type: ignore
         if self.insecure:
-            return grpc.aio.insecure_channel(self.target, options=self.options)  # type: ignore
+            return grpc.aio.insecure_channel(target, options=self.options)  # type: ignore
         assert self.channel_credentials
         credentials = (
             grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
             if self.call_credentials
             else self.channel_credentials
         )
-        return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
+        return grpc.aio.secure_channel(target, credentials, self.options)  # type: ignore
 
     @contextlib.asynccontextmanager  # type: ignore
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
-        async with self._channel_builder() as channel:
+        target = self.target
+        if self.discover:
+            async with self._channel_builder(self.target) as channel:
+                logger.debug("Starting discovery from %s", self.target)
+                gossip = Gossip(GossipStub(channel))
+                members = await gossip.get_members()
+                leader = next(m for m in members if m.state == State.Leader)
+                logger.debug("Discovered a leader: %s:%s", leader.endpoint.address, leader.endpoint.port)
+                target = f"{leader.endpoint.address}:{leader.endpoint.port}"
+
+        async with self._channel_builder(target) as channel:
             yield Connection(
                 channel=channel,
                 streams=Streams(StreamsStub(channel)),

@@ -12,7 +12,7 @@ from esdb.subscriptions import Event, NackAction, SubscriptionSettings
 
 
 @pytest.mark.asyncio
-async def test_create_stream_subscription(client):
+async def test_create_stream_subscription(client, wait_for_stream):
     stream = str(uuid.uuid4())
     async with client.connect() as conn:
         await conn.streams.append(
@@ -20,6 +20,8 @@ async def test_create_stream_subscription(client):
             event_type="some_event",
             data={},
         )
+
+        # await wait_for_stream(conn, stream)
 
         await conn.subscriptions.create_stream_subscription(
             stream=stream,

@@ -9,11 +9,11 @@ from esdb.client import Connection
 logger = logging.getLogger()
 
 ALLOWED_STATES = (
-  gossip.State.Follower,
-  gossip.State.Leader,
-  gossip.State.ReadOnlyReplica,
-  gossip.State.PreReadOnlyReplica,
-  gossip.State.ReadOnlyLeaderless,
+    gossip.State.Follower,
+    gossip.State.Leader,
+    gossip.State.ReadOnlyReplica,
+    gossip.State.PreReadOnlyReplica,
+    gossip.State.ReadOnlyLeaderless,
 )
 
 
@@ -42,8 +42,6 @@ def find_best_member(members: list[gossip.Member], preference: Preference) -> Op
     for member in allowed_members:
         if member.state in states:
             return member
-
-
 
 
 async def discover(
