@@ -203,18 +203,23 @@ class Streams:
         self,
         stream: str,
         messages: Iterable[Message],
-        stream_state: StreamState = StreamState.ANY,
+        stream_state: Optional[StreamState] = None,
         correlation_id: Optional[uuid.UUID] = None,
         deadline_ms: Optional[int] = None,
         stream_position: Optional[int] = None,
     ) -> BatchAppendResult:
+        if stream_position is not None and stream_state is not None:
+            raise ValueError("stream_position can't be used with stream_state")
+        if stream_position is None and stream_state is None:
+            stream_state = StreamState.ANY
         correlation_id_ = UUID(string=str(correlation_id or uuid.uuid4()))
+        stream_opts = {stream_state.value: GEmpty()} if stream_state else {}
         options_req = BatchAppendReq(
             correlation_id=correlation_id_,
             options=BatchAppendReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 deadline=Duration(nanos=deadline_ms * 1000000) if deadline_ms is not None else None,
-                **{stream_state.value: GEmpty()},  # type: ignore
+                **stream_opts,
             ),
             is_final=False,
         )

@@ -1,3 +1,4 @@
+import time
 import uuid
 
 import pytest
@@ -47,3 +48,24 @@ async def test_batch_append_deadline(client):
             await conn.streams.batch_append(stream, messages, deadline_ms=0)
 
     assert "Append failed with Timeout" in str(err.value)
+
+
+@pytest.mark.asyncio
+async def test_batch_append_stream_position(client):
+    stream = str(uuid.uuid4())
+    messages = [Message(event_type="foo", data=b"") for _ in range(3)]
+    async with client.connect() as conn:
+        await conn.streams.append(stream, "foo", data=b"")
+        await conn.streams.batch_append(stream, messages, stream_position=0)
+        with pytest.raises(ClientException) as err:
+            await conn.streams.batch_append(stream, messages, stream_position=5)
+        assert "Append failed with WrongExpectedVersion" in str(err.value)
+
+
+@pytest.mark.asyncio
+async def test_batch_append_stream_position_and_state(client):
+    async with client.connect() as conn:
+        with pytest.raises(ValueError) as err:
+            await conn.streams.batch_append("foo", [], stream_position=0, stream_state=StreamState.ANY)
+
+    assert str(err.value) == "stream_position can't be used with stream_state"
