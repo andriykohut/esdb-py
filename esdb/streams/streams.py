@@ -219,7 +219,7 @@ class Streams:
             options=BatchAppendReq.Options(
                 stream_identifier=StreamIdentifier(stream_name=stream.encode()),
                 deadline=Duration(nanos=deadline_ms * 1000000) if deadline_ms is not None else None,
-                **stream_opts,
+                **stream_opts,  # type: ignore
             ),
             is_final=False,
         )
