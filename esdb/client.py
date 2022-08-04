@@ -92,9 +92,11 @@ class ESClient:
                 logger.debug("Starting discovery from %s", self.target)
                 gossip = Gossip(GossipStub(channel))
                 members = await gossip.get_members()
-                leader = next(m for m in members if m.state == State.Leader)
-                logger.debug("Discovered a leader: %s:%s", leader.endpoint.address, leader.endpoint.port)
-                target = f"{leader.endpoint.address}:{leader.endpoint.port}"
+                for member in members:
+                    if member.state == State.Leader and member.endpoint:
+                        logger.debug("Discovered a leader: %s:%s", member.endpoint.address, member.endpoint.port)
+                        target = f"{member.endpoint.address}:{member.endpoint.port}"
+                        break
 
         async with self._channel_builder(target) as channel:
             yield Connection(
