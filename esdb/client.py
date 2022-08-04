@@ -87,6 +87,7 @@ class ESClient:
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
         target = self.target
         if self.discover:
+            # TODO: handle preferences
             async with self._channel_builder(self.target) as channel:
                 logger.debug("Starting discovery from %s", self.target)
                 gossip = Gossip(GossipStub(channel))
