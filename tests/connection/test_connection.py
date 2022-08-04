@@ -8,18 +8,6 @@ from tests.conftest import root_cert
 
 
 @pytest.mark.asyncio
-async def test_read_and_write_stream_with_tls_and_basic_auth(client_tls):
-    stream = str(uuid.uuid4())
-    events = []
-    async with client_tls.connect() as conn:
-        for _ in range(10):
-            await conn.streams.append(stream=stream, event_type="foobar", data={})
-        async for event in conn.streams.read(stream=stream, count=500):
-            events.append(event)
-    assert len(list(events)) == 10
-
-
-@pytest.mark.asyncio
 async def test_invalid_cert():
     client = ESClient("localhost:2111", root_certificates=b"foo", username="admin", password="changeit")
     async with client.connect() as conn:

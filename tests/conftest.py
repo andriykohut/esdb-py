@@ -13,9 +13,4 @@ def root_cert():
 
 @pytest.fixture
 def client() -> ESClient:
-    return ESClient("localhost:2113", tls=False)
-
-
-@pytest.fixture
-def client_tls() -> ESClient:
-    return ESClient("localhost:2111", root_certificates=root_cert(), username="admin", password="changeit")
+    return ESClient("localhost:2112", root_certificates=root_cert(), username="admin", password="changeit")

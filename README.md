@@ -80,7 +80,7 @@ import uuid
 from esdb import ESClient
 
 # For insecure connection without basic auth:
-# client = ESClient("localhost:2113", tls=False)
+# client = ESClient("localhost:2113", insecure=True)
 with open("certs/ca/ca.crt", "rb") as fh:
     root_cert = fh.read()
 
@@ -150,7 +150,7 @@ async def batch_append():
         Message(event_type="two", data={"item": 2}),
         Message(event_type="two", data={"item": 3}),
     ]
-    async with ESClient("localhost:2113", tls=False).connect() as conn:
+    async with ESClient("localhost:2113", insecure=True).connect() as conn:
         response = await conn.streams.batch_append(stream=stream, messages=messages)
         assert response.current_revision == 5
         events = [e async for e in conn.streams.read(stream=stream, count=50)]
@@ -171,7 +171,7 @@ from esdb.shared import Filter
 
 
 async def filters():
-    async with ESClient("localhost:2113", tls=False).connect() as conn:
+    async with ESClient("localhost:2113", insecure=True).connect() as conn:
         for i in range(10):
             await conn.streams.append(stream=str(uuid.uuid4()), event_type=f"prefix-{i}", data=b"")
         async for event in conn.streams.read_all(
@@ -197,7 +197,7 @@ from esdb import ESClient
 from esdb.shared import Filter
 from esdb.subscriptions import SubscriptionSettings, NackAction
 
-client = ESClient("localhost:2113", tls=False)
+client = ESClient("localhost:2113", insecure=True)
 
 stream = "stream-foo"
 group = "group-bar"
