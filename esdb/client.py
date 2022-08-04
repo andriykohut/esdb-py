@@ -2,15 +2,20 @@ from __future__ import annotations
 
 import base64
 import contextlib
+import logging
 from dataclasses import dataclass
 from typing import AsyncContextManager, Optional
 
 import grpc
 
+from esdb.generated.gossip_pb2_grpc import GossipStub
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.streams_pb2_grpc import StreamsStub
+from esdb.gossip import Gossip, State
 from esdb.streams import Streams
 from esdb.subscriptions import PersistentSubscriptions
+
+logger = logging.getLogger(__name__)
 
 
 class BasicAuthPlugin(grpc.AuthMetadataPlugin):
@@ -26,6 +31,7 @@ class Connection:
     channel: grpc.aio._base_channel.Channel  # type: ignore
     streams: Streams
     subscriptions: PersistentSubscriptions
+    gossip: Gossip
 
 
 class ESClient:
@@ -34,24 +40,26 @@ class ESClient:
         target: str,
         username: Optional[str] = None,
         password: Optional[str] = None,
-        tls: bool = True,
+        insecure: bool = False,
         root_certificates: Optional[bytes] = None,
         private_key: Optional[bytes] = None,
         certificate_chain: Optional[bytes] = None,
         keepalive_time_ms: int = 10000,
         keepalive_timeout_ms: int = 10000,
+        discover: bool = False,
     ) -> None:
         self.channel_credentials = None
         self.call_credentials = None
-        self.tls = tls
+        self.insecure = insecure
         self.target = target
+        self.discover = discover
 
         self.options = [
             ("grpc.keepalive_time_ms", keepalive_time_ms),
             ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
         ]
 
-        if tls:
+        if not self.insecure:
             self.channel_credentials = grpc.ssl_channel_credentials(
                 root_certificates=root_certificates,
                 private_key=private_key,
@@ -64,22 +72,36 @@ class ESClient:
         if username and password:
             self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
 
-    def _channel_builder(self) -> grpc.aio.Channel:  # type: ignore
-        if not self.tls:
-            return grpc.aio.insecure_channel(self.target, options=self.options)  # type: ignore
+    def _channel_builder(self, target: str) -> grpc.aio.Channel:  # type: ignore
+        if self.insecure:
+            return grpc.aio.insecure_channel(target, options=self.options)  # type: ignore
         assert self.channel_credentials
         credentials = (
             grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
             if self.call_credentials
             else self.channel_credentials
         )
-        return grpc.aio.secure_channel(self.target, credentials, self.options)  # type: ignore
+        return grpc.aio.secure_channel(target, credentials, self.options)  # type: ignore
 
     @contextlib.asynccontextmanager  # type: ignore
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
-        async with self._channel_builder() as channel:
+        target = self.target
+        if self.discover:
+            # TODO: handle preferences
+            async with self._channel_builder(self.target) as channel:
+                logger.debug("Starting discovery from %s", self.target)
+                gossip = Gossip(GossipStub(channel))
+                members = await gossip.get_members()
+                for member in members:
+                    if member.state == State.Leader and member.endpoint:
+                        logger.debug("Discovered a leader: %s:%s", member.endpoint.address, member.endpoint.port)
+                        target = f"{member.endpoint.address}:{member.endpoint.port}"
+                        break
+
+        async with self._channel_builder(target) as channel:
             yield Connection(
                 channel=channel,
                 streams=Streams(StreamsStub(channel)),
                 subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
+                gossip=Gossip(GossipStub(channel)),
             )

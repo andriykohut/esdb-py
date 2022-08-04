@@ -19,7 +19,7 @@ lint:
 	poetry run black --check .
 	poetry run isort --check-only .
 	poetry run flake8 .
-	poetry run mypy ./esdb
+	poetry run mypy .
 
 test:
 	poetry run pytest --cov esdb
