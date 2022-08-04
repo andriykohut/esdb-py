@@ -1,5 +1,3 @@
-import uuid
-
 import grpc
 import pytest
 
