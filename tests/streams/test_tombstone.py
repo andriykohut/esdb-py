@@ -25,3 +25,16 @@ async def test_tombstone(client):
             await conn.streams.append(stream=stream, event_type="foo", data=b"")
 
         assert f"Event stream '{stream}' is deleted." in str(err.value)
+
+
+@pytest.mark.asyncio
+async def test_tombstone_with_revision(client):
+    stream = str(uuid.uuid4())
+    async with client.connect() as conn:
+        await conn.streams.append(stream=stream, event_type="foo", data=b"")
+        with pytest.raises(grpc.aio._call.AioRpcError) as err:
+            await conn.streams.tombstone(stream=stream, revision=23)
+
+        assert "Expected version: 23, Actual version: 0" in str(err.value)
+
+        await conn.streams.tombstone(stream=stream, revision=0)
