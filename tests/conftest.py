@@ -1,7 +1,6 @@
 import asyncio
 from functools import lru_cache
 
-import grpc
 import pytest
 
 from esdb import ESClient
