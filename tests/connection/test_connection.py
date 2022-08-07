@@ -2,6 +2,7 @@ import grpc
 import pytest
 
 from esdb import ESClient
+from esdb.client import Preference
 from tests.conftest import root_cert
 
 
@@ -28,3 +29,17 @@ async def test_invalid_user_pass(user, password):
             await conn.streams.append("foo", "test_event", b"data")
 
     assert "UNAUTHENTICATED" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    "user, password",
+    [
+        ("foo", None),
+        (None, "foo"),
+    ],
+)
+def test_missing_user_or_pass(user, password):
+    with pytest.raises(ValueError) as err:
+        ESClient(endpoint="...", username=user, password=password)
+
+    assert str(err.value) == "Both username and password are required"
