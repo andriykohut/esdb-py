@@ -57,6 +57,6 @@ class Gossip:
     def __init__(self, stub: GossipStub) -> None:
         self._stub = stub
 
-    async def get_members(self) -> list[Member]:
-        info: ClusterInfo = await self._stub.Read(Empty())
+    async def get_members(self, timeout: int) -> list[Member]:
+        info: ClusterInfo = await self._stub.Read(Empty(), timeout=timeout)
         return [Member.from_protobuf(m) for m in info.members]

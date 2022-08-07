@@ -29,3 +29,7 @@ class WrongExpectedVersion(ClientException):
 class StreamNotFound(ClientException):
     def __init__(self, error: ReadResp.StreamNotFound) -> None:
         super().__init__(f"Stream '{error.stream_identifier.stream_name.decode()}' not found")
+
+
+class DiscoveryError(ClientException):
+    ...
