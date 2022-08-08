@@ -2,7 +2,6 @@ import grpc
 import pytest
 
 from esdb import ESClient
-from esdb.client import Preference
 from tests.conftest import root_cert
 
 
