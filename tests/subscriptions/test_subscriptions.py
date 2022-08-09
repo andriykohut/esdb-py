@@ -29,8 +29,8 @@ async def test_create_and_update_stream_subscription(client):
                 read_batch_size=10,
                 history_buffer_size=15,
                 checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=1000,
+                    type=SubscriptionSettings.DurationType.Type.TICKS,
+                    value=1000000,
                 ),
                 resolve_links=False,
                 extra_statistics=True,
