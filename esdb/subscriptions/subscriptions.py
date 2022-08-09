@@ -3,11 +3,25 @@ from __future__ import annotations
 import asyncio
 from typing import AsyncIterable, AsyncIterator, Optional
 
-from esdb.generated.persistent_pb2 import CreateReq, CreateResp, ReadReq, ReadResp
+from esdb.generated.persistent_pb2 import (
+    CreateReq,
+    CreateResp,
+    GetInfoReq,
+    GetInfoResp,
+    ReadReq,
+    ReadResp,
+    UpdateReq,
+    UpdateResp,
+)
 from esdb.generated.persistent_pb2_grpc import PersistentSubscriptionsStub
 from esdb.generated.shared_pb2 import UUID, Empty, StreamIdentifier
 from esdb.shared import Filter
-from esdb.subscriptions.types import Event, NackAction, SubscriptionSettings
+from esdb.subscriptions.types import (
+    Event,
+    NackAction,
+    SubscriptionInfo,
+    SubscriptionSettings,
+)
 
 
 class Subscription:
@@ -89,7 +103,7 @@ class PersistentSubscriptions:
                 ),
                 stream_identifier=stream_identifier,
                 group_name=group_name,
-                settings=settings.to_protobuf(),
+                settings=settings.to_protobuf(CreateReq.Settings),
             )
         )
         response: CreateResp = await self._stub.Create(create_request)
@@ -105,7 +119,7 @@ class PersistentSubscriptions:
         create_request = CreateReq(
             options=CreateReq.Options(
                 group_name=group_name,
-                settings=settings.to_protobuf(),
+                settings=settings.to_protobuf(CreateReq.Settings),
                 all=CreateReq.AllOptions(
                     # position=CreateReq.Position(), TODO: deal with position
                     start=None if backwards else Empty(),
@@ -125,3 +139,66 @@ class PersistentSubscriptions:
         stream: Optional[str] = None,
     ) -> Subscription:
         return Subscription(stream=stream, group_name=group_name, buffer_size=buffer_size, stub=self._stub)
+
+    async def update_stream_subscription(
+        self, stream: str, group_name: str, settings: SubscriptionSettings, backwards: bool = False
+    ) -> None:
+        stream_identifier = StreamIdentifier(stream_name=stream.encode())
+        update_request = UpdateReq(
+            options=UpdateReq.Options(
+                stream=UpdateReq.StreamOptions(
+                    stream_identifier=stream_identifier,
+                    start=None if backwards else Empty(),
+                    end=Empty() if backwards else None,
+                ),
+                stream_identifier=stream_identifier,
+                group_name=group_name,
+                settings=settings.to_protobuf(UpdateReq.Settings),
+            )
+        )
+        response: UpdateResp = await self._stub.Update(update_request)
+        assert isinstance(response, UpdateResp), f"Expected {UpdateResp} got {response.__class__}"
+
+    async def update_all_subscription(
+        self, group_name: str, settings: SubscriptionSettings, backwards: bool = False
+    ) -> None:
+        update_request = UpdateReq(
+            options=UpdateReq.Options(
+                group_name=group_name,
+                settings=settings.to_protobuf(UpdateReq.Settings),
+                all=UpdateReq.AllOptions(
+                    # position=CreateReq.Position(), TODO: deal with position
+                    start=None if backwards else Empty(),
+                    end=Empty() if backwards else None,
+                ),
+            )
+        )
+        response: UpdateResp = await self._stub.Update(update_request)
+        assert isinstance(response, UpdateResp), f"Expected {UpdateResp} got {response.__class__}"
+
+    async def get_info(self, group_name: str, stream: Optional[str] = None) -> SubscriptionInfo:
+        info_request = GetInfoReq(
+            options=GetInfoReq.Options(
+                group_name=group_name,
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()) if stream else None,
+                all=Empty() if stream is None else None,
+            )
+        )
+        response: GetInfoResp = await self._stub.GetInfo(info_request)
+        info = response.subscription_info
+        return SubscriptionInfo(
+            group_name=info.group_name,
+            status=info.status,
+            start_from=info.start_from,
+            message_timeout_milliseconds=info.message_timeout_milliseconds,
+            extra_statistics=info.extra_statistics,
+            max_retry_count=info.max_retry_count,
+            live_buffer_size=info.live_buffer_size,
+            buffer_size=info.buffer_size,
+            read_batch_size=info.read_batch_size,
+            check_point_after_milliseconds=info.check_point_after_milliseconds,
+            min_check_point_count=info.min_check_point_count,
+            max_check_point_count=info.max_check_point_count,
+            consumer_strategy=info.named_consumer_strategy,
+            max_subscriber_count=info.max_subscriber_count,
+        )
