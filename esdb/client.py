@@ -9,7 +9,7 @@ import logging
 import random
 from dataclasses import dataclass
 from functools import cmp_to_key
-from typing import AsyncContextManager, Optional
+from typing import AsyncContextManager, Optional, Union
 
 import grpc
 
@@ -49,7 +49,7 @@ class Connection:
 class ESClient:
     def __init__(
         self,
-        endpoint: str,
+        endpoints: Union[str, list[str]],
         username: Optional[str] = None,
         password: Optional[str] = None,
         insecure: bool = False,
@@ -67,7 +67,7 @@ class ESClient:
         self.channel_credentials = None
         self.call_credentials = None
         self.insecure = insecure
-        self.endpoint = endpoint
+        self.endpoints = endpoints if isinstance(endpoints, list) else [endpoints]
         self.discover = discover
         self.discovery_interval = discovery_interval
         self.discovery_attempts = discovery_attempts
@@ -105,15 +105,9 @@ class ESClient:
 
     @contextlib.asynccontextmanager  # type: ignore
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
-        endpoint = self.endpoint
+        endpoint = self.endpoints[0]
         if self.discover:
-            endpoint = await self.discover_endpoint(
-                [self.endpoint],
-                interval=self.discovery_interval,
-                attempts=self.discovery_attempts,
-                timeout=self.gossip_timeout,
-                preference=self.node_preference,
-            )
+            endpoint = await self.discover_endpoint()
 
         async with self._create_channel(endpoint) as channel:
             yield Connection(
@@ -123,30 +117,31 @@ class ESClient:
                 gossip=Gossip(GossipStub(channel)),
             )
 
-    async def discover_endpoint(
-        self,
-        endpoints: list[str],
-        interval: int,
-        attempts: int,
-        timeout: int,
-        preference: Preference,
-    ) -> str:
-        for attempt in range(1, attempts + 1):
-            candidates = [*endpoints]
+    async def discover_endpoint(self) -> str:
+        for attempt in range(1, self.discovery_attempts + 1):
+            candidates = self.endpoints.copy()
             random.shuffle(candidates)
-            logger.info("Starting discovery on %s", ",".join(endpoints))
+            logger.info("Starting discovery attempt %s on %s", attempt, ",".join(candidates))
             for candidate in candidates:
                 async with self._create_channel(candidate) as chan:
                     gossip = Gossip(GossipStub(chan))
-                    members = await gossip.get_members(timeout)
-                    if endpoint := self.pick_node(preference, members):
+                    members = await gossip.get_members(self.gossip_timeout)
+                    if pick := self.pick_node(self.node_preference, members):
+                        assert pick.endpoint
+                        endpoint = f"{pick.endpoint.address}:{pick.endpoint.port}"
+                        logger.info(
+                            "Discovered %s node at %s (Preference: %s)",
+                            pick.state.name,
+                            endpoint,
+                            self.node_preference.name,
+                        )
                         return endpoint
 
-            await asyncio.sleep(interval)
-        raise DiscoveryError(f"Discovery failed after {attempts} attempt")
+            await asyncio.sleep(self.discovery_interval)
+        raise DiscoveryError(f"Discovery failed after {self.discovery_attempts} attempt(s)")
 
     @staticmethod
-    def pick_node(preference: Preference, members: list[Member]) -> Optional[str]:
+    def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]:
         preference_map = {
             Preference.LEADER: [State.Leader],
             Preference.FOLLOWER: [State.Follower],
@@ -166,10 +161,10 @@ class ESClient:
             (
                 m
                 for m in sorted(members_, key=cmp_to_key(_compare))
-                if m.is_alive and m.state in list(itertools.chain(*preference_map.values()))
+                if m.is_alive and m.state in list(itertools.chain(*preference_map.values())) and m.endpoint
             ),
             None,
         )
         if not member or not member.endpoint:
             return None
-        return f"{member.endpoint.address}:{member.endpoint.port}"
+        return member
