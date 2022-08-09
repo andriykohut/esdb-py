@@ -1,4 +1,0 @@
-[submodule "EventStore"]
-	path = EventStore
-	url = git@github.com:EventStore/EventStore.git
-	shallow = true

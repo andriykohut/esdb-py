@@ -2,6 +2,8 @@ import grpc
 import pytest
 
 from esdb import ESClient
+from esdb.exceptions import DiscoveryError
+from esdb.gossip import Gossip
 from tests.conftest import root_cert
 
 
@@ -28,3 +30,33 @@ async def test_invalid_user_pass(user, password):
             await conn.streams.append("foo", "test_event", b"data")
 
     assert "UNAUTHENTICATED" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    "user, password",
+    [
+        ("foo", None),
+        (None, "foo"),
+    ],
+)
+def test_missing_user_or_pass(user, password):
+    with pytest.raises(ValueError) as err:
+        ESClient(endpoints="...", username=user, password=password)
+
+    assert str(err.value) == "Both username and password are required"
+
+
+@pytest.mark.asyncio
+async def test_discovery_failed(client, monkeypatch):
+    client.discovery_interval = 0
+    client.discovery_attempts = 3
+
+    async def _get_members(*_):
+        return []
+
+    monkeypatch.setattr(Gossip, "get_members", _get_members)
+    with pytest.raises(DiscoveryError) as err:
+        async with client.connect():
+            ...
+
+    assert str(err.value) == "Discovery failed after 3 attempt(s)"

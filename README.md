@@ -41,8 +41,6 @@
     - [ ] reply parked events
 - [ ] CRUD for projections
 - [ ] users
-- [ ] other connection options
-    - [ ] multi-node gossip
 
 ## Installation
 Using pip:
@@ -69,6 +67,19 @@ pyenv local esdb-py
 # Usage
 
 Have a look at [tests](https://github.com/andriykohut/esdb-py/tree/main/tests) for more examples.
+
+## Discovery and node preferences
+```py
+from esdb import ESClient
+from esdb.client import Preference
+
+client = ESClient(
+  endpoint="localhost:2112",
+  discover=True,  # Discover the available nodes via gossip
+  node_preference=Preference.FOLLOWER,  # Connect to a preferred node type
+)
+
+```
 
 ## Append/Read
 
