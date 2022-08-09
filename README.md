@@ -74,7 +74,7 @@ from esdb import ESClient
 from esdb.client import Preference
 
 client = ESClient(
-  endpoint="localhost:2112",
+  "localhost:2112",
   discover=True,  # Discover the available nodes via gossip
   node_preference=Preference.FOLLOWER,  # Connect to a preferred node type
 )
