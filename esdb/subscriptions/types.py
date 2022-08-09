@@ -96,7 +96,7 @@ class SubscriptionSettings:
         if self.consumer_strategy:
             if cls is CreateReq.Settings:
                 settings.consumer_strategy = self.consumer_strategy.value  # type: ignore
-            elif cls is UpdateReq.Settings:
+            else:
                 settings.named_consumer_strategy = {  # type: ignore
                     self.ConsumerStrategy.DISPATCH_TO_SINGLE: 0,
                     self.ConsumerStrategy.ROUND_ROBIN: 1,
