@@ -34,10 +34,10 @@
     - [x] create
     - [x] read stream
     - [x] read all with filter (v21.10+)
-    - [ ] update
+    - [x] update
     - [ ] delete
     - [ ] list
-    - [ ] info
+    - [x] info
     - [ ] reply parked events
 - [ ] CRUD for projections
 - [ ] users
