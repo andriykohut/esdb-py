@@ -12,7 +12,7 @@ from esdb.subscriptions import Event, NackAction, SubscriptionSettings
 
 
 @pytest.mark.asyncio
-async def test_create_stream_subscription(client):
+async def test_create_and_update_stream_subscription(client):
     stream = str(uuid.uuid4())
     async with client.connect() as conn:
         await conn.streams.append(
@@ -30,7 +30,7 @@ async def test_create_stream_subscription(client):
                 history_buffer_size=15,
                 checkpoint=SubscriptionSettings.DurationType(
                     type=SubscriptionSettings.DurationType.Type.TICKS,
-                    value=1000,
+                    value=1000000,
                 ),
                 resolve_links=False,
                 extra_statistics=True,
@@ -45,6 +45,28 @@ async def test_create_stream_subscription(client):
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
             ),
         )
+
+        info = await conn.subscriptions.get_info(group_name="me", stream=stream)
+        assert info.group_name == "me"
+        assert info.consumer_strategy == "RoundRobin"
+
+        await conn.subscriptions.update_stream_subscription(
+            stream=stream,
+            group_name="me",
+            settings=SubscriptionSettings(
+                live_buffer_size=15,
+                read_batch_size=10,
+                history_buffer_size=15,
+                consumer_strategy=SubscriptionSettings.ConsumerStrategy.DISPATCH_TO_SINGLE,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS, value=1000
+                ),
+            ),
+        )
+
+        info = await conn.subscriptions.get_info(group_name="me", stream=stream)
+        assert info.group_name == "me"
+        assert info.consumer_strategy == "DispatchToSingle"
 
 
 @pytest.mark.asyncio
@@ -201,7 +223,7 @@ async def test_nack(client):
 
 
 @pytest.mark.asyncio
-async def test_create_all_subscription(client):
+async def test_create_and_update_all_subscription(client):
     event_type = str(uuid.uuid4())
     group_name = str(uuid.uuid4())
     async with client.connect() as conn:
@@ -230,3 +252,21 @@ async def test_create_all_subscription(client):
 
         assert events
         assert all(e.type == event_type for e in events)
+
+        await conn.subscriptions.update_all_subscription(
+            group_name=group_name,
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=5,
+                checkpoint=SubscriptionSettings.DurationType(
+                    type=SubscriptionSettings.DurationType.Type.MS,
+                    value=10000,
+                ),
+            ),
+        )
+
+        info = await conn.subscriptions.get_info(group_name=group_name)
+        assert info.consumer_strategy == "DispatchToSingle"
+        assert info.max_retry_count == 5

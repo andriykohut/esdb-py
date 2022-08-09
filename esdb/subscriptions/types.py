@@ -3,9 +3,9 @@ from __future__ import annotations
 import enum
 import json
 from dataclasses import dataclass
-from typing import Mapping, Optional, Union
+from typing import Mapping, Optional, Type, TypeVar, Union
 
-from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
+from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp, UpdateReq
 from esdb.streams.types import ContentType
 
 
@@ -34,6 +34,9 @@ class Event:
             if event.event.metadata["content-type"] == ContentType.JSON.value
             else event.event.data,
         )
+
+
+SettingsType = TypeVar("SettingsType", CreateReq.Settings, UpdateReq.Settings)
 
 
 @dataclass
@@ -65,14 +68,14 @@ class SubscriptionSettings:
     message_timeout: Optional[DurationType] = None
     consumer_strategy: Optional[ConsumerStrategy] = None
 
-    def to_protobuf(self) -> CreateReq.Settings:
+    def to_protobuf(self, cls: Type[SettingsType]) -> SettingsType:
         assert (
             self.read_batch_size < self.live_buffer_size
         ), "read_batch_size may not be greater than or equal to live_buffer_size"
         assert (
             self.read_batch_size < self.history_buffer_size
         ), "read_batch_size may not be greater than or equal to history_buffer_size"
-        settings = CreateReq.Settings(
+        settings = cls(
             live_buffer_size=self.live_buffer_size,
             read_batch_size=self.read_batch_size,
             history_buffer_size=self.history_buffer_size,
@@ -91,7 +94,14 @@ class SubscriptionSettings:
         if self.max_subscriber_count is not None:
             settings.max_subscriber_count = self.max_subscriber_count
         if self.consumer_strategy:
-            settings.consumer_strategy = self.consumer_strategy.value
+            if cls is CreateReq.Settings:
+                settings.consumer_strategy = self.consumer_strategy.value  # type: ignore
+            else:
+                settings.named_consumer_strategy = {  # type: ignore
+                    self.ConsumerStrategy.DISPATCH_TO_SINGLE: 0,
+                    self.ConsumerStrategy.ROUND_ROBIN: 1,
+                    self.ConsumerStrategy.PINNED: 2,
+                }[self.consumer_strategy]
 
         if self.checkpoint.type == self.DurationType.Type.MS:
             settings.checkpoint_after_ms = self.checkpoint.value
@@ -113,3 +123,21 @@ class NackAction(enum.Enum):
     RETRY = ReadReq.Nack.Action.Retry
     SKIP = ReadReq.Nack.Action.Skip
     STOP = ReadReq.Nack.Action.Stop
+
+
+@dataclass
+class SubscriptionInfo:
+    group_name: str
+    status: str
+    start_from: str
+    message_timeout_milliseconds: int
+    extra_statistics: bool
+    max_retry_count: int
+    live_buffer_size: int
+    buffer_size: int
+    read_batch_size: int
+    check_point_after_milliseconds: int
+    min_check_point_count: int
+    max_check_point_count: int
+    consumer_strategy: str
+    max_subscriber_count: int
