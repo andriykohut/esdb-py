@@ -13,7 +13,7 @@
 * [Usage](#usage)
     * [Append/Read](#appendread)
     * [Batch append](#batch-append)
-    * [Transient subscription to all events with filtering](#transient-subscription-to-all-events-with-filtering)
+    * [Catch-up subscription to all events with filtering](#catch-up-subscription-to-all-events-with-filtering)
     * [Persistent subscriptions](#persistent-subscriptions)
 <!-- TOC -->
 
@@ -171,7 +171,7 @@ async def batch_append():
 asyncio.run(batch_append())
 ```
 
-## Transient subscription to all events with filtering
+## Catch-up subscription to all events with filtering
 
 ```py
 import uuid
