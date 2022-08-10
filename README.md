@@ -27,7 +27,7 @@
     - [x] delete
     - [x] read stream
     - [x] read all with stream/event type filters (v21.10+)
-    - [x] transient subscriptions
+    - [x] catch-up subscriptions
     - [x] tombstone
     - [x] filtering
 - [x] persistent subscriptions
@@ -81,7 +81,7 @@ client = ESClient(
 
 ```
 
-## Append/Read
+## Append, Read, Catch-up subscriptions
 
 ```py
 import asyncio
@@ -132,7 +132,7 @@ async def streams():
         async for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
             print(result.data)
 
-        # Create a transient subscription to a stream
+        # Create a catch-up subscription to a stream
         async for result in conn.streams.read(stream=stream, subscribe=True):
             print(result.data)
 
