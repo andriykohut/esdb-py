@@ -3,7 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/esdb.svg)](https://pypi.org/project/esdb/)
 [![codecov](https://codecov.io/gh/andriykohut/esdb-py/branch/main/graph/badge.svg?token=YVDPTDBPFB)](https://codecov.io/gh/andriykohut/esdb-py)
 
-**EventStoreDB Python gRPC client**
+## EventStoreDB Python gRPC client
+
 > NOTE: This project is still work in progress
 
 <!-- TOC -->
@@ -11,64 +12,74 @@
 * [Installation](#installation)
 * [Development](#development)
 * [Usage](#usage)
-    * [Append, Read, Catch-up subscriptions](#append-read-catch-up-subscriptions)
-    * [Batch append](#batch-append)
-    * [Catch-up subscription to all events with filtering](#catch-up-subscription-to-all-events-with-filtering)
-    * [Persistent subscriptions](#persistent-subscriptions)
+  * [Discovery and node preferences](#discovery-and-node-preferences)
+  * [Append, Read, Catch-up subscriptions](#append-read-catch-up-subscriptions)
+  * [Batch append](#batch-append)
+  * [Catch-up subscription to all events with filtering](#catch-up-subscription-to-all-events-with-filtering)
+  * [Persistent subscriptions](#persistent-subscriptions)
 <!-- TOC -->
 
 ## Completed features
-- [x] secure connection
-- [x] basic auth
-- [ ] connection string parsing
-- [x] streams
-    - [x] append
-    - [x] batch append (v21.10+)
-    - [x] delete
-    - [x] read stream
-    - [x] read all with stream/event type filters (v21.10+)
-    - [x] catch-up subscriptions
-    - [x] tombstone
-    - [x] filtering
-- [x] persistent subscriptions
-    - [x] create
-    - [x] read stream
-    - [x] read all with filter (v21.10+)
-    - [x] update
-    - [ ] delete
-    - [ ] list
-    - [x] info
-    - [ ] reply parked events
-- [ ] CRUD for projections
-- [ ] users
+
+* [x] secure connection
+* [x] basic auth
+* [ ] connection string parsing
+* [x] streams
+  * [x] append
+  * [x] batch append (v21.10+)
+  * [x] delete
+  * [x] read stream
+  * [x] read all with stream/event type filters (v21.10+)
+  * [x] catch-up subscriptions
+  * [x] tombstone
+  * [x] filtering
+* [x] persistent subscriptions
+  * [x] create
+  * [x] read stream
+  * [x] read all with filter (v21.10+)
+  * [x] update
+  * [ ] delete
+  * [ ] list
+  * [x] info
+  * [ ] reply parked events
+* [ ] CRUD for projections
+* [ ] users
 
 ## Installation
+
 Using pip:
+
 ```sh
 pip install esdb
 ```
+
 Using poetry:
+
 ```sh
 poetry add esdb
 ```
 
-# Development
+## Development
+
 1. Install [poetry](https://python-poetry.org/docs/#installation)
 2. Create virtualenv (i.e. using pyenv):
-```sh
-pyenv install 3.10.5
-pyenv virtualenv 3.10.5 esdb-py
-pyenv local esdb-py
-```
+
+    ```sh
+    pyenv install 3.10.5
+    pyenv virtualenv 3.10.5 esdb-py
+    pyenv local esdb-py
+    ```
+
 3. Install deps with `poetry install`
 4. Start eventstore in docker: `make run-esdb`
 5. Run the tests: `pytest tests`
 
-# Usage
+## Usage
 
 Have a look at [tests](https://github.com/andriykohut/esdb-py/tree/main/tests) for more examples.
 
-## Discovery and node preferences
+### Discovery and node preferences
+
 ```py
 from esdb import ESClient
 from esdb.client import Preference
@@ -81,7 +92,7 @@ client = ESClient(
 
 ```
 
-## Append, Read, Catch-up subscriptions
+### Append, Read, Catch-up subscriptions
 
 ```py
 import asyncio
@@ -140,7 +151,7 @@ async def streams():
 asyncio.run(streams())
 ```
 
-## Batch append
+### Batch append
 
 ```py
 import asyncio
@@ -171,7 +182,7 @@ async def batch_append():
 asyncio.run(batch_append())
 ```
 
-## Catch-up subscription to all events with filtering
+### Catch-up subscription to all events with filtering
 
 ```py
 import uuid
@@ -200,7 +211,7 @@ async def filters():
 asyncio.run(filters())
 ```
 
-## Persistent subscriptions
+### Persistent subscriptions
 
 ```python
 import asyncio
