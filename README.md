@@ -11,7 +11,7 @@
 * [Installation](#installation)
 * [Development](#development)
 * [Usage](#usage)
-    * [Append/Read](#appendread)
+    * [Append, Read, Catch-up subscriptions](#append-read-catch-up-subscriptions)
     * [Batch append](#batch-append)
     * [Catch-up subscription to all events with filtering](#catch-up-subscription-to-all-events-with-filtering)
     * [Persistent subscriptions](#persistent-subscriptions)
