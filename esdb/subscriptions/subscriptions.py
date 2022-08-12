@@ -7,7 +7,6 @@ from esdb.generated.persistent_pb2 import (
     CreateReq,
     CreateResp,
     DeleteReq,
-    DeleteResp,
     GetInfoReq,
     GetInfoResp,
     ReadReq,

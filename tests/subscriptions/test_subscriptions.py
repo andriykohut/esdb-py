@@ -282,7 +282,7 @@ async def test_delete_all_subscription(client):
     async with client.connect() as conn:
         await conn.subscriptions.create_all_subscription(
             group_name=group_name,
-            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex=f".*", checkpoint_interval_multiplier=200),
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex=r".*", checkpoint_interval_multiplier=200),
             settings=SubscriptionSettings(
                 read_batch_size=50,
                 live_buffer_size=100,
