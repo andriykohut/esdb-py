@@ -5,6 +5,7 @@ import uuid
 from collections import defaultdict
 from unittest import mock
 
+import grpc
 import pytest
 
 from esdb.shared import Filter
@@ -28,20 +29,14 @@ async def test_create_and_update_stream_subscription(client):
                 live_buffer_size=15,
                 read_batch_size=10,
                 history_buffer_size=15,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.TICKS,
-                    value=1000000,
-                ),
+                checkpoint_ms=10000,
                 resolve_links=False,
                 extra_statistics=True,
                 max_retry_count=5,
                 min_checkpoint_count=20,
                 max_checkpoint_count=30,
                 max_subscriber_count=10,
-                message_timeout=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=1000,
-                ),
+                message_timeout_ms=10000,
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
             ),
         )
@@ -58,9 +53,7 @@ async def test_create_and_update_stream_subscription(client):
                 read_batch_size=10,
                 history_buffer_size=15,
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.DISPATCH_TO_SINGLE,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS, value=1000
-                ),
+                checkpoint_ms=10000,
             ),
         )
 
@@ -87,10 +80,7 @@ async def test_subscribe_to_stream(client):
                 read_batch_size=5,
                 live_buffer_size=10,
                 history_buffer_size=10,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=10000,
             ),
         )
 
@@ -139,10 +129,7 @@ async def test_multiple_consumers(client):
                 live_buffer_size=10,
                 history_buffer_size=10,
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=100000,
             ),
         )
 
@@ -200,10 +187,7 @@ async def test_nack(client):
                 live_buffer_size=100,
                 history_buffer_size=100,
                 max_retry_count=2,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=10000,
             ),
         )
 
@@ -237,10 +221,7 @@ async def test_create_and_update_all_subscription(client):
                 live_buffer_size=100,
                 history_buffer_size=100,
                 max_retry_count=2,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=100000,
             ),
         )
 
@@ -260,13 +241,60 @@ async def test_create_and_update_all_subscription(client):
                 live_buffer_size=100,
                 history_buffer_size=100,
                 max_retry_count=5,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=100000,
             ),
         )
 
         info = await conn.subscriptions.get_info(group_name=group_name)
         assert info.consumer_strategy == "DispatchToSingle"
         assert info.max_retry_count == 5
+
+
+@pytest.mark.asyncio
+async def test_delete_stream_subscription(client):
+    stream = str(uuid.uuid4())
+    group_name = str(uuid.uuid4())
+    async with client.connect() as conn:
+        await conn.streams.append(stream=str(uuid.uuid4()), event_type="some_event", data={})
+        await conn.subscriptions.create_stream_subscription(
+            stream=stream,
+            group_name=group_name,
+            settings=SubscriptionSettings(
+                live_buffer_size=15,
+                read_batch_size=10,
+                history_buffer_size=15,
+                checkpoint_ms=10000,
+            ),
+        )
+
+        info = await conn.subscriptions.get_info(group_name, stream)
+        assert info.group_name == group_name
+
+        await conn.subscriptions.delete(group_name, stream)
+        with pytest.raises(grpc.aio._call.AioRpcError) as err:
+            await conn.subscriptions.get_info(group_name, stream)
+        assert err.value.code() == grpc.StatusCode.NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_delete_all_subscription(client):
+    group_name = str(uuid.uuid4())
+    async with client.connect() as conn:
+        await conn.subscriptions.create_all_subscription(
+            group_name=group_name,
+            filter_by=Filter(kind=Filter.Kind.EVENT_TYPE, regex=r".*", checkpoint_interval_multiplier=200),
+            settings=SubscriptionSettings(
+                read_batch_size=50,
+                live_buffer_size=100,
+                history_buffer_size=100,
+                max_retry_count=2,
+                checkpoint_ms=100000,
+            ),
+        )
+
+        info = await conn.subscriptions.get_info(group_name)
+        assert info.group_name == group_name
+        await conn.subscriptions.delete(group_name)
+        with pytest.raises(grpc.aio._call.AioRpcError) as err:
+            await conn.subscriptions.get_info(group_name)
+        assert err.value.code() == grpc.StatusCode.NOT_FOUND

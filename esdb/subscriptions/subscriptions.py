@@ -6,6 +6,7 @@ from typing import AsyncIterable, AsyncIterator, Optional
 from esdb.generated.persistent_pb2 import (
     CreateReq,
     CreateResp,
+    DeleteReq,
     GetInfoReq,
     GetInfoResp,
     ReadReq,
@@ -202,3 +203,13 @@ class PersistentSubscriptions:
             consumer_strategy=info.named_consumer_strategy,
             max_subscriber_count=info.max_subscriber_count,
         )
+
+    async def delete(self, group_name: str, stream: Optional[str] = None) -> None:
+        request = DeleteReq(
+            options=DeleteReq.Options(
+                group_name=group_name,
+                all=Empty() if stream is None else None,
+                stream_identifier=StreamIdentifier(stream_name=stream.encode()) if stream is not None else None,
+            )
+        )
+        await self._stub.Delete(request)

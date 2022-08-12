@@ -41,15 +41,6 @@ SettingsType = TypeVar("SettingsType", CreateReq.Settings, UpdateReq.Settings)
 
 @dataclass
 class SubscriptionSettings:
-    @dataclass
-    class DurationType:
-        class Type(enum.Enum):
-            TICKS = "ticks"
-            MS = "ms"
-
-        type: Type
-        value: int
-
     class ConsumerStrategy(enum.Enum):
         DISPATCH_TO_SINGLE = "DispatchToSingle"
         ROUND_ROBIN = "RoundRobin"
@@ -58,14 +49,14 @@ class SubscriptionSettings:
     live_buffer_size: int
     read_batch_size: int
     history_buffer_size: int
-    checkpoint: DurationType
+    checkpoint_ms: int
     resolve_links: Optional[bool] = None
     extra_statistics: Optional[bool] = None
     max_retry_count: Optional[int] = None
     min_checkpoint_count: Optional[int] = None
     max_checkpoint_count: Optional[int] = None
     max_subscriber_count: Optional[int] = None
-    message_timeout: Optional[DurationType] = None
+    message_timeout_ms: Optional[int] = None
     consumer_strategy: Optional[ConsumerStrategy] = None
 
     def to_protobuf(self, cls: Type[SettingsType]) -> SettingsType:
@@ -103,16 +94,10 @@ class SubscriptionSettings:
                     self.ConsumerStrategy.PINNED: 2,
                 }[self.consumer_strategy]
 
-        if self.checkpoint.type == self.DurationType.Type.MS:
-            settings.checkpoint_after_ms = self.checkpoint.value
-        elif self.checkpoint.type == self.DurationType.Type.TICKS:
-            settings.checkpoint_after_ticks = self.checkpoint.value
+        settings.checkpoint_after_ms = self.checkpoint_ms
 
-        if self.message_timeout:
-            if self.message_timeout.type == self.DurationType.Type.MS:
-                settings.message_timeout_ms = self.message_timeout.value
-            elif self.message_timeout.type == self.DurationType.Type.TICKS:
-                settings.message_timeout_ticks = self.message_timeout.value
+        if self.message_timeout_ms:
+            settings.message_timeout_ms = self.message_timeout_ms
 
         return settings
 
