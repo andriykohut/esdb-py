@@ -38,7 +38,7 @@
   * [x] read stream
   * [x] read all with filter (v21.10+)
   * [x] update
-  * [ ] delete
+  * [x] delete
   * [ ] list
   * [x] info
   * [ ] reply parked events
@@ -241,10 +241,7 @@ async def persistent():
                 live_buffer_size=10,
                 history_buffer_size=10,
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=10000,
             ),
         )
 
@@ -257,10 +254,7 @@ async def persistent():
                 live_buffer_size=100,
                 history_buffer_size=100,
                 max_retry_count=2,
-                checkpoint=SubscriptionSettings.DurationType(
-                    type=SubscriptionSettings.DurationType.Type.MS,
-                    value=10000,
-                ),
+                checkpoint_ms=20000,
             ),
         )
 
@@ -273,6 +267,14 @@ async def persistent():
                 await sub.ack([event])
             except Exception as err:
                 await sub.nack([event], NackAction.RETRY, reason=str(err))
+
+        # get subscription info
+        info = await conn.subscriptions.get_info(group, stream)
+        assert info.group_name == group
+
+        # delete subscription
+        await conn.subscriptions.delete(group, stream)
+
 
 
 asyncio.run(persistent())
