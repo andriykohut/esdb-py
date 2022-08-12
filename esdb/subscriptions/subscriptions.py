@@ -9,6 +9,8 @@ from esdb.generated.persistent_pb2 import (
     DeleteReq,
     GetInfoReq,
     GetInfoResp,
+    ListReq,
+    ListResp,
     ReadReq,
     ReadResp,
     UpdateReq,
@@ -72,6 +74,7 @@ class Subscription:
                 )
             )
         )
+        await self.send_queue.join()
 
     async def nack(self, events: list[Event], action: NackAction, reason: Optional[str] = None) -> None:
         assert self.subscription_id, "Nothing to nack, not reading from a subscription yet"
@@ -186,23 +189,19 @@ class PersistentSubscriptions:
             )
         )
         response: GetInfoResp = await self._stub.GetInfo(info_request)
-        info = response.subscription_info
-        return SubscriptionInfo(
-            group_name=info.group_name,
-            status=info.status,
-            start_from=info.start_from,
-            message_timeout_milliseconds=info.message_timeout_milliseconds,
-            extra_statistics=info.extra_statistics,
-            max_retry_count=info.max_retry_count,
-            live_buffer_size=info.live_buffer_size,
-            buffer_size=info.buffer_size,
-            read_batch_size=info.read_batch_size,
-            check_point_after_milliseconds=info.check_point_after_milliseconds,
-            min_check_point_count=info.min_check_point_count,
-            max_check_point_count=info.max_check_point_count,
-            consumer_strategy=info.named_consumer_strategy,
-            max_subscriber_count=info.max_subscriber_count,
+        return SubscriptionInfo.from_protobuf(response.subscription_info)
+
+    async def list(self, stream: Optional[str] = None) -> list[SubscriptionInfo]:
+        request = ListReq(
+            options=ListReq.Options(
+                list_all_subscriptions=Empty() if stream is None else None,
+                list_for_stream=None
+                if stream is None
+                else ListReq.StreamOption(stream=StreamIdentifier(stream_name=stream.encode())),
+            )
         )
+        response: ListResp = await self._stub.List(request)
+        return [SubscriptionInfo.from_protobuf(sub) for sub in response.subscriptions]
 
     async def delete(self, group_name: str, stream: Optional[str] = None) -> None:
         request = DeleteReq(

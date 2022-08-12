@@ -5,7 +5,9 @@ import json
 from dataclasses import dataclass
 from typing import Mapping, Optional, Type, TypeVar, Union
 
-from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp, UpdateReq
+from esdb.generated.persistent_pb2 import CreateReq, ReadReq, ReadResp
+from esdb.generated.persistent_pb2 import SubscriptionInfo as SubscriptionInfoPB
+from esdb.generated.persistent_pb2 import UpdateReq
 from esdb.streams.types import ContentType
 
 
@@ -111,9 +113,42 @@ class NackAction(enum.Enum):
 
 
 @dataclass
+class ConnectionInfo:
+    username: str
+    average_items_per_second: int
+    total_items: int
+    count_since_last_measurement: int
+    observed_measurements: dict[str, int]
+    available_slots: int
+    in_flight_messages: int
+    connection_name: str
+
+    @classmethod
+    def from_protobuf(cls, info: SubscriptionInfoPB.ConnectionInfo) -> ConnectionInfo:
+        return cls(
+            username=info.username,
+            average_items_per_second=info.average_items_per_second,
+            total_items=info.total_items,
+            count_since_last_measurement=info.count_since_last_measurement,
+            observed_measurements={m.key: m.value for m in info.observed_measurements},
+            available_slots=info.available_slots,
+            in_flight_messages=info.in_flight_messages,
+            connection_name=info.connection_name,
+        )
+
+
+@dataclass
 class SubscriptionInfo:
+    event_source: str
     group_name: str
     status: str
+    connections: list[ConnectionInfo]
+    average_per_second: int
+    total_items: int
+    count_since_last_measurement: int
+    last_checkpointed_event_position: str
+    last_known_event_position: str
+    resolve_link_tos: bool
     start_from: str
     message_timeout_milliseconds: int
     extra_statistics: bool
@@ -124,5 +159,44 @@ class SubscriptionInfo:
     check_point_after_milliseconds: int
     min_check_point_count: int
     max_check_point_count: int
+    read_buffer_count: int
+    live_buffer_count: int
+    retry_buffer_count: int
+    total_in_flight_messages: int
+    outstanding_messages_count: int
     consumer_strategy: str
     max_subscriber_count: int
+    parked_message_count: int
+
+    @classmethod
+    def from_protobuf(cls, info: SubscriptionInfoPB) -> SubscriptionInfo:
+        return cls(
+            event_source=info.event_source,
+            group_name=info.group_name,
+            status=info.status,
+            connections=[ConnectionInfo.from_protobuf(c) for c in info.connections],
+            start_from=info.start_from,
+            message_timeout_milliseconds=info.message_timeout_milliseconds,
+            extra_statistics=info.extra_statistics,
+            max_retry_count=info.max_retry_count,
+            live_buffer_size=info.live_buffer_size,
+            buffer_size=info.buffer_size,
+            read_batch_size=info.read_batch_size,
+            check_point_after_milliseconds=info.check_point_after_milliseconds,
+            min_check_point_count=info.min_check_point_count,
+            max_check_point_count=info.max_check_point_count,
+            consumer_strategy=info.named_consumer_strategy,
+            max_subscriber_count=info.max_subscriber_count,
+            average_per_second=info.average_per_second,
+            count_since_last_measurement=info.count_since_last_measurement,
+            last_checkpointed_event_position=info.last_checkpointed_event_position,
+            last_known_event_position=info.last_known_event_position,
+            live_buffer_count=info.live_buffer_count,
+            outstanding_messages_count=info.outstanding_messages_count,
+            parked_message_count=info.parked_message_count,
+            read_buffer_count=info.read_buffer_count,
+            resolve_link_tos=info.resolve_link_tos,
+            retry_buffer_count=info.retry_buffer_count,
+            total_in_flight_messages=info.total_in_flight_messages,
+            total_items=info.total_items,
+        )

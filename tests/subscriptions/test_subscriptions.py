@@ -130,6 +130,9 @@ async def test_multiple_consumers(client):
                 history_buffer_size=10,
                 consumer_strategy=SubscriptionSettings.ConsumerStrategy.ROUND_ROBIN,
                 checkpoint_ms=100000,
+                message_timeout_ms=10000,
+                max_checkpoint_count=1,
+                min_checkpoint_count=1,
             ),
         )
 
@@ -137,7 +140,7 @@ async def test_multiple_consumers(client):
 
     async def run_consumer(id: int):
         async with client.connect() as conn:
-            subscription = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=5)
+            subscription = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=1)
             async for event in subscription:
                 await subscription.ack([event])
                 await result_queue.put((id, event.data["i"]))
@@ -298,3 +301,36 @@ async def test_delete_all_subscription(client):
         with pytest.raises(grpc.aio._call.AioRpcError) as err:
             await conn.subscriptions.get_info(group_name)
         assert err.value.code() == grpc.StatusCode.NOT_FOUND
+
+
+@pytest.mark.asyncio
+async def test_list_subscription(client):
+    group1 = str(uuid.uuid4())
+    group2 = str(uuid.uuid4())
+    stream = str(uuid.uuid4())
+    settings = SubscriptionSettings(
+        read_batch_size=9,
+        live_buffer_size=10,
+        history_buffer_size=10,
+        max_subscriber_count=3,
+        checkpoint_ms=5000,
+    )
+    async with client.connect() as conn:
+        await conn.streams.append(stream, "evt_type", b"data")
+        await conn.subscriptions.create_stream_subscription(
+            group_name=group1,
+            stream=stream,
+            settings=settings,
+        )
+        await conn.subscriptions.create_all_subscription(
+            group_name=group2,
+            settings=settings,
+        )
+
+        subs = await conn.subscriptions.list()
+        groups = [sub.group_name for sub in subs]
+        assert group1 in groups
+        assert group2 in groups
+
+        [sub] = await conn.subscriptions.list(stream=stream)
+        assert sub.group_name == group1

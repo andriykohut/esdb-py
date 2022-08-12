@@ -39,7 +39,7 @@
   * [x] read all with filter (v21.10+)
   * [x] update
   * [x] delete
-  * [ ] list
+  * [x] list
   * [x] info
   * [ ] reply parked events
 * [ ] CRUD for projections
@@ -274,6 +274,11 @@ async def persistent():
 
         # delete subscription
         await conn.subscriptions.delete(group, stream)
+        
+        # list subscriptions
+        subs = await conn.subscriptions.list()
+        for sub in subs:
+            print(sub.total_items)
 
 
 
