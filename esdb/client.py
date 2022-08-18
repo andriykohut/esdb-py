@@ -46,6 +46,34 @@ class Connection:
     gossip: Gossip
 
 
+def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]:
+    preference_map = {
+        Preference.LEADER: [State.Leader],
+        Preference.FOLLOWER: [State.Follower],
+        Preference.READ_ONLY_REPLICA: [State.ReadOnlyLeaderless, State.PreReadOnlyReplica, State.ReadOnlyReplica],
+    }
+    preferred_states = preference_map[preference]
+
+    def _compare(a: Member, b: Member) -> int:
+        return (preferred_states.index(b.state) if b.state in preferred_states else -1) - (
+            preferred_states.index(a.state) if a.state in preferred_states else -1
+        )
+
+    members_ = members.copy()
+    random.shuffle(members_)
+
+    member: Optional[Member] = next(
+        (
+            m
+            for m in sorted(members_, key=cmp_to_key(_compare))
+            if m.is_alive and m.state in list(itertools.chain(*preference_map.values())) and m.endpoint
+        ),
+        None,
+    )
+    if not member or not member.endpoint:
+        return None
+    return member
+
 class ESClient:
     def __init__(
         self,
@@ -126,7 +154,7 @@ class ESClient:
                 async with self._create_channel(candidate) as chan:
                     gossip = Gossip(GossipStub(chan))
                     members = await gossip.get_members(self.gossip_timeout)
-                    if pick := self.pick_node(self.node_preference, members):
+                    if pick := pick_node(self.node_preference, members):
                         assert pick.endpoint
                         endpoint = f"{pick.endpoint.address}:{pick.endpoint.port}"
                         logger.info(
@@ -140,31 +168,3 @@ class ESClient:
             await asyncio.sleep(self.discovery_interval)
         raise DiscoveryError(f"Discovery failed after {self.discovery_attempts} attempt(s)")
 
-    @staticmethod
-    def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]:
-        preference_map = {
-            Preference.LEADER: [State.Leader],
-            Preference.FOLLOWER: [State.Follower],
-            Preference.READ_ONLY_REPLICA: [State.ReadOnlyLeaderless, State.PreReadOnlyReplica, State.ReadOnlyReplica],
-        }
-        preferred_states = preference_map[preference]
-
-        def _compare(a: Member, b: Member) -> int:
-            return (preferred_states.index(b.state) if b.state in preferred_states else -1) - (
-                preferred_states.index(a.state) if a.state in preferred_states else -1
-            )
-
-        members_ = members.copy()
-        random.shuffle(members_)
-
-        member: Optional[Member] = next(
-            (
-                m
-                for m in sorted(members_, key=cmp_to_key(_compare))
-                if m.is_alive and m.state in list(itertools.chain(*preference_map.values())) and m.endpoint
-            ),
-            None,
-        )
-        if not member or not member.endpoint:
-            return None
-        return member
