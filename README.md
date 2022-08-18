@@ -13,6 +13,7 @@
 * [Development](#development)
 * [Usage](#usage)
   * [Discovery and node preferences](#discovery-and-node-preferences)
+  * [Connection configuration](#connection-configuration)
   * [Append, Read, Catch-up subscriptions](#append-read-catch-up-subscriptions)
   * [Batch append](#batch-append)
   * [Catch-up subscription to all events with filtering](#catch-up-subscription-to-all-events-with-filtering)
@@ -92,17 +93,15 @@ client = ESClient(
 
 ```
 
-### Append, Read, Catch-up subscriptions
+### Connection configuration
 
 ```py
-import asyncio
-import datetime
-import uuid
-
 from esdb import ESClient
 
-# For insecure connection without basic auth:
-# client = ESClient("localhost:2113", insecure=True)
+# Connect without TLS
+client = ESClient("localhost:2113", insecure=True)
+
+# Secure connection with basic auth and keepalive
 with open("certs/ca/ca.crt", "rb") as fh:
     root_cert = fh.read()
 
@@ -114,12 +113,25 @@ client = ESClient(
     keepalive_time_ms=5000,
     keepalive_timeout_ms=10000,
 )
+```
 
+### Append, Read, Catch-up subscriptions
+
+```py
+import asyncio
+import datetime
+import uuid
+
+from esdb import ESClient
+
+
+client = ESClient("localhost:2113", insecure=True)
 stream = f"test-{str(uuid.uuid4())}"
 
 
 async def streams():
     async with client.connect() as conn:
+        # Appending to stream
         for i in range(10):
             append_result = await conn.streams.append(
                 stream=stream,
@@ -127,19 +139,19 @@ async def streams():
                 data={"i": i, "ts": datetime.datetime.utcnow().isoformat()},
             )
 
-        print("Forwards!")
+        # Read up to 10 events
         async for result in conn.streams.read(stream=stream, count=10):
             print(result.data)
 
-        print("Backwards!")
+        # Read up to 10 events, backwards
         async for result in conn.streams.read(stream=stream, count=10, backwards=True):
             print(result.data)
 
-        print("Forwards start from middle!")
+        # Read up to 10 events, starting from 5th event
         async for result in conn.streams.read(stream=stream, count=10, revision=5):
             print(result.data)
 
-        print("Backwards start from middle!")
+        # Read up to 10 events backwards, starting from 5th event
         async for result in conn.streams.read(stream=stream, count=10, backwards=True, revision=5):
             print(result.data)
 
@@ -162,6 +174,7 @@ from esdb.streams import Message
 
 
 async def batch_append():
+    # Append multiple events in as a single batch
     # Batch append is not supported on EventStore < v21.10
     stream = str(uuid.uuid4())
     messages: list[Message] = [
@@ -194,8 +207,10 @@ from esdb.shared import Filter
 
 async def filters():
     async with ESClient("localhost:2113", insecure=True).connect() as conn:
+        # Append 10 events with the same prefix to random streams
         for i in range(10):
             await conn.streams.append(stream=str(uuid.uuid4()), event_type=f"prefix-{i}", data=b"")
+        # subscribe to events from all streams, filtering by event type
         async for event in conn.streams.read_all(
                 subscribe=True,  # subscribe will wait for events, use count=<n> to read <n> events and stop
                 filter_by=Filter(
@@ -231,7 +246,7 @@ async def persistent():
         for i in range(50):
             await conn.streams.append(stream, "foobar", {"i": i})
 
-        # create a subscription
+        # create a stream subscription
         await conn.subscriptions.create_stream_subscription(
             stream=stream,
             group_name=group,
@@ -245,6 +260,7 @@ async def persistent():
             ),
         )
 
+        # create subscription to all events with filtering
         # Only supported on EventStore v21.10+
         await conn.subscriptions.create_all_subscription(
             group_name="subscription_group",
@@ -258,6 +274,7 @@ async def persistent():
             ),
         )
 
+    # read from a subscription
     async with client.connect() as conn:
         sub = conn.subscriptions.subscribe(stream=stream, group_name=group, buffer_size=5)
         async for event in sub:
@@ -279,7 +296,6 @@ async def persistent():
         subs = await conn.subscriptions.list()
         for sub in subs:
             print(sub.total_items)
-
 
 
 asyncio.run(persistent())
