@@ -74,6 +74,7 @@ def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]
         return None
     return member
 
+
 class ESClient:
     def __init__(
         self,
@@ -167,4 +168,3 @@ class ESClient:
 
             await asyncio.sleep(self.discovery_interval)
         raise DiscoveryError(f"Discovery failed after {self.discovery_attempts} attempt(s)")
-
