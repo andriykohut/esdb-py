@@ -128,7 +128,7 @@ def parse_connection_string(connection_string: str) -> dict:
             if len(val) != 1:
                 raise ValueError(f"Too many values for {key}")
             settings[key] = val[0]
-        config['settings'] = settings
+        config["settings"] = settings
 
     return config
 
