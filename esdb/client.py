@@ -7,6 +7,7 @@ import enum
 import itertools
 import logging
 import random
+import urllib.parse
 from dataclasses import dataclass
 from functools import cmp_to_key
 from typing import AsyncContextManager, Optional, Union
@@ -73,6 +74,63 @@ def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]
     if not member or not member.endpoint:
         return None
     return member
+
+
+def parse_endpoint(s: str) -> tuple[str, int]:
+    if ":" in s:
+        items = s.split(":")
+        if len(items) != 2:
+            raise ValueError("Too many colons in a host")
+        host, port_str = items
+        try:
+            port = int(port_str)
+        except ValueError:
+            raise ValueError(f"{port_str} port is not a number")
+        return host, port
+
+    return s, 2113
+
+
+def parse_connection_string(connection_string: str) -> dict:
+    "esdb://dwqdqw:2113,dwqdq:2113,dqwdwq:2113?keepAliveTimeout=10000&keepAliveInterval=10000"
+    config = {}
+    scheme, rest = connection_string.split("://")
+    if scheme not in ("esdb", "esdb+discover"):
+        raise ValueError("esdb:// or esdb+discover:// scheme is required")
+
+    config["dns_discover"] = scheme == "esdb+discover"
+
+    if "@" in rest:
+        user_info, rest = rest.split("@")
+        user_info_items = user_info.split(":")
+        if len(user_info) != 2:
+            raise ValueError("Invalid user credentials")
+        user, password = user_info_items
+        if not user:
+            raise ValueError("Username is required")
+        if not password:
+            raise ValueError("Password is required")
+        config.update({"user": user, "password": password})
+
+    hosts, *queries = rest.split("?")
+    endpoints = []
+    for host in hosts.split(","):
+        endpoints.append(parse_endpoint(host))
+    if len(endpoints) == 1:
+        config["address"] = endpoints[0]
+    else:
+        config["gossip_seed"] = endpoints
+
+    if queries:
+        [settings_query] = queries
+        settings = {}
+        for key, val in urllib.parse.parse_qs(settings_query, strict_parsing=True).items():
+            if len(val) != 1:
+                raise ValueError(f"Too many values for {key}")
+            settings[key] = val[0]
+        config['settings'] = settings
+
+    return config
 
 
 class ESClient:
