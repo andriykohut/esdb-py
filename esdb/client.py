@@ -30,12 +30,39 @@ class Preference(enum.Enum):
     FOLLOWER = enum.auto()
     READ_ONLY_REPLICA = enum.auto()
 
+    @classmethod
+    def from_string(cls, s: str) -> Connection:
+        return {
+            "follower": cls.FOLLOWER,
+            "leader": cls.LEADER,
+            "readonlyreplica": cls.READ_ONLY_REPLICA,
+        }[s.lower()]
+
+
+@dataclass
+class Configuration:
+    address: Optional[Member.Endpoint] = None
+    gossip_seed: Optional[list[Member.Endpoint]] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    disable_tls: bool = False
+    node_preference: Preference = Preference.LEADER
+    verify_cert: bool = True
+    root_cert: Optional[bytes] = None
+    max_discovery_attempts: int = 10
+    discovery_interval: int = 100
+    gossip_timeout: int = 5
+    dns_discover: bool = False
+    keep_alive_interval: int = 10
+    keep_alive_timeout: int = 10
+    default_deadline: int = 10
+
 
 class BasicAuthPlugin(grpc.AuthMetadataPlugin):
     def __init__(self, user: str, password: str) -> None:
         self.__auth = base64.b64encode(f"{user}:{password}".encode())
 
-    def __call__(self, context: grpc.AuthMetadataContext, callback: grpc.AuthMetadataPluginCallback) -> None:
+    def __call__(self, _: grpc.AuthMetadataContext, callback: grpc.AuthMetadataPluginCallback) -> None:
         callback((("authorization", b"Basic " + self.__auth),), None)
 
 
@@ -76,7 +103,7 @@ def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]
     return member
 
 
-def parse_endpoint(s: str) -> tuple[str, int]:
+def parse_endpoint(s: str) -> Member.Endpoint:
     if ":" in s:
         items = s.split(":")
         if len(items) != 2:
@@ -86,19 +113,52 @@ def parse_endpoint(s: str) -> tuple[str, int]:
             port = int(port_str)
         except ValueError:
             raise ValueError(f"{port_str} port is not a number")
-        return host, port
+        return Member.Endpoint(host, port)
 
-    return s, 2113
+    return Member.Endpoint(host, 2113)
 
 
-def parse_connection_string(connection_string: str) -> dict:
-    "esdb://dwqdqw:2113,dwqdq:2113,dqwdwq:2113?keepAliveTimeout=10000&keepAliveInterval=10000"
-    config = {}
+def parse_settings(query: str, c: Configuration) -> None:
+    def _str_to_bool(s: str) -> bool:
+        return {"true": True, "false": False}[s.lower()]
+
+    for k, v in urllib.parse.parse_qs(query, strict_parsing=True).items():
+        if len(v) != 1:
+            raise ValueError("Too many values for {k}")
+        key = k.lower()
+        [val] = v
+        if key == "discoveryinterval":
+            c.discovery_interval = int(val)
+        elif key == "gossiptimeout":
+            c.gossip_timeout = int(val)
+        elif key == "maxdiscoverattempts":
+            c.max_discovery_attempts = int(val)
+        elif key == "nodepreference":
+            c.node_preference = Preference.from_string(val)
+        elif key == "keepaliveinterval":
+            c.keep_alive_interval = int(val)
+        elif key == "keepalivetimeout":
+            c.keep_alive_timeout = int(val)
+        elif key == "tls":
+            c.disable_tls = _str_to_bool(val)
+        elif key == "tlscafile":
+            with open(val, "rb") as fh:
+                c.root_cert = fh.read()
+        elif key == "tlsverifycert":
+            c.verify_cert = _str_to_bool(val)
+        elif key == "defaultdeadline":
+            c.default_deadline = int(val)
+        else:
+            raise ValueError(f"Invalid option {k}")
+
+
+def parse_connection_string(connection_string: str) -> Configuration:
+    config = Configuration()
     scheme, rest = connection_string.split("://")
     if scheme not in ("esdb", "esdb+discover"):
         raise ValueError("esdb:// or esdb+discover:// scheme is required")
 
-    config["dns_discover"] = scheme == "esdb+discover"
+    config.dns_discover = scheme == "esdb+discover"
 
     if "@" in rest:
         user_info, rest = rest.split("@")
@@ -110,25 +170,20 @@ def parse_connection_string(connection_string: str) -> dict:
             raise ValueError("Username is required")
         if not password:
             raise ValueError("Password is required")
-        config.update({"user": user, "password": password})
+        config.user, config.password = user, password
 
     hosts, *queries = rest.split("?")
     endpoints = []
     for host in hosts.split(","):
         endpoints.append(parse_endpoint(host))
     if len(endpoints) == 1:
-        config["address"] = endpoints[0]
+        config.address = endpoints[0]
     else:
-        config["gossip_seed"] = endpoints
+        config.gossip_seed = endpoints
 
     if queries:
         [settings_query] = queries
-        settings = {}
-        for key, val in urllib.parse.parse_qs(settings_query, strict_parsing=True).items():
-            if len(val) != 1:
-                raise ValueError(f"Too many values for {key}")
-            settings[key] = val[0]
-        config["settings"] = settings
+        parse_settings(settings_query, config)
 
     return config
 
