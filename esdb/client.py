@@ -115,7 +115,7 @@ def parse_endpoint(s: str) -> Member.Endpoint:
             raise ValueError(f"{port_str} port is not a number")
         return Member.Endpoint(host, port)
 
-    return Member.Endpoint(host, 2113)
+    return Member.Endpoint(s, 2113)
 
 
 def parse_settings(query: str, c: Configuration) -> None:
