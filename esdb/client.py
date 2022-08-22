@@ -31,7 +31,7 @@ class Preference(enum.Enum):
     READ_ONLY_REPLICA = enum.auto()
 
     @classmethod
-    def from_string(cls, s: str) -> Connection:
+    def from_string(cls, s: str) -> Preference:
         return {
             "follower": cls.FOLLOWER,
             "leader": cls.LEADER,
@@ -170,7 +170,7 @@ def parse_connection_string(connection_string: str) -> Configuration:
             raise ValueError("Username is required")
         if not password:
             raise ValueError("Password is required")
-        config.user, config.password = user, password
+        config.username, config.password = user, password
 
     hosts, *queries = rest.split("?")
     endpoints = []

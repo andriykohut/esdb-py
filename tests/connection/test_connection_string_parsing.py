@@ -1,8 +1,6 @@
-from re import M
-
 import pytest
 
-from esdb.client import Configuration, Member, Preference, parse_connection_string
+from esdb.client import Configuration, Member, parse_connection_string
 
 
 @pytest.mark.parametrize(
