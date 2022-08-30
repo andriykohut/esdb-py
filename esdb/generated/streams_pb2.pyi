@@ -3,6 +3,7 @@
 isort:skip_file
 """
 import builtins
+import collections.abc
 import google.protobuf.descriptor
 import google.protobuf.duration_pb2
 import google.protobuf.empty_pb2
@@ -12,30 +13,38 @@ import google.protobuf.message
 import google.protobuf.timestamp_pb2
 import shared_pb2
 import status_pb2
+import sys
 import typing
-import typing_extensions
+
+if sys.version_info >= (3, 10):
+    import typing as typing_extensions
+else:
+    import typing_extensions
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class ReadReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         class _ReadDirection:
-            ValueType = typing.NewType('ValueType', builtins.int)
+            ValueType = typing.NewType("ValueType", builtins.int)
             V: typing_extensions.TypeAlias = ValueType
-        class _ReadDirectionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Options._ReadDirection.ValueType], builtins.type):
+
+        class _ReadDirectionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Options._ReadDirection.ValueType], builtins.type):  # noqa: F821
             DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             Forwards: ReadReq.Options._ReadDirection.ValueType  # 0
             Backwards: ReadReq.Options._ReadDirection.ValueType  # 1
-        class ReadDirection(_ReadDirection, metaclass=_ReadDirectionEnumTypeWrapper):
-            pass
 
+        class ReadDirection(_ReadDirection, metaclass=_ReadDirectionEnumTypeWrapper): ...
         Forwards: ReadReq.Options.ReadDirection.ValueType  # 0
         Backwards: ReadReq.Options.ReadDirection.ValueType  # 1
 
         class StreamOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
             REVISION_FIELD_NUMBER: builtins.int
             START_FIELD_NUMBER: builtins.int
@@ -47,19 +56,21 @@ class ReadReq(google.protobuf.message.Message):
             def start(self) -> shared_pb2.Empty: ...
             @property
             def end(self) -> shared_pb2.Empty: ...
-            def __init__(self,
+            def __init__(
+                self,
                 *,
-                stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+                stream_identifier: shared_pb2.StreamIdentifier | None = ...,
                 revision: builtins.int = ...,
-                start: typing.Optional[shared_pb2.Empty] = ...,
-                end: typing.Optional[shared_pb2.Empty] = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["end",b"end","revision",b"revision","revision_option",b"revision_option","start",b"start","stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["end",b"end","revision",b"revision","revision_option",b"revision_option","start",b"start","stream_identifier",b"stream_identifier"]) -> None: ...
-            def WhichOneof(self, oneof_group: typing_extensions.Literal["revision_option",b"revision_option"]) -> typing.Optional[typing_extensions.Literal["revision","start","end"]]: ...
+                start: shared_pb2.Empty | None = ...,
+                end: shared_pb2.Empty | None = ...,
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["end", b"end", "revision", b"revision", "revision_option", b"revision_option", "start", b"start", "stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["end", b"end", "revision", b"revision", "revision_option", b"revision_option", "start", b"start", "stream_identifier", b"stream_identifier"]) -> None: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["revision_option", b"revision_option"]) -> typing_extensions.Literal["revision", "start", "end"] | None: ...
 
         class AllOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             POSITION_FIELD_NUMBER: builtins.int
             START_FIELD_NUMBER: builtins.int
             END_FIELD_NUMBER: builtins.int
@@ -69,49 +80,57 @@ class ReadReq(google.protobuf.message.Message):
             def start(self) -> shared_pb2.Empty: ...
             @property
             def end(self) -> shared_pb2.Empty: ...
-            def __init__(self,
+            def __init__(
+                self,
                 *,
-                position: typing.Optional[global___ReadReq.Options.Position] = ...,
-                start: typing.Optional[shared_pb2.Empty] = ...,
-                end: typing.Optional[shared_pb2.Empty] = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["all_option",b"all_option","end",b"end","position",b"position","start",b"start"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["all_option",b"all_option","end",b"end","position",b"position","start",b"start"]) -> None: ...
-            def WhichOneof(self, oneof_group: typing_extensions.Literal["all_option",b"all_option"]) -> typing.Optional[typing_extensions.Literal["position","start","end"]]: ...
+                position: global___ReadReq.Options.Position | None = ...,
+                start: shared_pb2.Empty | None = ...,
+                end: shared_pb2.Empty | None = ...,
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["all_option", b"all_option", "end", b"end", "position", b"position", "start", b"start"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["all_option", b"all_option", "end", b"end", "position", b"position", "start", b"start"]) -> None: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["all_option", b"all_option"]) -> typing_extensions.Literal["position", "start", "end"] | None: ...
 
         class SubscriptionOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
-            def __init__(self,
-                ) -> None: ...
+
+            def __init__(
+                self,
+            ) -> None: ...
 
         class Position(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             COMMIT_POSITION_FIELD_NUMBER: builtins.int
             PREPARE_POSITION_FIELD_NUMBER: builtins.int
             commit_position: builtins.int
             prepare_position: builtins.int
-            def __init__(self,
+            def __init__(
+                self,
                 *,
                 commit_position: builtins.int = ...,
                 prepare_position: builtins.int = ...,
-                ) -> None: ...
-            def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","prepare_position",b"prepare_position"]) -> None: ...
+            ) -> None: ...
+            def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
         class FilterOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             class Expression(google.protobuf.message.Message):
                 DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
                 REGEX_FIELD_NUMBER: builtins.int
                 PREFIX_FIELD_NUMBER: builtins.int
-                regex: typing.Text
+                regex: builtins.str
                 @property
-                def prefix(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
-                def __init__(self,
+                def prefix(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.str]: ...
+                def __init__(
+                    self,
                     *,
-                    regex: typing.Text = ...,
-                    prefix: typing.Optional[typing.Iterable[typing.Text]] = ...,
-                    ) -> None: ...
-                def ClearField(self, field_name: typing_extensions.Literal["prefix",b"prefix","regex",b"regex"]) -> None: ...
+                    regex: builtins.str = ...,
+                    prefix: collections.abc.Iterable[builtins.str] | None = ...,
+                ) -> None: ...
+                def ClearField(self, field_name: typing_extensions.Literal["prefix", b"prefix", "regex", b"regex"]) -> None: ...
 
             STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
             EVENT_TYPE_FIELD_NUMBER: builtins.int
@@ -126,47 +145,52 @@ class ReadReq(google.protobuf.message.Message):
             @property
             def count(self) -> shared_pb2.Empty: ...
             checkpointIntervalMultiplier: builtins.int
-            def __init__(self,
+            def __init__(
+                self,
                 *,
-                stream_identifier: typing.Optional[global___ReadReq.Options.FilterOptions.Expression] = ...,
-                event_type: typing.Optional[global___ReadReq.Options.FilterOptions.Expression] = ...,
+                stream_identifier: global___ReadReq.Options.FilterOptions.Expression | None = ...,
+                event_type: global___ReadReq.Options.FilterOptions.Expression | None = ...,
                 max: builtins.int = ...,
-                count: typing.Optional[shared_pb2.Empty] = ...,
+                count: shared_pb2.Empty | None = ...,
                 checkpointIntervalMultiplier: builtins.int = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["count",b"count","event_type",b"event_type","filter",b"filter","max",b"max","stream_identifier",b"stream_identifier","window",b"window"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["checkpointIntervalMultiplier",b"checkpointIntervalMultiplier","count",b"count","event_type",b"event_type","filter",b"filter","max",b"max","stream_identifier",b"stream_identifier","window",b"window"]) -> None: ...
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["count", b"count", "event_type", b"event_type", "filter", b"filter", "max", b"max", "stream_identifier", b"stream_identifier", "window", b"window"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["checkpointIntervalMultiplier", b"checkpointIntervalMultiplier", "count", b"count", "event_type", b"event_type", "filter", b"filter", "max", b"max", "stream_identifier", b"stream_identifier", "window", b"window"]) -> None: ...
             @typing.overload
-            def WhichOneof(self, oneof_group: typing_extensions.Literal["filter",b"filter"]) -> typing.Optional[typing_extensions.Literal["stream_identifier","event_type"]]: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["filter", b"filter"]) -> typing_extensions.Literal["stream_identifier", "event_type"] | None: ...
             @typing.overload
-            def WhichOneof(self, oneof_group: typing_extensions.Literal["window",b"window"]) -> typing.Optional[typing_extensions.Literal["max","count"]]: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["window", b"window"]) -> typing_extensions.Literal["max", "count"] | None: ...
 
         class UUIDOption(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             STRUCTURED_FIELD_NUMBER: builtins.int
             STRING_FIELD_NUMBER: builtins.int
             @property
             def structured(self) -> shared_pb2.Empty: ...
             @property
             def string(self) -> shared_pb2.Empty: ...
-            def __init__(self,
+            def __init__(
+                self,
                 *,
-                structured: typing.Optional[shared_pb2.Empty] = ...,
-                string: typing.Optional[shared_pb2.Empty] = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["content",b"content","string",b"string","structured",b"structured"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["content",b"content","string",b"string","structured",b"structured"]) -> None: ...
-            def WhichOneof(self, oneof_group: typing_extensions.Literal["content",b"content"]) -> typing.Optional[typing_extensions.Literal["structured","string"]]: ...
+                structured: shared_pb2.Empty | None = ...,
+                string: shared_pb2.Empty | None = ...,
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["content", b"content", "string", b"string", "structured", b"structured"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["content", b"content", "string", b"string", "structured", b"structured"]) -> None: ...
+            def WhichOneof(self, oneof_group: typing_extensions.Literal["content", b"content"]) -> typing_extensions.Literal["structured", "string"] | None: ...
 
         class ControlOption(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             COMPATIBILITY_FIELD_NUMBER: builtins.int
             compatibility: builtins.int
-            def __init__(self,
+            def __init__(
+                self,
                 *,
                 compatibility: builtins.int = ...,
-                ) -> None: ...
-            def ClearField(self, field_name: typing_extensions.Literal["compatibility",b"compatibility"]) -> None: ...
+            ) -> None: ...
+            def ClearField(self, field_name: typing_extensions.Literal["compatibility", b"compatibility"]) -> None: ...
 
         STREAM_FIELD_NUMBER: builtins.int
         ALL_FIELD_NUMBER: builtins.int
@@ -195,57 +219,65 @@ class ReadReq(google.protobuf.message.Message):
         def uuid_option(self) -> global___ReadReq.Options.UUIDOption: ...
         @property
         def control_option(self) -> global___ReadReq.Options.ControlOption: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream: typing.Optional[global___ReadReq.Options.StreamOptions] = ...,
-            all: typing.Optional[global___ReadReq.Options.AllOptions] = ...,
+            stream: global___ReadReq.Options.StreamOptions | None = ...,
+            all: global___ReadReq.Options.AllOptions | None = ...,
             read_direction: global___ReadReq.Options.ReadDirection.ValueType = ...,
             resolve_links: builtins.bool = ...,
             count: builtins.int = ...,
-            subscription: typing.Optional[global___ReadReq.Options.SubscriptionOptions] = ...,
-            filter: typing.Optional[global___ReadReq.Options.FilterOptions] = ...,
-            no_filter: typing.Optional[shared_pb2.Empty] = ...,
-            uuid_option: typing.Optional[global___ReadReq.Options.UUIDOption] = ...,
-            control_option: typing.Optional[global___ReadReq.Options.ControlOption] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["all",b"all","control_option",b"control_option","count",b"count","count_option",b"count_option","filter",b"filter","filter_option",b"filter_option","no_filter",b"no_filter","stream",b"stream","stream_option",b"stream_option","subscription",b"subscription","uuid_option",b"uuid_option"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["all",b"all","control_option",b"control_option","count",b"count","count_option",b"count_option","filter",b"filter","filter_option",b"filter_option","no_filter",b"no_filter","read_direction",b"read_direction","resolve_links",b"resolve_links","stream",b"stream","stream_option",b"stream_option","subscription",b"subscription","uuid_option",b"uuid_option"]) -> None: ...
+            subscription: global___ReadReq.Options.SubscriptionOptions | None = ...,
+            filter: global___ReadReq.Options.FilterOptions | None = ...,
+            no_filter: shared_pb2.Empty | None = ...,
+            uuid_option: global___ReadReq.Options.UUIDOption | None = ...,
+            control_option: global___ReadReq.Options.ControlOption | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["all", b"all", "control_option", b"control_option", "count", b"count", "count_option", b"count_option", "filter", b"filter", "filter_option", b"filter_option", "no_filter", b"no_filter", "stream", b"stream", "stream_option", b"stream_option", "subscription", b"subscription", "uuid_option", b"uuid_option"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["all", b"all", "control_option", b"control_option", "count", b"count", "count_option", b"count_option", "filter", b"filter", "filter_option", b"filter_option", "no_filter", b"no_filter", "read_direction", b"read_direction", "resolve_links", b"resolve_links", "stream", b"stream", "stream_option", b"stream_option", "subscription", b"subscription", "uuid_option", b"uuid_option"]) -> None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["count_option",b"count_option"]) -> typing.Optional[typing_extensions.Literal["count","subscription"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["count_option", b"count_option"]) -> typing_extensions.Literal["count", "subscription"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["filter_option",b"filter_option"]) -> typing.Optional[typing_extensions.Literal["filter","no_filter"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["filter_option", b"filter_option"]) -> typing_extensions.Literal["filter", "no_filter"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["stream_option",b"stream_option"]) -> typing.Optional[typing_extensions.Literal["stream","all"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["stream_option", b"stream_option"]) -> typing_extensions.Literal["stream", "all"] | None: ...
 
     OPTIONS_FIELD_NUMBER: builtins.int
     @property
     def options(self) -> global___ReadReq.Options: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        options: typing.Optional[global___ReadReq.Options] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["options",b"options"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["options",b"options"]) -> None: ...
+        options: global___ReadReq.Options | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["options", b"options"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["options", b"options"]) -> None: ...
+
 global___ReadReq = ReadReq
 
 class ReadResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class ReadEvent(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         class RecordedEvent(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             class MetadataEntry(google.protobuf.message.Message):
                 DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
                 KEY_FIELD_NUMBER: builtins.int
                 VALUE_FIELD_NUMBER: builtins.int
-                key: typing.Text
-                value: typing.Text
-                def __init__(self,
+                key: builtins.str
+                value: builtins.str
+                def __init__(
+                    self,
                     *,
-                    key: typing.Text = ...,
-                    value: typing.Text = ...,
-                    ) -> None: ...
-                def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+                    key: builtins.str = ...,
+                    value: builtins.str = ...,
+                ) -> None: ...
+                def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
             ID_FIELD_NUMBER: builtins.int
             STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
@@ -263,22 +295,23 @@ class ReadResp(google.protobuf.message.Message):
             prepare_position: builtins.int
             commit_position: builtins.int
             @property
-            def metadata(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
+            def metadata(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]: ...
             custom_metadata: builtins.bytes
             data: builtins.bytes
-            def __init__(self,
+            def __init__(
+                self,
                 *,
-                id: typing.Optional[shared_pb2.UUID] = ...,
-                stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+                id: shared_pb2.UUID | None = ...,
+                stream_identifier: shared_pb2.StreamIdentifier | None = ...,
                 stream_revision: builtins.int = ...,
                 prepare_position: builtins.int = ...,
                 commit_position: builtins.int = ...,
-                metadata: typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
+                metadata: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
                 custom_metadata: builtins.bytes = ...,
                 data: builtins.bytes = ...,
-                ) -> None: ...
-            def HasField(self, field_name: typing_extensions.Literal["id",b"id","stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-            def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","custom_metadata",b"custom_metadata","data",b"data","id",b"id","metadata",b"metadata","prepare_position",b"prepare_position","stream_identifier",b"stream_identifier","stream_revision",b"stream_revision"]) -> None: ...
+            ) -> None: ...
+            def HasField(self, field_name: typing_extensions.Literal["id", b"id", "stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+            def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "custom_metadata", b"custom_metadata", "data", b"data", "id", b"id", "metadata", b"metadata", "prepare_position", b"prepare_position", "stream_identifier", b"stream_identifier", "stream_revision", b"stream_revision"]) -> None: ...
 
         EVENT_FIELD_NUMBER: builtins.int
         LINK_FIELD_NUMBER: builtins.int
@@ -291,51 +324,58 @@ class ReadResp(google.protobuf.message.Message):
         commit_position: builtins.int
         @property
         def no_position(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            event: typing.Optional[global___ReadResp.ReadEvent.RecordedEvent] = ...,
-            link: typing.Optional[global___ReadResp.ReadEvent.RecordedEvent] = ...,
+            event: global___ReadResp.ReadEvent.RecordedEvent | None = ...,
+            link: global___ReadResp.ReadEvent.RecordedEvent | None = ...,
             commit_position: builtins.int = ...,
-            no_position: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","event",b"event","link",b"link","no_position",b"no_position","position",b"position"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","event",b"event","link",b"link","no_position",b"no_position","position",b"position"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["position",b"position"]) -> typing.Optional[typing_extensions.Literal["commit_position","no_position"]]: ...
+            no_position: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "event", b"event", "link", b"link", "no_position", b"no_position", "position", b"position"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "event", b"event", "link", b"link", "no_position", b"no_position", "position", b"position"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["position", b"position"]) -> typing_extensions.Literal["commit_position", "no_position"] | None: ...
 
     class SubscriptionConfirmation(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
-        subscription_id: typing.Text
-        def __init__(self,
+        subscription_id: builtins.str
+        def __init__(
+            self,
             *,
-            subscription_id: typing.Text = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["subscription_id",b"subscription_id"]) -> None: ...
+            subscription_id: builtins.str = ...,
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["subscription_id", b"subscription_id"]) -> None: ...
 
     class Checkpoint(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         COMMIT_POSITION_FIELD_NUMBER: builtins.int
         PREPARE_POSITION_FIELD_NUMBER: builtins.int
         commit_position: builtins.int
         prepare_position: builtins.int
-        def __init__(self,
+        def __init__(
+            self,
             *,
             commit_position: builtins.int = ...,
             prepare_position: builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","prepare_position",b"prepare_position"]) -> None: ...
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
     class StreamNotFound(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
         @property
         def stream_identifier(self) -> shared_pb2.StreamIdentifier: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["stream_identifier",b"stream_identifier"]) -> None: ...
+            stream_identifier: shared_pb2.StreamIdentifier | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["stream_identifier", b"stream_identifier"]) -> None: ...
 
     EVENT_FIELD_NUMBER: builtins.int
     CONFIRMATION_FIELD_NUMBER: builtins.int
@@ -356,25 +396,29 @@ class ReadResp(google.protobuf.message.Message):
     last_stream_position: builtins.int
     @property
     def last_all_stream_position(self) -> shared_pb2.AllStreamPosition: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        event: typing.Optional[global___ReadResp.ReadEvent] = ...,
-        confirmation: typing.Optional[global___ReadResp.SubscriptionConfirmation] = ...,
-        checkpoint: typing.Optional[global___ReadResp.Checkpoint] = ...,
-        stream_not_found: typing.Optional[global___ReadResp.StreamNotFound] = ...,
+        event: global___ReadResp.ReadEvent | None = ...,
+        confirmation: global___ReadResp.SubscriptionConfirmation | None = ...,
+        checkpoint: global___ReadResp.Checkpoint | None = ...,
+        stream_not_found: global___ReadResp.StreamNotFound | None = ...,
         first_stream_position: builtins.int = ...,
         last_stream_position: builtins.int = ...,
-        last_all_stream_position: typing.Optional[shared_pb2.AllStreamPosition] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["checkpoint",b"checkpoint","confirmation",b"confirmation","content",b"content","event",b"event","first_stream_position",b"first_stream_position","last_all_stream_position",b"last_all_stream_position","last_stream_position",b"last_stream_position","stream_not_found",b"stream_not_found"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["checkpoint",b"checkpoint","confirmation",b"confirmation","content",b"content","event",b"event","first_stream_position",b"first_stream_position","last_all_stream_position",b"last_all_stream_position","last_stream_position",b"last_stream_position","stream_not_found",b"stream_not_found"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["content",b"content"]) -> typing.Optional[typing_extensions.Literal["event","confirmation","checkpoint","stream_not_found","first_stream_position","last_stream_position","last_all_stream_position"]]: ...
+        last_all_stream_position: shared_pb2.AllStreamPosition | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["checkpoint", b"checkpoint", "confirmation", b"confirmation", "content", b"content", "event", b"event", "first_stream_position", b"first_stream_position", "last_all_stream_position", b"last_all_stream_position", "last_stream_position", b"last_stream_position", "stream_not_found", b"stream_not_found"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["checkpoint", b"checkpoint", "confirmation", b"confirmation", "content", b"content", "event", b"event", "first_stream_position", b"first_stream_position", "last_all_stream_position", b"last_all_stream_position", "last_stream_position", b"last_stream_position", "stream_not_found", b"stream_not_found"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["content", b"content"]) -> typing_extensions.Literal["event", "confirmation", "checkpoint", "stream_not_found", "first_stream_position", "last_stream_position", "last_all_stream_position"] | None: ...
+
 global___ReadResp = ReadResp
 
 class AppendReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
         REVISION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
@@ -389,32 +433,36 @@ class AppendReq(google.protobuf.message.Message):
         def any(self) -> shared_pb2.Empty: ...
         @property
         def stream_exists(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+            stream_identifier: shared_pb2.StreamIdentifier | None = ...,
             revision: builtins.int = ...,
-            no_stream: typing.Optional[shared_pb2.Empty] = ...,
-            any: typing.Optional[shared_pb2.Empty] = ...,
-            stream_exists: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision",b"expected_stream_revision"]) -> typing.Optional[typing_extensions.Literal["revision","no_stream","any","stream_exists"]]: ...
+            no_stream: shared_pb2.Empty | None = ...,
+            any: shared_pb2.Empty | None = ...,
+            stream_exists: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision", b"expected_stream_revision"]) -> typing_extensions.Literal["revision", "no_stream", "any", "stream_exists"] | None: ...
 
     class ProposedMessage(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         class MetadataEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
-            key: typing.Text
-            value: typing.Text
-            def __init__(self,
+            key: builtins.str
+            value: builtins.str
+            def __init__(
+                self,
                 *,
-                key: typing.Text = ...,
-                value: typing.Text = ...,
-                ) -> None: ...
-            def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+                key: builtins.str = ...,
+                value: builtins.str = ...,
+            ) -> None: ...
+            def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
         ID_FIELD_NUMBER: builtins.int
         METADATA_FIELD_NUMBER: builtins.int
@@ -423,18 +471,19 @@ class AppendReq(google.protobuf.message.Message):
         @property
         def id(self) -> shared_pb2.UUID: ...
         @property
-        def metadata(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
+        def metadata(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]: ...
         custom_metadata: builtins.bytes
         data: builtins.bytes
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            id: typing.Optional[shared_pb2.UUID] = ...,
-            metadata: typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
+            id: shared_pb2.UUID | None = ...,
+            metadata: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
             custom_metadata: builtins.bytes = ...,
             data: builtins.bytes = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["id",b"id"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["custom_metadata",b"custom_metadata","data",b"data","id",b"id","metadata",b"metadata"]) -> None: ...
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["id", b"id"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["custom_metadata", b"custom_metadata", "data", b"data", "id", b"id", "metadata", b"metadata"]) -> None: ...
 
     OPTIONS_FIELD_NUMBER: builtins.int
     PROPOSED_MESSAGE_FIELD_NUMBER: builtins.int
@@ -442,33 +491,39 @@ class AppendReq(google.protobuf.message.Message):
     def options(self) -> global___AppendReq.Options: ...
     @property
     def proposed_message(self) -> global___AppendReq.ProposedMessage: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        options: typing.Optional[global___AppendReq.Options] = ...,
-        proposed_message: typing.Optional[global___AppendReq.ProposedMessage] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["content",b"content","options",b"options","proposed_message",b"proposed_message"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["content",b"content","options",b"options","proposed_message",b"proposed_message"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["content",b"content"]) -> typing.Optional[typing_extensions.Literal["options","proposed_message"]]: ...
+        options: global___AppendReq.Options | None = ...,
+        proposed_message: global___AppendReq.ProposedMessage | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["content", b"content", "options", b"options", "proposed_message", b"proposed_message"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["content", b"content", "options", b"options", "proposed_message", b"proposed_message"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["content", b"content"]) -> typing_extensions.Literal["options", "proposed_message"] | None: ...
+
 global___AppendReq = AppendReq
 
 class AppendResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         COMMIT_POSITION_FIELD_NUMBER: builtins.int
         PREPARE_POSITION_FIELD_NUMBER: builtins.int
         commit_position: builtins.int
         prepare_position: builtins.int
-        def __init__(self,
+        def __init__(
+            self,
             *,
             commit_position: builtins.int = ...,
             prepare_position: builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","prepare_position",b"prepare_position"]) -> None: ...
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
     class Success(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         CURRENT_REVISION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
         POSITION_FIELD_NUMBER: builtins.int
@@ -480,22 +535,24 @@ class AppendResp(google.protobuf.message.Message):
         def position(self) -> global___AppendResp.Position: ...
         @property
         def no_position(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
             current_revision: builtins.int = ...,
-            no_stream: typing.Optional[shared_pb2.Empty] = ...,
-            position: typing.Optional[global___AppendResp.Position] = ...,
-            no_position: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["current_revision",b"current_revision","current_revision_option",b"current_revision_option","no_position",b"no_position","no_stream",b"no_stream","position",b"position","position_option",b"position_option"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["current_revision",b"current_revision","current_revision_option",b"current_revision_option","no_position",b"no_position","no_stream",b"no_stream","position",b"position","position_option",b"position_option"]) -> None: ...
+            no_stream: shared_pb2.Empty | None = ...,
+            position: global___AppendResp.Position | None = ...,
+            no_position: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["current_revision", b"current_revision", "current_revision_option", b"current_revision_option", "no_position", b"no_position", "no_stream", b"no_stream", "position", b"position", "position_option", b"position_option"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["current_revision", b"current_revision", "current_revision_option", b"current_revision_option", "no_position", b"no_position", "no_stream", b"no_stream", "position", b"position", "position_option", b"position_option"]) -> None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option",b"current_revision_option"]) -> typing.Optional[typing_extensions.Literal["current_revision","no_stream"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option", b"current_revision_option"]) -> typing_extensions.Literal["current_revision", "no_stream"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option",b"position_option"]) -> typing.Optional[typing_extensions.Literal["position","no_position"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option", b"position_option"]) -> typing_extensions.Literal["position", "no_position"] | None: ...
 
     class WrongExpectedVersion(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         CURRENT_REVISION_20_6_0_FIELD_NUMBER: builtins.int
         NO_STREAM_20_6_0_FIELD_NUMBER: builtins.int
         EXPECTED_REVISION_20_6_0_FIELD_NUMBER: builtins.int
@@ -525,30 +582,31 @@ class AppendResp(google.protobuf.message.Message):
         def expected_stream_exists(self) -> shared_pb2.Empty: ...
         @property
         def expected_no_stream(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
             current_revision_20_6_0: builtins.int = ...,
-            no_stream_20_6_0: typing.Optional[shared_pb2.Empty] = ...,
+            no_stream_20_6_0: shared_pb2.Empty | None = ...,
             expected_revision_20_6_0: builtins.int = ...,
-            any_20_6_0: typing.Optional[shared_pb2.Empty] = ...,
-            stream_exists_20_6_0: typing.Optional[shared_pb2.Empty] = ...,
+            any_20_6_0: shared_pb2.Empty | None = ...,
+            stream_exists_20_6_0: shared_pb2.Empty | None = ...,
             current_revision: builtins.int = ...,
-            current_no_stream: typing.Optional[shared_pb2.Empty] = ...,
+            current_no_stream: shared_pb2.Empty | None = ...,
             expected_revision: builtins.int = ...,
-            expected_any: typing.Optional[shared_pb2.Empty] = ...,
-            expected_stream_exists: typing.Optional[shared_pb2.Empty] = ...,
-            expected_no_stream: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["any_20_6_0",b"any_20_6_0","current_no_stream",b"current_no_stream","current_revision",b"current_revision","current_revision_20_6_0",b"current_revision_20_6_0","current_revision_option",b"current_revision_option","current_revision_option_20_6_0",b"current_revision_option_20_6_0","expected_any",b"expected_any","expected_no_stream",b"expected_no_stream","expected_revision",b"expected_revision","expected_revision_20_6_0",b"expected_revision_20_6_0","expected_revision_option",b"expected_revision_option","expected_revision_option_20_6_0",b"expected_revision_option_20_6_0","expected_stream_exists",b"expected_stream_exists","no_stream_20_6_0",b"no_stream_20_6_0","stream_exists_20_6_0",b"stream_exists_20_6_0"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["any_20_6_0",b"any_20_6_0","current_no_stream",b"current_no_stream","current_revision",b"current_revision","current_revision_20_6_0",b"current_revision_20_6_0","current_revision_option",b"current_revision_option","current_revision_option_20_6_0",b"current_revision_option_20_6_0","expected_any",b"expected_any","expected_no_stream",b"expected_no_stream","expected_revision",b"expected_revision","expected_revision_20_6_0",b"expected_revision_20_6_0","expected_revision_option",b"expected_revision_option","expected_revision_option_20_6_0",b"expected_revision_option_20_6_0","expected_stream_exists",b"expected_stream_exists","no_stream_20_6_0",b"no_stream_20_6_0","stream_exists_20_6_0",b"stream_exists_20_6_0"]) -> None: ...
+            expected_any: shared_pb2.Empty | None = ...,
+            expected_stream_exists: shared_pb2.Empty | None = ...,
+            expected_no_stream: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["any_20_6_0", b"any_20_6_0", "current_no_stream", b"current_no_stream", "current_revision", b"current_revision", "current_revision_20_6_0", b"current_revision_20_6_0", "current_revision_option", b"current_revision_option", "current_revision_option_20_6_0", b"current_revision_option_20_6_0", "expected_any", b"expected_any", "expected_no_stream", b"expected_no_stream", "expected_revision", b"expected_revision", "expected_revision_20_6_0", b"expected_revision_20_6_0", "expected_revision_option", b"expected_revision_option", "expected_revision_option_20_6_0", b"expected_revision_option_20_6_0", "expected_stream_exists", b"expected_stream_exists", "no_stream_20_6_0", b"no_stream_20_6_0", "stream_exists_20_6_0", b"stream_exists_20_6_0"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["any_20_6_0", b"any_20_6_0", "current_no_stream", b"current_no_stream", "current_revision", b"current_revision", "current_revision_20_6_0", b"current_revision_20_6_0", "current_revision_option", b"current_revision_option", "current_revision_option_20_6_0", b"current_revision_option_20_6_0", "expected_any", b"expected_any", "expected_no_stream", b"expected_no_stream", "expected_revision", b"expected_revision", "expected_revision_20_6_0", b"expected_revision_20_6_0", "expected_revision_option", b"expected_revision_option", "expected_revision_option_20_6_0", b"expected_revision_option_20_6_0", "expected_stream_exists", b"expected_stream_exists", "no_stream_20_6_0", b"no_stream_20_6_0", "stream_exists_20_6_0", b"stream_exists_20_6_0"]) -> None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option",b"current_revision_option"]) -> typing.Optional[typing_extensions.Literal["current_revision","current_no_stream"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option", b"current_revision_option"]) -> typing_extensions.Literal["current_revision", "current_no_stream"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option_20_6_0",b"current_revision_option_20_6_0"]) -> typing.Optional[typing_extensions.Literal["current_revision_20_6_0","no_stream_20_6_0"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option_20_6_0", b"current_revision_option_20_6_0"]) -> typing_extensions.Literal["current_revision_20_6_0", "no_stream_20_6_0"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_revision_option",b"expected_revision_option"]) -> typing.Optional[typing_extensions.Literal["expected_revision","expected_any","expected_stream_exists","expected_no_stream"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_revision_option", b"expected_revision_option"]) -> typing_extensions.Literal["expected_revision", "expected_any", "expected_stream_exists", "expected_no_stream"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_revision_option_20_6_0",b"expected_revision_option_20_6_0"]) -> typing.Optional[typing_extensions.Literal["expected_revision_20_6_0","any_20_6_0","stream_exists_20_6_0"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_revision_option_20_6_0", b"expected_revision_option_20_6_0"]) -> typing_extensions.Literal["expected_revision_20_6_0", "any_20_6_0", "stream_exists_20_6_0"] | None: ...
 
     SUCCESS_FIELD_NUMBER: builtins.int
     WRONG_EXPECTED_VERSION_FIELD_NUMBER: builtins.int
@@ -556,20 +614,24 @@ class AppendResp(google.protobuf.message.Message):
     def success(self) -> global___AppendResp.Success: ...
     @property
     def wrong_expected_version(self) -> global___AppendResp.WrongExpectedVersion: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        success: typing.Optional[global___AppendResp.Success] = ...,
-        wrong_expected_version: typing.Optional[global___AppendResp.WrongExpectedVersion] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["result",b"result","success",b"success","wrong_expected_version",b"wrong_expected_version"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["result",b"result","success",b"success","wrong_expected_version",b"wrong_expected_version"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["result",b"result"]) -> typing.Optional[typing_extensions.Literal["success","wrong_expected_version"]]: ...
+        success: global___AppendResp.Success | None = ...,
+        wrong_expected_version: global___AppendResp.WrongExpectedVersion | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["result", b"result", "success", b"success", "wrong_expected_version", b"wrong_expected_version"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["result", b"result", "success", b"success", "wrong_expected_version", b"wrong_expected_version"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["result", b"result"]) -> typing_extensions.Literal["success", "wrong_expected_version"] | None: ...
+
 global___AppendResp = AppendResp
 
 class BatchAppendReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
         STREAM_POSITION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
@@ -590,37 +652,41 @@ class BatchAppendReq(google.protobuf.message.Message):
         def deadline_21_10_0(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
         @property
         def deadline(self) -> google.protobuf.duration_pb2.Duration: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+            stream_identifier: shared_pb2.StreamIdentifier | None = ...,
             stream_position: builtins.int = ...,
-            no_stream: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-            any: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-            stream_exists: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-            deadline_21_10_0: typing.Optional[google.protobuf.timestamp_pb2.Timestamp] = ...,
-            deadline: typing.Optional[google.protobuf.duration_pb2.Duration] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["any",b"any","deadline",b"deadline","deadline_21_10_0",b"deadline_21_10_0","deadline_option",b"deadline_option","expected_stream_position",b"expected_stream_position","no_stream",b"no_stream","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier","stream_position",b"stream_position"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["any",b"any","deadline",b"deadline","deadline_21_10_0",b"deadline_21_10_0","deadline_option",b"deadline_option","expected_stream_position",b"expected_stream_position","no_stream",b"no_stream","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier","stream_position",b"stream_position"]) -> None: ...
+            no_stream: google.protobuf.empty_pb2.Empty | None = ...,
+            any: google.protobuf.empty_pb2.Empty | None = ...,
+            stream_exists: google.protobuf.empty_pb2.Empty | None = ...,
+            deadline_21_10_0: google.protobuf.timestamp_pb2.Timestamp | None = ...,
+            deadline: google.protobuf.duration_pb2.Duration | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["any", b"any", "deadline", b"deadline", "deadline_21_10_0", b"deadline_21_10_0", "deadline_option", b"deadline_option", "expected_stream_position", b"expected_stream_position", "no_stream", b"no_stream", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier", "stream_position", b"stream_position"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "deadline", b"deadline", "deadline_21_10_0", b"deadline_21_10_0", "deadline_option", b"deadline_option", "expected_stream_position", b"expected_stream_position", "no_stream", b"no_stream", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier", "stream_position", b"stream_position"]) -> None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["deadline_option",b"deadline_option"]) -> typing.Optional[typing_extensions.Literal["deadline_21_10_0","deadline"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["deadline_option", b"deadline_option"]) -> typing_extensions.Literal["deadline_21_10_0", "deadline"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_position",b"expected_stream_position"]) -> typing.Optional[typing_extensions.Literal["stream_position","no_stream","any","stream_exists"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_position", b"expected_stream_position"]) -> typing_extensions.Literal["stream_position", "no_stream", "any", "stream_exists"] | None: ...
 
     class ProposedMessage(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         class MetadataEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
             KEY_FIELD_NUMBER: builtins.int
             VALUE_FIELD_NUMBER: builtins.int
-            key: typing.Text
-            value: typing.Text
-            def __init__(self,
+            key: builtins.str
+            value: builtins.str
+            def __init__(
+                self,
                 *,
-                key: typing.Text = ...,
-                value: typing.Text = ...,
-                ) -> None: ...
-            def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+                key: builtins.str = ...,
+                value: builtins.str = ...,
+            ) -> None: ...
+            def ClearField(self, field_name: typing_extensions.Literal["key", b"key", "value", b"value"]) -> None: ...
 
         ID_FIELD_NUMBER: builtins.int
         METADATA_FIELD_NUMBER: builtins.int
@@ -629,18 +695,19 @@ class BatchAppendReq(google.protobuf.message.Message):
         @property
         def id(self) -> shared_pb2.UUID: ...
         @property
-        def metadata(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
+        def metadata(self) -> google.protobuf.internal.containers.ScalarMap[builtins.str, builtins.str]: ...
         custom_metadata: builtins.bytes
         data: builtins.bytes
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            id: typing.Optional[shared_pb2.UUID] = ...,
-            metadata: typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
+            id: shared_pb2.UUID | None = ...,
+            metadata: collections.abc.Mapping[builtins.str, builtins.str] | None = ...,
             custom_metadata: builtins.bytes = ...,
             data: builtins.bytes = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["id",b"id"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["custom_metadata",b"custom_metadata","data",b"data","id",b"id","metadata",b"metadata"]) -> None: ...
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["id", b"id"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["custom_metadata", b"custom_metadata", "data", b"data", "id", b"id", "metadata", b"metadata"]) -> None: ...
 
     CORRELATION_ID_FIELD_NUMBER: builtins.int
     OPTIONS_FIELD_NUMBER: builtins.int
@@ -653,21 +720,25 @@ class BatchAppendReq(google.protobuf.message.Message):
     @property
     def proposed_messages(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___BatchAppendReq.ProposedMessage]: ...
     is_final: builtins.bool
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        correlation_id: typing.Optional[shared_pb2.UUID] = ...,
-        options: typing.Optional[global___BatchAppendReq.Options] = ...,
-        proposed_messages: typing.Optional[typing.Iterable[global___BatchAppendReq.ProposedMessage]] = ...,
+        correlation_id: shared_pb2.UUID | None = ...,
+        options: global___BatchAppendReq.Options | None = ...,
+        proposed_messages: collections.abc.Iterable[global___BatchAppendReq.ProposedMessage] | None = ...,
         is_final: builtins.bool = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["correlation_id",b"correlation_id","options",b"options"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["correlation_id",b"correlation_id","is_final",b"is_final","options",b"options","proposed_messages",b"proposed_messages"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "options", b"options"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["correlation_id", b"correlation_id", "is_final", b"is_final", "options", b"options", "proposed_messages", b"proposed_messages"]) -> None: ...
+
 global___BatchAppendReq = BatchAppendReq
 
 class BatchAppendResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Success(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         CURRENT_REVISION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
         POSITION_FIELD_NUMBER: builtins.int
@@ -679,19 +750,20 @@ class BatchAppendResp(google.protobuf.message.Message):
         def position(self) -> shared_pb2.AllStreamPosition: ...
         @property
         def no_position(self) -> google.protobuf.empty_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
             current_revision: builtins.int = ...,
-            no_stream: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-            position: typing.Optional[shared_pb2.AllStreamPosition] = ...,
-            no_position: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["current_revision",b"current_revision","current_revision_option",b"current_revision_option","no_position",b"no_position","no_stream",b"no_stream","position",b"position","position_option",b"position_option"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["current_revision",b"current_revision","current_revision_option",b"current_revision_option","no_position",b"no_position","no_stream",b"no_stream","position",b"position","position_option",b"position_option"]) -> None: ...
+            no_stream: google.protobuf.empty_pb2.Empty | None = ...,
+            position: shared_pb2.AllStreamPosition | None = ...,
+            no_position: google.protobuf.empty_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["current_revision", b"current_revision", "current_revision_option", b"current_revision_option", "no_position", b"no_position", "no_stream", b"no_stream", "position", b"position", "position_option", b"position_option"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["current_revision", b"current_revision", "current_revision_option", b"current_revision_option", "no_position", b"no_position", "no_stream", b"no_stream", "position", b"position", "position_option", b"position_option"]) -> None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option",b"current_revision_option"]) -> typing.Optional[typing_extensions.Literal["current_revision","no_stream"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["current_revision_option", b"current_revision_option"]) -> typing_extensions.Literal["current_revision", "no_stream"] | None: ...
         @typing.overload
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option",b"position_option"]) -> typing.Optional[typing_extensions.Literal["position","no_position"]]: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option", b"position_option"]) -> typing_extensions.Literal["position", "no_position"] | None: ...
 
     CORRELATION_ID_FIELD_NUMBER: builtins.int
     ERROR_FIELD_NUMBER: builtins.int
@@ -716,29 +788,33 @@ class BatchAppendResp(google.protobuf.message.Message):
     def any(self) -> google.protobuf.empty_pb2.Empty: ...
     @property
     def stream_exists(self) -> google.protobuf.empty_pb2.Empty: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        correlation_id: typing.Optional[shared_pb2.UUID] = ...,
-        error: typing.Optional[status_pb2.Status] = ...,
-        success: typing.Optional[global___BatchAppendResp.Success] = ...,
-        stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+        correlation_id: shared_pb2.UUID | None = ...,
+        error: status_pb2.Status | None = ...,
+        success: global___BatchAppendResp.Success | None = ...,
+        stream_identifier: shared_pb2.StreamIdentifier | None = ...,
         stream_position: builtins.int = ...,
-        no_stream: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-        any: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-        stream_exists: typing.Optional[google.protobuf.empty_pb2.Empty] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["any",b"any","correlation_id",b"correlation_id","error",b"error","expected_stream_position",b"expected_stream_position","no_stream",b"no_stream","result",b"result","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier","stream_position",b"stream_position","success",b"success"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["any",b"any","correlation_id",b"correlation_id","error",b"error","expected_stream_position",b"expected_stream_position","no_stream",b"no_stream","result",b"result","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier","stream_position",b"stream_position","success",b"success"]) -> None: ...
+        no_stream: google.protobuf.empty_pb2.Empty | None = ...,
+        any: google.protobuf.empty_pb2.Empty | None = ...,
+        stream_exists: google.protobuf.empty_pb2.Empty | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["any", b"any", "correlation_id", b"correlation_id", "error", b"error", "expected_stream_position", b"expected_stream_position", "no_stream", b"no_stream", "result", b"result", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier", "stream_position", b"stream_position", "success", b"success"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "correlation_id", b"correlation_id", "error", b"error", "expected_stream_position", b"expected_stream_position", "no_stream", b"no_stream", "result", b"result", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier", "stream_position", b"stream_position", "success", b"success"]) -> None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_position",b"expected_stream_position"]) -> typing.Optional[typing_extensions.Literal["stream_position","no_stream","any","stream_exists"]]: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_position", b"expected_stream_position"]) -> typing_extensions.Literal["stream_position", "no_stream", "any", "stream_exists"] | None: ...
     @typing.overload
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["result",b"result"]) -> typing.Optional[typing_extensions.Literal["error","success"]]: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["result", b"result"]) -> typing_extensions.Literal["error", "success"] | None: ...
+
 global___BatchAppendResp = BatchAppendResp
 
 class DeleteReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
         REVISION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
@@ -753,43 +829,49 @@ class DeleteReq(google.protobuf.message.Message):
         def any(self) -> shared_pb2.Empty: ...
         @property
         def stream_exists(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+            stream_identifier: shared_pb2.StreamIdentifier | None = ...,
             revision: builtins.int = ...,
-            no_stream: typing.Optional[shared_pb2.Empty] = ...,
-            any: typing.Optional[shared_pb2.Empty] = ...,
-            stream_exists: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision",b"expected_stream_revision"]) -> typing.Optional[typing_extensions.Literal["revision","no_stream","any","stream_exists"]]: ...
+            no_stream: shared_pb2.Empty | None = ...,
+            any: shared_pb2.Empty | None = ...,
+            stream_exists: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision", b"expected_stream_revision"]) -> typing_extensions.Literal["revision", "no_stream", "any", "stream_exists"] | None: ...
 
     OPTIONS_FIELD_NUMBER: builtins.int
     @property
     def options(self) -> global___DeleteReq.Options: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        options: typing.Optional[global___DeleteReq.Options] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["options",b"options"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["options",b"options"]) -> None: ...
+        options: global___DeleteReq.Options | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["options", b"options"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["options", b"options"]) -> None: ...
+
 global___DeleteReq = DeleteReq
 
 class DeleteResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         COMMIT_POSITION_FIELD_NUMBER: builtins.int
         PREPARE_POSITION_FIELD_NUMBER: builtins.int
         commit_position: builtins.int
         prepare_position: builtins.int
-        def __init__(self,
+        def __init__(
+            self,
             *,
             commit_position: builtins.int = ...,
             prepare_position: builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","prepare_position",b"prepare_position"]) -> None: ...
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
     POSITION_FIELD_NUMBER: builtins.int
     NO_POSITION_FIELD_NUMBER: builtins.int
@@ -797,20 +879,24 @@ class DeleteResp(google.protobuf.message.Message):
     def position(self) -> global___DeleteResp.Position: ...
     @property
     def no_position(self) -> shared_pb2.Empty: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        position: typing.Optional[global___DeleteResp.Position] = ...,
-        no_position: typing.Optional[shared_pb2.Empty] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["no_position",b"no_position","position",b"position","position_option",b"position_option"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["no_position",b"no_position","position",b"position","position_option",b"position_option"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option",b"position_option"]) -> typing.Optional[typing_extensions.Literal["position","no_position"]]: ...
+        position: global___DeleteResp.Position | None = ...,
+        no_position: shared_pb2.Empty | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["no_position", b"no_position", "position", b"position", "position_option", b"position_option"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["no_position", b"no_position", "position", b"position", "position_option", b"position_option"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option", b"position_option"]) -> typing_extensions.Literal["position", "no_position"] | None: ...
+
 global___DeleteResp = DeleteResp
 
 class TombstoneReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         STREAM_IDENTIFIER_FIELD_NUMBER: builtins.int
         REVISION_FIELD_NUMBER: builtins.int
         NO_STREAM_FIELD_NUMBER: builtins.int
@@ -825,43 +911,49 @@ class TombstoneReq(google.protobuf.message.Message):
         def any(self) -> shared_pb2.Empty: ...
         @property
         def stream_exists(self) -> shared_pb2.Empty: ...
-        def __init__(self,
+        def __init__(
+            self,
             *,
-            stream_identifier: typing.Optional[shared_pb2.StreamIdentifier] = ...,
+            stream_identifier: shared_pb2.StreamIdentifier | None = ...,
             revision: builtins.int = ...,
-            no_stream: typing.Optional[shared_pb2.Empty] = ...,
-            any: typing.Optional[shared_pb2.Empty] = ...,
-            stream_exists: typing.Optional[shared_pb2.Empty] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["any",b"any","expected_stream_revision",b"expected_stream_revision","no_stream",b"no_stream","revision",b"revision","stream_exists",b"stream_exists","stream_identifier",b"stream_identifier"]) -> None: ...
-        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision",b"expected_stream_revision"]) -> typing.Optional[typing_extensions.Literal["revision","no_stream","any","stream_exists"]]: ...
+            no_stream: shared_pb2.Empty | None = ...,
+            any: shared_pb2.Empty | None = ...,
+            stream_exists: shared_pb2.Empty | None = ...,
+        ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> None: ...
+        def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision", b"expected_stream_revision"]) -> typing_extensions.Literal["revision", "no_stream", "any", "stream_exists"] | None: ...
 
     OPTIONS_FIELD_NUMBER: builtins.int
     @property
     def options(self) -> global___TombstoneReq.Options: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        options: typing.Optional[global___TombstoneReq.Options] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["options",b"options"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["options",b"options"]) -> None: ...
+        options: global___TombstoneReq.Options | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["options", b"options"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["options", b"options"]) -> None: ...
+
 global___TombstoneReq = TombstoneReq
 
 class TombstoneResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
         COMMIT_POSITION_FIELD_NUMBER: builtins.int
         PREPARE_POSITION_FIELD_NUMBER: builtins.int
         commit_position: builtins.int
         prepare_position: builtins.int
-        def __init__(self,
+        def __init__(
+            self,
             *,
             commit_position: builtins.int = ...,
             prepare_position: builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["commit_position",b"commit_position","prepare_position",b"prepare_position"]) -> None: ...
+        ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
     POSITION_FIELD_NUMBER: builtins.int
     NO_POSITION_FIELD_NUMBER: builtins.int
@@ -869,12 +961,14 @@ class TombstoneResp(google.protobuf.message.Message):
     def position(self) -> global___TombstoneResp.Position: ...
     @property
     def no_position(self) -> shared_pb2.Empty: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        position: typing.Optional[global___TombstoneResp.Position] = ...,
-        no_position: typing.Optional[shared_pb2.Empty] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["no_position",b"no_position","position",b"position","position_option",b"position_option"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["no_position",b"no_position","position",b"position","position_option",b"position_option"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option",b"position_option"]) -> typing.Optional[typing_extensions.Literal["position","no_position"]]: ...
+        position: global___TombstoneResp.Position | None = ...,
+        no_position: shared_pb2.Empty | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["no_position", b"no_position", "position", b"position", "position_option", b"position_option"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["no_position", b"no_position", "position", b"position", "position_option", b"position_option"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option", b"position_option"]) -> typing_extensions.Literal["position", "no_position"] | None: ...
+
 global___TombstoneResp = TombstoneResp
