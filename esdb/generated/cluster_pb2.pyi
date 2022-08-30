@@ -3,35 +3,45 @@
 isort:skip_file
 """
 import builtins
+import collections.abc
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import shared_pb2
+import sys
 import typing
-import typing_extensions
+
+if sys.version_info >= (3, 10):
+    import typing as typing_extensions
+else:
+    import typing_extensions
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class GossipRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     INFO_FIELD_NUMBER: builtins.int
     SERVER_FIELD_NUMBER: builtins.int
     @property
     def info(self) -> global___ClusterInfo: ...
     @property
     def server(self) -> global___EndPoint: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        info: typing.Optional[global___ClusterInfo] = ...,
-        server: typing.Optional[global___EndPoint] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["info",b"info","server",b"server"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["info",b"info","server",b"server"]) -> None: ...
+        info: global___ClusterInfo | None = ...,
+        server: global___EndPoint | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["info", b"info", "server", b"server"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["info", b"info", "server", b"server"]) -> None: ...
+
 global___GossipRequest = GossipRequest
 
 class ViewChangeRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
     ATTEMPTED_VIEW_FIELD_NUMBER: builtins.int
@@ -40,18 +50,21 @@ class ViewChangeRequest(google.protobuf.message.Message):
     @property
     def server_http(self) -> global___EndPoint: ...
     attempted_view: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
         attempted_view: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["attempted_view",b"attempted_view","server_http",b"server_http","server_id",b"server_id"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["attempted_view", b"attempted_view", "server_http", b"server_http", "server_id", b"server_id"]) -> None: ...
+
 global___ViewChangeRequest = ViewChangeRequest
 
 class ViewChangeProofRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
     INSTALLED_VIEW_FIELD_NUMBER: builtins.int
@@ -60,18 +73,21 @@ class ViewChangeProofRequest(google.protobuf.message.Message):
     @property
     def server_http(self) -> global___EndPoint: ...
     installed_view: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
         installed_view: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["installed_view",b"installed_view","server_http",b"server_http","server_id",b"server_id"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["installed_view", b"installed_view", "server_http", b"server_http", "server_id", b"server_id"]) -> None: ...
+
 global___ViewChangeProofRequest = ViewChangeProofRequest
 
 class PrepareRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
     VIEW_FIELD_NUMBER: builtins.int
@@ -80,18 +96,21 @@ class PrepareRequest(google.protobuf.message.Message):
     @property
     def server_http(self) -> global___EndPoint: ...
     view: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
         view: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["server_http",b"server_http","server_id",b"server_id","view",b"view"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["server_http", b"server_http", "server_id", b"server_id", "view", b"view"]) -> None: ...
+
 global___PrepareRequest = PrepareRequest
 
 class PrepareOkRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     VIEW_FIELD_NUMBER: builtins.int
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
@@ -121,27 +140,30 @@ class PrepareOkRequest(google.protobuf.message.Message):
     node_priority: builtins.int
     @property
     def cluster_info(self) -> global___ClusterInfo: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
         view: builtins.int = ...,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
         epoch_number: builtins.int = ...,
         epoch_position: builtins.int = ...,
-        epoch_id: typing.Optional[shared_pb2.UUID] = ...,
-        epoch_leader_instance_id: typing.Optional[shared_pb2.UUID] = ...,
+        epoch_id: shared_pb2.UUID | None = ...,
+        epoch_leader_instance_id: shared_pb2.UUID | None = ...,
         last_commit_position: builtins.int = ...,
         writer_checkpoint: builtins.int = ...,
         chaser_checkpoint: builtins.int = ...,
         node_priority: builtins.int = ...,
-        cluster_info: typing.Optional[global___ClusterInfo] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["cluster_info",b"cluster_info","epoch_id",b"epoch_id","epoch_leader_instance_id",b"epoch_leader_instance_id","server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["chaser_checkpoint",b"chaser_checkpoint","cluster_info",b"cluster_info","epoch_id",b"epoch_id","epoch_leader_instance_id",b"epoch_leader_instance_id","epoch_number",b"epoch_number","epoch_position",b"epoch_position","last_commit_position",b"last_commit_position","node_priority",b"node_priority","server_http",b"server_http","server_id",b"server_id","view",b"view","writer_checkpoint",b"writer_checkpoint"]) -> None: ...
+        cluster_info: global___ClusterInfo | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["cluster_info", b"cluster_info", "epoch_id", b"epoch_id", "epoch_leader_instance_id", b"epoch_leader_instance_id", "server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["chaser_checkpoint", b"chaser_checkpoint", "cluster_info", b"cluster_info", "epoch_id", b"epoch_id", "epoch_leader_instance_id", b"epoch_leader_instance_id", "epoch_number", b"epoch_number", "epoch_position", b"epoch_position", "last_commit_position", b"last_commit_position", "node_priority", b"node_priority", "server_http", b"server_http", "server_id", b"server_id", "view", b"view", "writer_checkpoint", b"writer_checkpoint"]) -> None: ...
+
 global___PrepareOkRequest = PrepareOkRequest
 
 class ProposalRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
     LEADER_ID_FIELD_NUMBER: builtins.int
@@ -174,28 +196,31 @@ class ProposalRequest(google.protobuf.message.Message):
     writer_checkpoint: builtins.int
     chaser_checkpoint: builtins.int
     node_priority: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
-        leader_id: typing.Optional[shared_pb2.UUID] = ...,
-        leader_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
+        leader_id: shared_pb2.UUID | None = ...,
+        leader_http: global___EndPoint | None = ...,
         view: builtins.int = ...,
         epoch_number: builtins.int = ...,
         epoch_position: builtins.int = ...,
-        epoch_id: typing.Optional[shared_pb2.UUID] = ...,
-        epoch_leader_instance_id: typing.Optional[shared_pb2.UUID] = ...,
+        epoch_id: shared_pb2.UUID | None = ...,
+        epoch_leader_instance_id: shared_pb2.UUID | None = ...,
         last_commit_position: builtins.int = ...,
         writer_checkpoint: builtins.int = ...,
         chaser_checkpoint: builtins.int = ...,
         node_priority: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["epoch_id",b"epoch_id","epoch_leader_instance_id",b"epoch_leader_instance_id","leader_http",b"leader_http","leader_id",b"leader_id","server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["chaser_checkpoint",b"chaser_checkpoint","epoch_id",b"epoch_id","epoch_leader_instance_id",b"epoch_leader_instance_id","epoch_number",b"epoch_number","epoch_position",b"epoch_position","last_commit_position",b"last_commit_position","leader_http",b"leader_http","leader_id",b"leader_id","node_priority",b"node_priority","server_http",b"server_http","server_id",b"server_id","view",b"view","writer_checkpoint",b"writer_checkpoint"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["epoch_id", b"epoch_id", "epoch_leader_instance_id", b"epoch_leader_instance_id", "leader_http", b"leader_http", "leader_id", b"leader_id", "server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["chaser_checkpoint", b"chaser_checkpoint", "epoch_id", b"epoch_id", "epoch_leader_instance_id", b"epoch_leader_instance_id", "epoch_number", b"epoch_number", "epoch_position", b"epoch_position", "last_commit_position", b"last_commit_position", "leader_http", b"leader_http", "leader_id", b"leader_id", "node_priority", b"node_priority", "server_http", b"server_http", "server_id", b"server_id", "view", b"view", "writer_checkpoint", b"writer_checkpoint"]) -> None: ...
+
 global___ProposalRequest = ProposalRequest
 
 class AcceptRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SERVER_ID_FIELD_NUMBER: builtins.int
     SERVER_HTTP_FIELD_NUMBER: builtins.int
     LEADER_ID_FIELD_NUMBER: builtins.int
@@ -210,37 +235,43 @@ class AcceptRequest(google.protobuf.message.Message):
     @property
     def leader_http(self) -> global___EndPoint: ...
     view: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
-        leader_id: typing.Optional[shared_pb2.UUID] = ...,
-        leader_http: typing.Optional[global___EndPoint] = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
+        leader_id: shared_pb2.UUID | None = ...,
+        leader_http: global___EndPoint | None = ...,
         view: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id","server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id","server_http",b"server_http","server_id",b"server_id","view",b"view"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id", "server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id", "server_http", b"server_http", "server_id", b"server_id", "view", b"view"]) -> None: ...
+
 global___AcceptRequest = AcceptRequest
 
 class LeaderIsResigningRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     LEADER_HTTP_FIELD_NUMBER: builtins.int
     @property
     def leader_id(self) -> shared_pb2.UUID: ...
     @property
     def leader_http(self) -> global___EndPoint: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        leader_id: typing.Optional[shared_pb2.UUID] = ...,
-        leader_http: typing.Optional[global___EndPoint] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id"]) -> None: ...
+        leader_id: shared_pb2.UUID | None = ...,
+        leader_http: global___EndPoint | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id"]) -> None: ...
+
 global___LeaderIsResigningRequest = LeaderIsResigningRequest
 
 class LeaderIsResigningOkRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     LEADER_HTTP_FIELD_NUMBER: builtins.int
     SERVER_ID_FIELD_NUMBER: builtins.int
@@ -253,49 +284,59 @@ class LeaderIsResigningOkRequest(google.protobuf.message.Message):
     def server_id(self) -> shared_pb2.UUID: ...
     @property
     def server_http(self) -> global___EndPoint: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        leader_id: typing.Optional[shared_pb2.UUID] = ...,
-        leader_http: typing.Optional[global___EndPoint] = ...,
-        server_id: typing.Optional[shared_pb2.UUID] = ...,
-        server_http: typing.Optional[global___EndPoint] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id","server_http",b"server_http","server_id",b"server_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_http",b"leader_http","leader_id",b"leader_id","server_http",b"server_http","server_id",b"server_id"]) -> None: ...
+        leader_id: shared_pb2.UUID | None = ...,
+        leader_http: global___EndPoint | None = ...,
+        server_id: shared_pb2.UUID | None = ...,
+        server_http: global___EndPoint | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id", "server_http", b"server_http", "server_id", b"server_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_http", b"leader_http", "leader_id", b"leader_id", "server_http", b"server_http", "server_id", b"server_id"]) -> None: ...
+
 global___LeaderIsResigningOkRequest = LeaderIsResigningOkRequest
 
 class ClusterInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     MEMBERS_FIELD_NUMBER: builtins.int
     @property
     def members(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___MemberInfo]: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        members: typing.Optional[typing.Iterable[global___MemberInfo]] = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["members",b"members"]) -> None: ...
+        members: collections.abc.Iterable[global___MemberInfo] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["members", b"members"]) -> None: ...
+
 global___ClusterInfo = ClusterInfo
 
 class EndPoint(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     ADDRESS_FIELD_NUMBER: builtins.int
     PORT_FIELD_NUMBER: builtins.int
-    address: typing.Text
+    address: builtins.str
     port: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        address: typing.Text = ...,
+        address: builtins.str = ...,
         port: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["address",b"address","port",b"port"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["address", b"address", "port", b"port"]) -> None: ...
+
 global___EndPoint = EndPoint
 
 class MemberInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class _VNodeState:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
-    class _VNodeStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[MemberInfo._VNodeState.ValueType], builtins.type):
+
+    class _VNodeStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[MemberInfo._VNodeState.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         Initializing: MemberInfo._VNodeState.ValueType  # 0
         DiscoverLeader: MemberInfo._VNodeState.ValueType  # 1
@@ -313,9 +354,8 @@ class MemberInfo(google.protobuf.message.Message):
         PreReadOnlyReplica: MemberInfo._VNodeState.ValueType  # 13
         ReadOnlyReplica: MemberInfo._VNodeState.ValueType  # 14
         ResigningLeader: MemberInfo._VNodeState.ValueType  # 15
-    class VNodeState(_VNodeState, metaclass=_VNodeStateEnumTypeWrapper):
-        pass
 
+    class VNodeState(_VNodeState, metaclass=_VNodeStateEnumTypeWrapper): ...
     Initializing: MemberInfo.VNodeState.ValueType  # 0
     DiscoverLeader: MemberInfo.VNodeState.ValueType  # 1
     Unknown: MemberInfo.VNodeState.ValueType  # 2
@@ -375,18 +415,19 @@ class MemberInfo(google.protobuf.message.Message):
     def epoch_id(self) -> shared_pb2.UUID: ...
     node_priority: builtins.int
     is_read_only_replica: builtins.bool
-    advertise_host_to_client_as: typing.Text
+    advertise_host_to_client_as: builtins.str
     advertise_http_port_to_client_as: builtins.int
     advertise_tcp_port_to_client_as: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        instance_id: typing.Optional[shared_pb2.UUID] = ...,
+        instance_id: shared_pb2.UUID | None = ...,
         time_stamp: builtins.int = ...,
         state: global___MemberInfo.VNodeState.ValueType = ...,
         is_alive: builtins.bool = ...,
-        http_end_point: typing.Optional[global___EndPoint] = ...,
-        internal_tcp: typing.Optional[global___EndPoint] = ...,
-        external_tcp: typing.Optional[global___EndPoint] = ...,
+        http_end_point: global___EndPoint | None = ...,
+        internal_tcp: global___EndPoint | None = ...,
+        external_tcp: global___EndPoint | None = ...,
         internal_tcp_uses_tls: builtins.bool = ...,
         external_tcp_uses_tls: builtins.bool = ...,
         last_commit_position: builtins.int = ...,
@@ -394,61 +435,72 @@ class MemberInfo(google.protobuf.message.Message):
         chaser_checkpoint: builtins.int = ...,
         epoch_position: builtins.int = ...,
         epoch_number: builtins.int = ...,
-        epoch_id: typing.Optional[shared_pb2.UUID] = ...,
+        epoch_id: shared_pb2.UUID | None = ...,
         node_priority: builtins.int = ...,
         is_read_only_replica: builtins.bool = ...,
-        advertise_host_to_client_as: typing.Text = ...,
+        advertise_host_to_client_as: builtins.str = ...,
         advertise_http_port_to_client_as: builtins.int = ...,
         advertise_tcp_port_to_client_as: builtins.int = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["epoch_id",b"epoch_id","external_tcp",b"external_tcp","http_end_point",b"http_end_point","instance_id",b"instance_id","internal_tcp",b"internal_tcp"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["advertise_host_to_client_as",b"advertise_host_to_client_as","advertise_http_port_to_client_as",b"advertise_http_port_to_client_as","advertise_tcp_port_to_client_as",b"advertise_tcp_port_to_client_as","chaser_checkpoint",b"chaser_checkpoint","epoch_id",b"epoch_id","epoch_number",b"epoch_number","epoch_position",b"epoch_position","external_tcp",b"external_tcp","external_tcp_uses_tls",b"external_tcp_uses_tls","http_end_point",b"http_end_point","instance_id",b"instance_id","internal_tcp",b"internal_tcp","internal_tcp_uses_tls",b"internal_tcp_uses_tls","is_alive",b"is_alive","is_read_only_replica",b"is_read_only_replica","last_commit_position",b"last_commit_position","node_priority",b"node_priority","state",b"state","time_stamp",b"time_stamp","writer_checkpoint",b"writer_checkpoint"]) -> None: ...
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["epoch_id", b"epoch_id", "external_tcp", b"external_tcp", "http_end_point", b"http_end_point", "instance_id", b"instance_id", "internal_tcp", b"internal_tcp"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["advertise_host_to_client_as", b"advertise_host_to_client_as", "advertise_http_port_to_client_as", b"advertise_http_port_to_client_as", "advertise_tcp_port_to_client_as", b"advertise_tcp_port_to_client_as", "chaser_checkpoint", b"chaser_checkpoint", "epoch_id", b"epoch_id", "epoch_number", b"epoch_number", "epoch_position", b"epoch_position", "external_tcp", b"external_tcp", "external_tcp_uses_tls", b"external_tcp_uses_tls", "http_end_point", b"http_end_point", "instance_id", b"instance_id", "internal_tcp", b"internal_tcp", "internal_tcp_uses_tls", b"internal_tcp_uses_tls", "is_alive", b"is_alive", "is_read_only_replica", b"is_read_only_replica", "last_commit_position", b"last_commit_position", "node_priority", b"node_priority", "state", b"state", "time_stamp", b"time_stamp", "writer_checkpoint", b"writer_checkpoint"]) -> None: ...
+
 global___MemberInfo = MemberInfo
 
 class ReplicaLogWrite(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LOG_POSITION_FIELD_NUMBER: builtins.int
     REPLICA_ID_FIELD_NUMBER: builtins.int
     log_position: builtins.int
     replica_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         log_position: builtins.int = ...,
         replica_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["log_position",b"log_position","replica_id",b"replica_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["log_position", b"log_position", "replica_id", b"replica_id"]) -> None: ...
+
 global___ReplicaLogWrite = ReplicaLogWrite
 
 class ReplicatedTo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LOG_POSITION_FIELD_NUMBER: builtins.int
     log_position: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
         log_position: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["log_position",b"log_position"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["log_position", b"log_position"]) -> None: ...
+
 global___ReplicatedTo = ReplicatedTo
 
 class Epoch(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     EPOCH_POSITION_FIELD_NUMBER: builtins.int
     EPOCH_NUMBER_FIELD_NUMBER: builtins.int
     EPOCH_ID_FIELD_NUMBER: builtins.int
     epoch_position: builtins.int
     epoch_number: builtins.int
     epoch_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         epoch_position: builtins.int = ...,
         epoch_number: builtins.int = ...,
         epoch_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["epoch_id",b"epoch_id","epoch_number",b"epoch_number","epoch_position",b"epoch_position"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["epoch_id", b"epoch_id", "epoch_number", b"epoch_number", "epoch_position", b"epoch_position"]) -> None: ...
+
 global___Epoch = Epoch
 
 class SubscribeReplica(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LOG_POSITION_FIELD_NUMBER: builtins.int
     CHUNK_ID_FIELD_NUMBER: builtins.int
     LASTEPOCHS_FIELD_NUMBER: builtins.int
@@ -468,71 +520,83 @@ class SubscribeReplica(google.protobuf.message.Message):
     subscription_id: builtins.bytes
     is_promotable: builtins.bool
     version: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
         log_position: builtins.int = ...,
         chunk_id: builtins.bytes = ...,
-        LastEpochs: typing.Optional[typing.Iterable[global___Epoch]] = ...,
+        LastEpochs: collections.abc.Iterable[global___Epoch] | None = ...,
         ip: builtins.bytes = ...,
         port: builtins.int = ...,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
         is_promotable: builtins.bool = ...,
         version: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["LastEpochs",b"LastEpochs","chunk_id",b"chunk_id","ip",b"ip","is_promotable",b"is_promotable","leader_id",b"leader_id","log_position",b"log_position","port",b"port","subscription_id",b"subscription_id","version",b"version"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["LastEpochs", b"LastEpochs", "chunk_id", b"chunk_id", "ip", b"ip", "is_promotable", b"is_promotable", "leader_id", b"leader_id", "log_position", b"log_position", "port", b"port", "subscription_id", b"subscription_id", "version", b"version"]) -> None: ...
+
 global___SubscribeReplica = SubscribeReplica
 
 class ReplicaSubscriptionRetry(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     leader_id: builtins.bytes
     subscription_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_id",b"leader_id","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_id", b"leader_id", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___ReplicaSubscriptionRetry = ReplicaSubscriptionRetry
 
 class ReplicaSubscribed(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_POSITION_FIELD_NUMBER: builtins.int
     leader_id: builtins.bytes
     subscription_id: builtins.bytes
     subscription_position: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
         subscription_position: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_id",b"leader_id","subscription_id",b"subscription_id","subscription_position",b"subscription_position"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_id", b"leader_id", "subscription_id", b"subscription_id", "subscription_position", b"subscription_position"]) -> None: ...
+
 global___ReplicaSubscribed = ReplicaSubscribed
 
 class ReplicaLogPositionAck(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     REPLICATION_LOG_POSITION_FIELD_NUMBER: builtins.int
     WRITER_LOG_POSITION_FIELD_NUMBER: builtins.int
     subscription_id: builtins.bytes
     replication_log_position: builtins.int
     writer_log_position: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
         subscription_id: builtins.bytes = ...,
         replication_log_position: builtins.int = ...,
         writer_log_position: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["replication_log_position",b"replication_log_position","subscription_id",b"subscription_id","writer_log_position",b"writer_log_position"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["replication_log_position", b"replication_log_position", "subscription_id", b"subscription_id", "writer_log_position", b"writer_log_position"]) -> None: ...
+
 global___ReplicaLogPositionAck = ReplicaLogPositionAck
 
 class CreateChunk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     CHUNK_HEADER_BYTES_FIELD_NUMBER: builtins.int
@@ -543,19 +607,22 @@ class CreateChunk(google.protobuf.message.Message):
     chunk_header_bytes: builtins.bytes
     file_size: builtins.int
     is_completed_chunk: builtins.bool
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
         chunk_header_bytes: builtins.bytes = ...,
         file_size: builtins.int = ...,
         is_completed_chunk: builtins.bool = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["chunk_header_bytes",b"chunk_header_bytes","file_size",b"file_size","is_completed_chunk",b"is_completed_chunk","leader_id",b"leader_id","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["chunk_header_bytes", b"chunk_header_bytes", "file_size", b"file_size", "is_completed_chunk", b"is_completed_chunk", "leader_id", b"leader_id", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___CreateChunk = CreateChunk
 
 class RawChunkBulk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     CHUNK_START_NUMBER_FIELD_NUMBER: builtins.int
@@ -570,7 +637,8 @@ class RawChunkBulk(google.protobuf.message.Message):
     raw_position: builtins.int
     raw_bytes: builtins.bytes
     complete_chunk: builtins.bool
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
@@ -579,12 +647,14 @@ class RawChunkBulk(google.protobuf.message.Message):
         raw_position: builtins.int = ...,
         raw_bytes: builtins.bytes = ...,
         complete_chunk: builtins.bool = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["chunk_end_number",b"chunk_end_number","chunk_start_number",b"chunk_start_number","complete_chunk",b"complete_chunk","leader_id",b"leader_id","raw_bytes",b"raw_bytes","raw_position",b"raw_position","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["chunk_end_number", b"chunk_end_number", "chunk_start_number", b"chunk_start_number", "complete_chunk", b"complete_chunk", "leader_id", b"leader_id", "raw_bytes", b"raw_bytes", "raw_position", b"raw_position", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___RawChunkBulk = RawChunkBulk
 
 class DataChunkBulk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     CHUNK_START_NUMBER_FIELD_NUMBER: builtins.int
@@ -599,7 +669,8 @@ class DataChunkBulk(google.protobuf.message.Message):
     subscription_position: builtins.int
     data_bytes: builtins.bytes
     complete_chunk: builtins.bool
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
@@ -608,48 +679,58 @@ class DataChunkBulk(google.protobuf.message.Message):
         subscription_position: builtins.int = ...,
         data_bytes: builtins.bytes = ...,
         complete_chunk: builtins.bool = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["chunk_end_number",b"chunk_end_number","chunk_start_number",b"chunk_start_number","complete_chunk",b"complete_chunk","data_bytes",b"data_bytes","leader_id",b"leader_id","subscription_id",b"subscription_id","subscription_position",b"subscription_position"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["chunk_end_number", b"chunk_end_number", "chunk_start_number", b"chunk_start_number", "complete_chunk", b"complete_chunk", "data_bytes", b"data_bytes", "leader_id", b"leader_id", "subscription_id", b"subscription_id", "subscription_position", b"subscription_position"]) -> None: ...
+
 global___DataChunkBulk = DataChunkBulk
 
 class FollowerAssignment(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     leader_id: builtins.bytes
     subscription_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_id",b"leader_id","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_id", b"leader_id", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___FollowerAssignment = FollowerAssignment
 
 class CloneAssignment(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     leader_id: builtins.bytes
     subscription_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_id",b"leader_id","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_id", b"leader_id", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___CloneAssignment = CloneAssignment
 
 class DropSubscription(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     LEADER_ID_FIELD_NUMBER: builtins.int
     SUBSCRIPTION_ID_FIELD_NUMBER: builtins.int
     leader_id: builtins.bytes
     subscription_id: builtins.bytes
-    def __init__(self,
+    def __init__(
+        self,
         *,
         leader_id: builtins.bytes = ...,
         subscription_id: builtins.bytes = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["leader_id",b"leader_id","subscription_id",b"subscription_id"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["leader_id", b"leader_id", "subscription_id", b"subscription_id"]) -> None: ...
+
 global___DropSubscription = DropSubscription
