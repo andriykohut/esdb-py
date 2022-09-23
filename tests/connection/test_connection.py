@@ -34,7 +34,8 @@ async def test_invalid_user_pass(user, password):
 @pytest.mark.asyncio
 async def test_discovery_failed(monkeypatch):
     client = ESClient(
-        f"esdb+discover://admin:changeit@localhost:2111?discoveryinterval=0&maxdiscoverattempts=3&tlscafile=certs/ca/ca.crt"
+        "esdb+discover://admin:changeit@localhost:2111?"
+        "discoveryinterval=0&maxdiscoverattempts=3&tlscafile=certs/ca/ca.crt"
     )
 
     async def _get_members(*_):

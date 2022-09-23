@@ -217,14 +217,18 @@ class ESClient:
 
     def _create_channel(self, endpoint: Member.Endpoint) -> grpc.aio.Channel:  # type: ignore
         if self.config.disable_tls:
-            return grpc.aio.insecure_channel(f"{endpoint.address}:{endpoint.port}", options=self.options)  # type: ignore
+            return grpc.aio.insecure_channel(  # type: ignore
+                f"{endpoint.address}:{endpoint.port}", options=self.options
+            )
         assert self.channel_credentials
         credentials = (
             grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
             if self.call_credentials
             else self.channel_credentials
         )
-        return grpc.aio.secure_channel(f"{endpoint.address}:{endpoint.port}", credentials, self.options)  # type: ignore
+        return grpc.aio.secure_channel(  # type: ignore
+            f"{endpoint.address}:{endpoint.port}", credentials, self.options
+        )
 
     @contextlib.asynccontextmanager  # type: ignore
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
@@ -245,7 +249,9 @@ class ESClient:
 
     async def discover_endpoint(self) -> Member.Endpoint:
         for attempt in range(1, self.config.max_discovery_attempts + 1):
-            candidates = self.config.gossip_seed.copy() if self.config.gossip_seed else [self.config.address]
+            candidates = (
+                self.config.gossip_seed.copy() if self.config.gossip_seed else [self.config.address]  # type: ignore
+            )
             random.shuffle(candidates)
             logger.info(
                 "Starting discovery attempt %s on %s", attempt, ",".join(f"{c.address}:{c.port}" for c in candidates)
