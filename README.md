@@ -84,7 +84,7 @@ Have a look at [tests](https://github.com/andriykohut/esdb-py/tree/main/tests) f
 
 DNS discovery with credentials, discovery configuration, node preference and ca file path
 ```
-esdb+discover://admin:changeit@localhost:2111?discoveryinterval=0&maxdiscoverattempts=3&tlscafile=certs/ca/ca.crt&nodepreference=follower
+esdb+discover://admin:changeit@localhost:2111?discoveryInterval=0&maxDiscoverAttempts=3&tlsCafile=certs/ca/ca.crt&nodePreference=follower
 ```
 
 Single-node insecure connection
@@ -112,7 +112,7 @@ Connection string can be generated [here](https://developers.eventstore.com/clie
 ```py
 from esdb import ESClient
 
-client = ESClient("esdb+discover://admin:changeit@localhost:2111?nodepreference=follower")
+client = ESClient("esdb+discover://admin:changeit@localhost:2111?nodePreference=follower")
 
 ```
 
@@ -125,7 +125,7 @@ from esdb import ESClient
 client = ESClient("esdb://localhost:2111?tls=false")
 
 # Secure connection with basic auth and keepalive
-client = ESClient("esdb://admin:changeit@localhost:2111?tlscafile=certs/ca/ca.crt&keepaliveinterval=5&keepalivetimeout=5")
+client = ESClient("esdb://admin:changeit@localhost:2111?tlsCafile=certs/ca/ca.crt&keepAliveInterval=5&keepAliveTimeout=5")
 ```
 
 ### Append, Read, Catch-up subscriptions
