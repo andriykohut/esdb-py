@@ -141,7 +141,7 @@ def parse_settings(query: str, c: Configuration) -> None:
         elif key == "keepalivetimeout":
             c.keep_alive_timeout = int(val)
         elif key == "tls":
-            c.disable_tls = _str_to_bool(val)
+            c.disable_tls = not _str_to_bool(val)
         elif key == "tlscafile":
             with open(val, "rb") as fh:
                 c.root_cert = fh.read()
