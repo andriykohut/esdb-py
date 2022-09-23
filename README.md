@@ -93,17 +93,19 @@ esdb://localhost:2111?tls=false
 ```
 
 Supported parameters:
- - `discoveryinterval`
- - `gossiptimeout`
- - `maxdiscoverattempts`
- - `nodepreference`
- - `keepaliveinterval`
- - `keepalivetimeout`
+ - `discoveryInterval`
+ - `gossipTimeout`
+ - `maxDiscoverAttempts`
+ - `nodePreference`
+ - `keepAliveInterval`
+ - `keepAliveTimeout`
  - `tls`
- - `tlscafile`
- - `tlsverifycert`
- - `defaultdeadline`
+ - `tlsCafile`
+ - `tlsVerifyCert`
+ - `defaultDeadline`
 
+
+Connection string can be generated [here](https://developers.eventstore.com/clients/grpc/#connection-details).
 
 ### Discovery and node preferences
 
