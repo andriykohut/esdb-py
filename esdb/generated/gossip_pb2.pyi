@@ -3,48 +3,62 @@
 isort:skip_file
 """
 import builtins
+import collections.abc
 import google.protobuf.descriptor
 import google.protobuf.internal.containers
 import google.protobuf.internal.enum_type_wrapper
 import google.protobuf.message
 import shared_pb2
+import sys
 import typing
-import typing_extensions
+
+if sys.version_info >= (3, 10):
+    import typing as typing_extensions
+else:
+    import typing_extensions
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
 class ClusterInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     MEMBERS_FIELD_NUMBER: builtins.int
     @property
     def members(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___MemberInfo]: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        members: typing.Optional[typing.Iterable[global___MemberInfo]] = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["members",b"members"]) -> None: ...
+        members: collections.abc.Iterable[global___MemberInfo] | None = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["members", b"members"]) -> None: ...
+
 global___ClusterInfo = ClusterInfo
 
 class EndPoint(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     ADDRESS_FIELD_NUMBER: builtins.int
     PORT_FIELD_NUMBER: builtins.int
-    address: typing.Text
+    address: builtins.str
     port: builtins.int
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        address: typing.Text = ...,
+        address: builtins.str = ...,
         port: builtins.int = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["address",b"address","port",b"port"]) -> None: ...
+    ) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["address", b"address", "port", b"port"]) -> None: ...
+
 global___EndPoint = EndPoint
 
 class MemberInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
     class _VNodeState:
-        ValueType = typing.NewType('ValueType', builtins.int)
+        ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
-    class _VNodeStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[MemberInfo._VNodeState.ValueType], builtins.type):
+
+    class _VNodeStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[MemberInfo._VNodeState.ValueType], builtins.type):  # noqa: F821
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         Initializing: MemberInfo._VNodeState.ValueType  # 0
         DiscoverLeader: MemberInfo._VNodeState.ValueType  # 1
@@ -62,9 +76,8 @@ class MemberInfo(google.protobuf.message.Message):
         PreReadOnlyReplica: MemberInfo._VNodeState.ValueType  # 13
         ReadOnlyReplica: MemberInfo._VNodeState.ValueType  # 14
         ResigningLeader: MemberInfo._VNodeState.ValueType  # 15
-    class VNodeState(_VNodeState, metaclass=_VNodeStateEnumTypeWrapper):
-        pass
 
+    class VNodeState(_VNodeState, metaclass=_VNodeStateEnumTypeWrapper): ...
     Initializing: MemberInfo.VNodeState.ValueType  # 0
     DiscoverLeader: MemberInfo.VNodeState.ValueType  # 1
     Unknown: MemberInfo.VNodeState.ValueType  # 2
@@ -94,14 +107,16 @@ class MemberInfo(google.protobuf.message.Message):
     is_alive: builtins.bool
     @property
     def http_end_point(self) -> global___EndPoint: ...
-    def __init__(self,
+    def __init__(
+        self,
         *,
-        instance_id: typing.Optional[shared_pb2.UUID] = ...,
+        instance_id: shared_pb2.UUID | None = ...,
         time_stamp: builtins.int = ...,
         state: global___MemberInfo.VNodeState.ValueType = ...,
         is_alive: builtins.bool = ...,
-        http_end_point: typing.Optional[global___EndPoint] = ...,
-        ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["http_end_point",b"http_end_point","instance_id",b"instance_id"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["http_end_point",b"http_end_point","instance_id",b"instance_id","is_alive",b"is_alive","state",b"state","time_stamp",b"time_stamp"]) -> None: ...
+        http_end_point: global___EndPoint | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["http_end_point", b"http_end_point", "instance_id", b"instance_id"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["http_end_point", b"http_end_point", "instance_id", b"instance_id", "is_alive", b"is_alive", "state", b"state", "time_stamp", b"time_stamp"]) -> None: ...
+
 global___MemberInfo = MemberInfo
