@@ -20,14 +20,14 @@ from esdb.client import Configuration, Member, parse_connection_string
             Configuration(dns_discover=True, address=Member.Endpoint(address="host", port=2113)),
         ),
         (
-                "esdb://user:pass@host:2113?tls=False",
-                Configuration(
-                    dns_discover=False,
-                    address=Member.Endpoint(address="host", port=2113),
-                    username="user",
-                    password="pass",
-                    disable_tls=True,
-                ),
+            "esdb://user:pass@host:2113?tls=False",
+            Configuration(
+                dns_discover=False,
+                address=Member.Endpoint(address="host", port=2113),
+                username="user",
+                password="pass",
+                disable_tls=True,
+            ),
         ),
     ),
 )
