@@ -21,17 +21,17 @@ class Filter:
     checkpoint_interval_multiplier: Optional[int] = None
 
     def to_protobuf(self, message_type: Type[MessageType]) -> MessageType:
-        Expression = message_type.Expression
+        expression_type = message_type.Expression
         stream_identifier = None
         event_type = None
         if self.kind == self.Kind.STREAM:
-            stream_identifier = Expression(regex=self.regex, prefix=self.prefixes)
+            stream_identifier = expression_type(regex=self.regex, prefix=self.prefixes)
         elif self.kind == self.Kind.EVENT_TYPE:
-            event_type = Expression(regex=self.regex, prefix=self.prefixes)
+            event_type = expression_type(regex=self.regex, prefix=self.prefixes)
         options = message_type(
             stream_identifier=stream_identifier,
             event_type=event_type,
-            max=0,  # This apparently does nothing ¯\_(ツ)_/¯
+            max=0,  # TODO: This apparently does nothing ¯\_(ツ)_/¯
             count=Empty(),
         )
         if self.checkpoint_interval_multiplier:

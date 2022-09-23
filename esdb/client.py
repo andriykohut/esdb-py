@@ -10,7 +10,7 @@ import random
 import urllib.parse
 from dataclasses import dataclass
 from functools import cmp_to_key
-from typing import AsyncContextManager, Optional, Union
+from typing import AsyncContextManager, Optional
 
 import grpc
 
@@ -72,6 +72,7 @@ class Connection:
     streams: Streams
     subscriptions: PersistentSubscriptions
     gossip: Gossip
+    config: Configuration
 
 
 def pick_node(preference: Preference, members: list[Member]) -> Optional[Member]:
@@ -163,7 +164,7 @@ def parse_connection_string(connection_string: str) -> Configuration:
     if "@" in rest:
         user_info, rest = rest.split("@")
         user_info_items = user_info.split(":")
-        if len(user_info) != 2:
+        if len(user_info_items) != 2:
             raise ValueError("Invalid user credentials")
         user, password = user_info_items
         if not user:
@@ -191,65 +192,47 @@ def parse_connection_string(connection_string: str) -> Configuration:
 class ESClient:
     def __init__(
         self,
-        endpoints: Union[str, list[str]],
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        insecure: bool = False,
+        connection_string: str,
         root_certificates: Optional[bytes] = None,
         private_key: Optional[bytes] = None,
         certificate_chain: Optional[bytes] = None,
-        keepalive_time_ms: int = 10000,
-        keepalive_timeout_ms: int = 10000,
-        discover: bool = False,
-        discovery_interval: int = 100,
-        discovery_attempts: int = 10,
-        gossip_timeout: int = 5,
-        node_preference: Preference = Preference.LEADER,
     ) -> None:
-        self.channel_credentials = None
-        self.call_credentials = None
-        self.insecure = insecure
-        self.endpoints = endpoints if isinstance(endpoints, list) else [endpoints]
-        self.discover = discover
-        self.discovery_interval = discovery_interval
-        self.discovery_attempts = discovery_attempts
-        self.gossip_timeout = gossip_timeout
-        self.node_preference = node_preference
-
+        self.config = parse_connection_string(connection_string)
         self.options = [
-            ("grpc.keepalive_time_ms", keepalive_time_ms),
-            ("grpc.keepalive_timeout_ms", keepalive_timeout_ms),
+            ("grpc.keepalive_time_ms", self.config.keep_alive_interval * 1000),
+            ("grpc.keepalive_timeout_ms", self.config.keep_alive_timeout * 1000),
         ]
 
-        if not self.insecure:
+        if not self.config.disable_tls:
             self.channel_credentials = grpc.ssl_channel_credentials(
-                root_certificates=root_certificates,
+                root_certificates=root_certificates or self.config.root_cert,
                 private_key=private_key,
                 certificate_chain=certificate_chain,
             )
 
-        if any([username, password]) and not all([username, password]):
-            raise ValueError("Both username and password are required")
+        if self.config.username and self.config.password:
+            self.call_credentials = grpc.metadata_call_credentials(
+                BasicAuthPlugin(self.config.username, self.config.password), name="auth"
+            )
 
-        if username and password:
-            self.call_credentials = grpc.metadata_call_credentials(BasicAuthPlugin(username, password), name="auth")
-
-    def _create_channel(self, endpoint: str) -> grpc.aio.Channel:  # type: ignore
-        if self.insecure:
-            return grpc.aio.insecure_channel(endpoint, options=self.options)  # type: ignore
+    def _create_channel(self, endpoint: Member.Endpoint) -> grpc.aio.Channel:  # type: ignore
+        if self.config.disable_tls:
+            return grpc.aio.insecure_channel(f"{endpoint.address}:{endpoint.port}", options=self.options)  # type: ignore
         assert self.channel_credentials
         credentials = (
             grpc.composite_channel_credentials(self.channel_credentials, self.call_credentials)
             if self.call_credentials
             else self.channel_credentials
         )
-        return grpc.aio.secure_channel(endpoint, credentials, self.options)  # type: ignore
+        return grpc.aio.secure_channel(f"{endpoint.address}:{endpoint.port}", credentials, self.options)  # type: ignore
 
     @contextlib.asynccontextmanager  # type: ignore
     async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
-        endpoint = self.endpoints[0]
-        if self.discover:
+        if self.config.dns_discover:
             endpoint = await self.discover_endpoint()
+        else:
+            assert self.config.address
+            endpoint = self.config.address
 
         async with self._create_channel(endpoint) as channel:
             yield Connection(
@@ -257,27 +240,29 @@ class ESClient:
                 streams=Streams(StreamsStub(channel)),
                 subscriptions=PersistentSubscriptions(PersistentSubscriptionsStub(channel)),
                 gossip=Gossip(GossipStub(channel)),
+                config=self.config,
             )
 
-    async def discover_endpoint(self) -> str:
-        for attempt in range(1, self.discovery_attempts + 1):
-            candidates = self.endpoints.copy()
+    async def discover_endpoint(self) -> Member.Endpoint:
+        for attempt in range(1, self.config.max_discovery_attempts + 1):
+            candidates = self.config.gossip_seed.copy() if self.config.gossip_seed else [self.config.address]
             random.shuffle(candidates)
-            logger.info("Starting discovery attempt %s on %s", attempt, ",".join(candidates))
+            logger.info(
+                "Starting discovery attempt %s on %s", attempt, ",".join(f"{c.address}:{c.port}" for c in candidates)
+            )
             for candidate in candidates:
                 async with self._create_channel(candidate) as chan:
                     gossip = Gossip(GossipStub(chan))
-                    members = await gossip.get_members(self.gossip_timeout)
-                    if pick := pick_node(self.node_preference, members):
+                    members = await gossip.get_members(self.config.gossip_timeout)
+                    if pick := pick_node(self.config.node_preference, members):
                         assert pick.endpoint
-                        endpoint = f"{pick.endpoint.address}:{pick.endpoint.port}"
                         logger.info(
                             "Discovered %s node at %s (Preference: %s)",
                             pick.state.name,
-                            endpoint,
-                            self.node_preference.name,
+                            f"{pick.endpoint.address}:{pick.endpoint.port}",
+                            self.config.node_preference.name,
                         )
-                        return endpoint
+                        return pick.endpoint
 
-            await asyncio.sleep(self.discovery_interval)
-        raise DiscoveryError(f"Discovery failed after {self.discovery_attempts} attempt(s)")
+            await asyncio.sleep(self.config.discovery_interval)
+        raise DiscoveryError(f"Discovery failed after {self.config.max_discovery_attempts} attempt(s)")
