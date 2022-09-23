@@ -30,13 +30,14 @@ from esdb.client import Configuration, Member, Preference, parse_connection_stri
             ),
         ),
         (
-            "esdb://host:2113?nodePreference=follower&tlsverifycert=false&defaultdeadline=21",
+            "esdb://host:2113?nodePreference=follower&tlsVerifyCert=false&defaultDeadline=21&gossipTimeout=12",
             Configuration(
                 dns_discover=False,
                 address=Member.Endpoint(address="host", port=2113),
                 node_preference=Preference.FOLLOWER,
                 verify_cert=False,
                 default_deadline=21,
+                gossip_timeout=12,
             ),
         ),
         (
