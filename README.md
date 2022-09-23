@@ -12,6 +12,7 @@
 * [Installation](#installation)
 * [Development](#development)
 * [Usage](#usage)
+  * [Connection string](#connection-string)
   * [Discovery and node preferences](#discovery-and-node-preferences)
   * [Connection configuration](#connection-configuration)
   * [Append, Read, Catch-up subscriptions](#append-read-catch-up-subscriptions)
@@ -79,17 +80,37 @@ poetry add esdb
 
 Have a look at [tests](https://github.com/andriykohut/esdb-py/tree/main/tests) for more examples.
 
+### Connection string examples
+
+DNS discovery with credentials, discovery configuration, node preference and ca file path
+```
+esdb+discover://admin:changeit@localhost:2111?discoveryinterval=0&maxdiscoverattempts=3&tlscafile=certs/ca/ca.crt&nodepreference=follower
+```
+
+Single-node insecure connection
+```
+esdb://localhost:2111?tls=false
+```
+
+Supported parameters:
+ - `discoveryinterval`
+ - `gossiptimeout`
+ - `maxdiscoverattempts`
+ - `nodepreference`
+ - `keepaliveinterval`
+ - `keepalivetimeout`
+ - `tls`
+ - `tlscafile`
+ - `tlsverifycert`
+ - `defaultdeadline`
+
+
 ### Discovery and node preferences
 
 ```py
 from esdb import ESClient
-from esdb.client import Preference
 
-client = ESClient(
-  "localhost:2112",
-  discover=True,  # Discover the available nodes via gossip
-  node_preference=Preference.FOLLOWER,  # Connect to a preferred node type
-)
+client = ESClient("esdb+discover://admin:changeit@localhost:2111?nodepreference=follower")
 
 ```
 
@@ -99,20 +120,10 @@ client = ESClient(
 from esdb import ESClient
 
 # Connect without TLS
-client = ESClient("localhost:2113", insecure=True)
+client = ESClient("esdb://localhost:2111?tls=false")
 
 # Secure connection with basic auth and keepalive
-with open("certs/ca/ca.crt", "rb") as fh:
-    root_cert = fh.read()
-
-client = ESClient(
-    "localhost:2111",
-    root_certificates=root_cert,
-    username="admin",
-    password="changeit",
-    keepalive_time_ms=5000,
-    keepalive_timeout_ms=10000,
-)
+client = ESClient("esdb://admin:changeit@localhost:2111?tlscafile=certs/ca/ca.crt&keepaliveinterval=5&keepalivetimeout=5")
 ```
 
 ### Append, Read, Catch-up subscriptions
@@ -125,7 +136,7 @@ import uuid
 from esdb import ESClient
 
 
-client = ESClient("localhost:2113", insecure=True)
+client = ESClient("esdb+discover://admin:changeit@localhost:2111")
 stream = f"test-{str(uuid.uuid4())}"
 
 
@@ -185,7 +196,7 @@ async def batch_append():
         Message(event_type="two", data={"item": 2}),
         Message(event_type="two", data={"item": 3}),
     ]
-    async with ESClient("localhost:2113", insecure=True).connect() as conn:
+    async with ESClient("esdb+discover://admin:changeit@localhost:2111").connect() as conn:
         response = await conn.streams.batch_append(stream=stream, messages=messages)
         assert response.current_revision == 5
         events = [e async for e in conn.streams.read(stream=stream, count=50)]
@@ -206,7 +217,7 @@ from esdb.shared import Filter
 
 
 async def filters():
-    async with ESClient("localhost:2113", insecure=True).connect() as conn:
+    async with ESClient("esdb+discover://admin:changeit@localhost:2111").connect() as conn:
         # Append 10 events with the same prefix to random streams
         for i in range(10):
             await conn.streams.append(stream=str(uuid.uuid4()), event_type=f"prefix-{i}", data=b"")
@@ -234,7 +245,7 @@ from esdb import ESClient
 from esdb.shared import Filter
 from esdb.subscriptions import SubscriptionSettings, NackAction
 
-client = ESClient("localhost:2113", insecure=True)
+client = ESClient("esdb+discover://admin:changeit@localhost:2111")
 
 stream = "stream-foo"
 group = "group-bar"
