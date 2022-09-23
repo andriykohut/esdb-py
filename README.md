@@ -25,7 +25,7 @@
 
 * [x] secure connection
 * [x] basic auth
-* [ ] connection string parsing
+* [x] connection string parsing
 * [x] streams
   * [x] append
   * [x] batch append (v21.10+)
