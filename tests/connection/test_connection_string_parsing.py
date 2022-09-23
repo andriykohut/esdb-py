@@ -1,6 +1,6 @@
 import pytest
 
-from esdb.client import Configuration, Member, parse_connection_string
+from esdb.client import Configuration, Member, Preference, parse_connection_string
 
 
 @pytest.mark.parametrize(
@@ -29,7 +29,44 @@ from esdb.client import Configuration, Member, parse_connection_string
                 disable_tls=True,
             ),
         ),
+        (
+            "esdb://host:2113?nodePreference=follower&tlsverifycert=false&defaultdeadline=21",
+            Configuration(
+                dns_discover=False,
+                address=Member.Endpoint(address="host", port=2113),
+                node_preference=Preference.FOLLOWER,
+                verify_cert=False,
+                default_deadline=21,
+            ),
+        ),
+        (
+            "esdb://host",
+            Configuration(
+                dns_discover=False,
+                address=Member.Endpoint(address="host", port=2113),
+            ),
+        ),
     ),
 )
 def test_parse_connection_string(connection_string, config):
     assert parse_connection_string(connection_string) == config
+
+
+@pytest.mark.parametrize(
+    "connection_string, error_msg",
+    (
+        ("foo://host:2113", "esdb:// or esdb+discover:// scheme is required"),
+        ("esdb://ho:st:2113", "Too many colons in a host"),
+        ("esdb://host:foo", "foo port is not a number"),
+        ("esdb://host?tls=true&tls=false", "Too many values for tls"),
+        ("esdb://host?foo=1", "Invalid option foo"),
+        ("esdb://user@host?foo=1", "Invalid user credentials"),
+        ("esdb://user:@host?foo=1", "Password is required"),
+        ("esdb://:password@host?foo=1", "Username is required"),
+    ),
+)
+def test_invalid_string(connection_string, error_msg):
+    with pytest.raises(ValueError) as err:
+        parse_connection_string(connection_string)
+
+    assert str(err.value) == error_msg

@@ -125,7 +125,7 @@ def parse_settings(query: str, c: Configuration) -> None:
 
     for k, v in urllib.parse.parse_qs(query, strict_parsing=True).items():
         if len(v) != 1:
-            raise ValueError("Too many values for {k}")
+            raise ValueError(f"Too many values for {k}")
         key = k.lower()
         [val] = v
         if key == "discoveryinterval":
