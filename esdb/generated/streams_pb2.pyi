@@ -23,9 +23,11 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class ReadReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -42,6 +44,7 @@ class ReadReq(google.protobuf.message.Message):
         Forwards: ReadReq.Options.ReadDirection.ValueType  # 0
         Backwards: ReadReq.Options.ReadDirection.ValueType  # 1
 
+        @typing_extensions.final
         class StreamOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -68,6 +71,7 @@ class ReadReq(google.protobuf.message.Message):
             def ClearField(self, field_name: typing_extensions.Literal["end", b"end", "revision", b"revision", "revision_option", b"revision_option", "start", b"start", "stream_identifier", b"stream_identifier"]) -> None: ...
             def WhichOneof(self, oneof_group: typing_extensions.Literal["revision_option", b"revision_option"]) -> typing_extensions.Literal["revision", "start", "end"] | None: ...
 
+        @typing_extensions.final
         class AllOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -91,6 +95,7 @@ class ReadReq(google.protobuf.message.Message):
             def ClearField(self, field_name: typing_extensions.Literal["all_option", b"all_option", "end", b"end", "position", b"position", "start", b"start"]) -> None: ...
             def WhichOneof(self, oneof_group: typing_extensions.Literal["all_option", b"all_option"]) -> typing_extensions.Literal["position", "start", "end"] | None: ...
 
+        @typing_extensions.final
         class SubscriptionOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -98,6 +103,7 @@ class ReadReq(google.protobuf.message.Message):
                 self,
             ) -> None: ...
 
+        @typing_extensions.final
         class Position(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -113,9 +119,11 @@ class ReadReq(google.protobuf.message.Message):
             ) -> None: ...
             def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
+        @typing_extensions.final
         class FilterOptions(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+            @typing_extensions.final
             class Expression(google.protobuf.message.Message):
                 DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -161,6 +169,7 @@ class ReadReq(google.protobuf.message.Message):
             @typing.overload
             def WhichOneof(self, oneof_group: typing_extensions.Literal["window", b"window"]) -> typing_extensions.Literal["max", "count"] | None: ...
 
+        @typing_extensions.final
         class UUIDOption(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -180,6 +189,7 @@ class ReadReq(google.protobuf.message.Message):
             def ClearField(self, field_name: typing_extensions.Literal["content", b"content", "string", b"string", "structured", b"structured"]) -> None: ...
             def WhichOneof(self, oneof_group: typing_extensions.Literal["content", b"content"]) -> typing_extensions.Literal["structured", "string"] | None: ...
 
+        @typing_extensions.final
         class ControlOption(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -255,15 +265,19 @@ class ReadReq(google.protobuf.message.Message):
 
 global___ReadReq = ReadReq
 
+@typing_extensions.final
 class ReadResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class ReadEvent(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class RecordedEvent(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+            @typing_extensions.final
             class MetadataEntry(google.protobuf.message.Message):
                 DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -336,6 +350,7 @@ class ReadResp(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "event", b"event", "link", b"link", "no_position", b"no_position", "position", b"position"]) -> None: ...
         def WhichOneof(self, oneof_group: typing_extensions.Literal["position", b"position"]) -> typing_extensions.Literal["commit_position", "no_position"] | None: ...
 
+    @typing_extensions.final
     class SubscriptionConfirmation(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -348,6 +363,7 @@ class ReadResp(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["subscription_id", b"subscription_id"]) -> None: ...
 
+    @typing_extensions.final
     class Checkpoint(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -363,6 +379,7 @@ class ReadResp(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
+    @typing_extensions.final
     class StreamNotFound(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -413,9 +430,11 @@ class ReadResp(google.protobuf.message.Message):
 
 global___ReadResp = ReadResp
 
+@typing_extensions.final
 class AppendReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -446,9 +465,11 @@ class AppendReq(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["any", b"any", "expected_stream_revision", b"expected_stream_revision", "no_stream", b"no_stream", "revision", b"revision", "stream_exists", b"stream_exists", "stream_identifier", b"stream_identifier"]) -> None: ...
         def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_revision", b"expected_stream_revision"]) -> typing_extensions.Literal["revision", "no_stream", "any", "stream_exists"] | None: ...
 
+    @typing_extensions.final
     class ProposedMessage(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class MetadataEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -503,9 +524,11 @@ class AppendReq(google.protobuf.message.Message):
 
 global___AppendReq = AppendReq
 
+@typing_extensions.final
 class AppendResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -521,6 +544,7 @@ class AppendResp(google.protobuf.message.Message):
         ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["commit_position", b"commit_position", "prepare_position", b"prepare_position"]) -> None: ...
 
+    @typing_extensions.final
     class Success(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -550,6 +574,7 @@ class AppendResp(google.protobuf.message.Message):
         @typing.overload
         def WhichOneof(self, oneof_group: typing_extensions.Literal["position_option", b"position_option"]) -> typing_extensions.Literal["position", "no_position"] | None: ...
 
+    @typing_extensions.final
     class WrongExpectedVersion(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -626,9 +651,11 @@ class AppendResp(google.protobuf.message.Message):
 
 global___AppendResp = AppendResp
 
+@typing_extensions.final
 class BatchAppendReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -670,9 +697,11 @@ class BatchAppendReq(google.protobuf.message.Message):
         @typing.overload
         def WhichOneof(self, oneof_group: typing_extensions.Literal["expected_stream_position", b"expected_stream_position"]) -> typing_extensions.Literal["stream_position", "no_stream", "any", "stream_exists"] | None: ...
 
+    @typing_extensions.final
     class ProposedMessage(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class MetadataEntry(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -733,9 +762,11 @@ class BatchAppendReq(google.protobuf.message.Message):
 
 global___BatchAppendReq = BatchAppendReq
 
+@typing_extensions.final
 class BatchAppendResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Success(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -809,9 +840,11 @@ class BatchAppendResp(google.protobuf.message.Message):
 
 global___BatchAppendResp = BatchAppendResp
 
+@typing_extensions.final
 class DeleteReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -855,9 +888,11 @@ class DeleteReq(google.protobuf.message.Message):
 
 global___DeleteReq = DeleteReq
 
+@typing_extensions.final
 class DeleteResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -891,9 +926,11 @@ class DeleteResp(google.protobuf.message.Message):
 
 global___DeleteResp = DeleteResp
 
+@typing_extensions.final
 class TombstoneReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -937,9 +974,11 @@ class TombstoneReq(google.protobuf.message.Message):
 
 global___TombstoneReq = TombstoneReq
 
+@typing_extensions.final
 class TombstoneResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Position(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

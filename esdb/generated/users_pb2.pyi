@@ -16,9 +16,11 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class CreateReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -54,6 +56,7 @@ class CreateReq(google.protobuf.message.Message):
 
 global___CreateReq = CreateReq
 
+@typing_extensions.final
 class CreateResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -63,9 +66,11 @@ class CreateResp(google.protobuf.message.Message):
 
 global___CreateResp = CreateResp
 
+@typing_extensions.final
 class UpdateReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -101,6 +106,7 @@ class UpdateReq(google.protobuf.message.Message):
 
 global___UpdateReq = UpdateReq
 
+@typing_extensions.final
 class UpdateResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -110,9 +116,11 @@ class UpdateResp(google.protobuf.message.Message):
 
 global___UpdateResp = UpdateResp
 
+@typing_extensions.final
 class DeleteReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -138,6 +146,7 @@ class DeleteReq(google.protobuf.message.Message):
 
 global___DeleteReq = DeleteReq
 
+@typing_extensions.final
 class DeleteResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -147,9 +156,11 @@ class DeleteResp(google.protobuf.message.Message):
 
 global___DeleteResp = DeleteResp
 
+@typing_extensions.final
 class EnableReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -175,6 +186,7 @@ class EnableReq(google.protobuf.message.Message):
 
 global___EnableReq = EnableReq
 
+@typing_extensions.final
 class EnableResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -184,9 +196,11 @@ class EnableResp(google.protobuf.message.Message):
 
 global___EnableResp = EnableResp
 
+@typing_extensions.final
 class DisableReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -212,6 +226,7 @@ class DisableReq(google.protobuf.message.Message):
 
 global___DisableReq = DisableReq
 
+@typing_extensions.final
 class DisableResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -221,9 +236,11 @@ class DisableResp(google.protobuf.message.Message):
 
 global___DisableResp = DisableResp
 
+@typing_extensions.final
 class DetailsReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -249,12 +266,15 @@ class DetailsReq(google.protobuf.message.Message):
 
 global___DetailsReq = DetailsReq
 
+@typing_extensions.final
 class DetailsResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class UserDetails(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+        @typing_extensions.final
         class DateTime(google.protobuf.message.Message):
             DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -304,9 +324,11 @@ class DetailsResp(google.protobuf.message.Message):
 
 global___DetailsResp = DetailsResp
 
+@typing_extensions.final
 class ChangePasswordReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -338,6 +360,7 @@ class ChangePasswordReq(google.protobuf.message.Message):
 
 global___ChangePasswordReq = ChangePasswordReq
 
+@typing_extensions.final
 class ChangePasswordResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -347,9 +370,11 @@ class ChangePasswordResp(google.protobuf.message.Message):
 
 global___ChangePasswordResp = ChangePasswordResp
 
+@typing_extensions.final
 class ResetPasswordReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -378,6 +403,7 @@ class ResetPasswordReq(google.protobuf.message.Message):
 
 global___ResetPasswordReq = ResetPasswordReq
 
+@typing_extensions.final
 class ResetPasswordResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
