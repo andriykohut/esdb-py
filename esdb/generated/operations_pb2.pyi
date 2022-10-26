@@ -16,9 +16,11 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class StartScavengeReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -47,9 +49,11 @@ class StartScavengeReq(google.protobuf.message.Message):
 
 global___StartScavengeReq = StartScavengeReq
 
+@typing_extensions.final
 class StopScavengeReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Options(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -75,6 +79,7 @@ class StopScavengeReq(google.protobuf.message.Message):
 
 global___StopScavengeReq = StopScavengeReq
 
+@typing_extensions.final
 class ScavengeResp(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -107,6 +112,7 @@ class ScavengeResp(google.protobuf.message.Message):
 
 global___ScavengeResp = ScavengeResp
 
+@typing_extensions.final
 class SetNodePriorityReq(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

@@ -19,6 +19,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class GossipRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -39,6 +40,7 @@ class GossipRequest(google.protobuf.message.Message):
 
 global___GossipRequest = GossipRequest
 
+@typing_extensions.final
 class ViewChangeRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -62,6 +64,7 @@ class ViewChangeRequest(google.protobuf.message.Message):
 
 global___ViewChangeRequest = ViewChangeRequest
 
+@typing_extensions.final
 class ViewChangeProofRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -85,6 +88,7 @@ class ViewChangeProofRequest(google.protobuf.message.Message):
 
 global___ViewChangeProofRequest = ViewChangeProofRequest
 
+@typing_extensions.final
 class PrepareRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -108,6 +112,7 @@ class PrepareRequest(google.protobuf.message.Message):
 
 global___PrepareRequest = PrepareRequest
 
+@typing_extensions.final
 class PrepareOkRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -161,6 +166,7 @@ class PrepareOkRequest(google.protobuf.message.Message):
 
 global___PrepareOkRequest = PrepareOkRequest
 
+@typing_extensions.final
 class ProposalRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -218,6 +224,7 @@ class ProposalRequest(google.protobuf.message.Message):
 
 global___ProposalRequest = ProposalRequest
 
+@typing_extensions.final
 class AcceptRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -249,6 +256,7 @@ class AcceptRequest(google.protobuf.message.Message):
 
 global___AcceptRequest = AcceptRequest
 
+@typing_extensions.final
 class LeaderIsResigningRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -269,6 +277,7 @@ class LeaderIsResigningRequest(google.protobuf.message.Message):
 
 global___LeaderIsResigningRequest = LeaderIsResigningRequest
 
+@typing_extensions.final
 class LeaderIsResigningOkRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -297,6 +306,7 @@ class LeaderIsResigningOkRequest(google.protobuf.message.Message):
 
 global___LeaderIsResigningOkRequest = LeaderIsResigningOkRequest
 
+@typing_extensions.final
 class ClusterInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -312,6 +322,7 @@ class ClusterInfo(google.protobuf.message.Message):
 
 global___ClusterInfo = ClusterInfo
 
+@typing_extensions.final
 class EndPoint(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -329,6 +340,7 @@ class EndPoint(google.protobuf.message.Message):
 
 global___EndPoint = EndPoint
 
+@typing_extensions.final
 class MemberInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -447,6 +459,7 @@ class MemberInfo(google.protobuf.message.Message):
 
 global___MemberInfo = MemberInfo
 
+@typing_extensions.final
 class ReplicaLogWrite(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -464,6 +477,7 @@ class ReplicaLogWrite(google.protobuf.message.Message):
 
 global___ReplicaLogWrite = ReplicaLogWrite
 
+@typing_extensions.final
 class ReplicatedTo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -478,6 +492,7 @@ class ReplicatedTo(google.protobuf.message.Message):
 
 global___ReplicatedTo = ReplicatedTo
 
+@typing_extensions.final
 class Epoch(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -498,6 +513,7 @@ class Epoch(google.protobuf.message.Message):
 
 global___Epoch = Epoch
 
+@typing_extensions.final
 class SubscribeReplica(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -537,6 +553,7 @@ class SubscribeReplica(google.protobuf.message.Message):
 
 global___SubscribeReplica = SubscribeReplica
 
+@typing_extensions.final
 class ReplicaSubscriptionRetry(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -554,6 +571,7 @@ class ReplicaSubscriptionRetry(google.protobuf.message.Message):
 
 global___ReplicaSubscriptionRetry = ReplicaSubscriptionRetry
 
+@typing_extensions.final
 class ReplicaSubscribed(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -574,6 +592,7 @@ class ReplicaSubscribed(google.protobuf.message.Message):
 
 global___ReplicaSubscribed = ReplicaSubscribed
 
+@typing_extensions.final
 class ReplicaLogPositionAck(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -594,6 +613,7 @@ class ReplicaLogPositionAck(google.protobuf.message.Message):
 
 global___ReplicaLogPositionAck = ReplicaLogPositionAck
 
+@typing_extensions.final
 class CreateChunk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -620,6 +640,7 @@ class CreateChunk(google.protobuf.message.Message):
 
 global___CreateChunk = CreateChunk
 
+@typing_extensions.final
 class RawChunkBulk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -652,6 +673,7 @@ class RawChunkBulk(google.protobuf.message.Message):
 
 global___RawChunkBulk = RawChunkBulk
 
+@typing_extensions.final
 class DataChunkBulk(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -684,6 +706,7 @@ class DataChunkBulk(google.protobuf.message.Message):
 
 global___DataChunkBulk = DataChunkBulk
 
+@typing_extensions.final
 class FollowerAssignment(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -701,6 +724,7 @@ class FollowerAssignment(google.protobuf.message.Message):
 
 global___FollowerAssignment = FollowerAssignment
 
+@typing_extensions.final
 class CloneAssignment(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -718,6 +742,7 @@ class CloneAssignment(google.protobuf.message.Message):
 
 global___CloneAssignment = CloneAssignment
 
+@typing_extensions.final
 class DropSubscription(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

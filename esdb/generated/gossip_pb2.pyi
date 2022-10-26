@@ -19,6 +19,7 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class ClusterInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -34,6 +35,7 @@ class ClusterInfo(google.protobuf.message.Message):
 
 global___ClusterInfo = ClusterInfo
 
+@typing_extensions.final
 class EndPoint(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -51,6 +53,7 @@ class EndPoint(google.protobuf.message.Message):
 
 global___EndPoint = EndPoint
 
+@typing_extensions.final
 class MemberInfo(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 

@@ -16,9 +16,11 @@ else:
 
 DESCRIPTOR: google.protobuf.descriptor.FileDescriptor
 
+@typing_extensions.final
 class UUID(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
+    @typing_extensions.final
     class Structured(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -51,6 +53,7 @@ class UUID(google.protobuf.message.Message):
 
 global___UUID = UUID
 
+@typing_extensions.final
 class Empty(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -60,6 +63,7 @@ class Empty(google.protobuf.message.Message):
 
 global___Empty = Empty
 
+@typing_extensions.final
 class StreamIdentifier(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -74,6 +78,7 @@ class StreamIdentifier(google.protobuf.message.Message):
 
 global___StreamIdentifier = StreamIdentifier
 
+@typing_extensions.final
 class AllStreamPosition(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -91,6 +96,7 @@ class AllStreamPosition(google.protobuf.message.Message):
 
 global___AllStreamPosition = AllStreamPosition
 
+@typing_extensions.final
 class WrongExpectedVersion(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -129,6 +135,7 @@ class WrongExpectedVersion(google.protobuf.message.Message):
 
 global___WrongExpectedVersion = WrongExpectedVersion
 
+@typing_extensions.final
 class AccessDenied(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -138,6 +145,7 @@ class AccessDenied(google.protobuf.message.Message):
 
 global___AccessDenied = AccessDenied
 
+@typing_extensions.final
 class StreamDeleted(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -154,6 +162,7 @@ class StreamDeleted(google.protobuf.message.Message):
 
 global___StreamDeleted = StreamDeleted
 
+@typing_extensions.final
 class Timeout(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -163,6 +172,7 @@ class Timeout(google.protobuf.message.Message):
 
 global___Timeout = Timeout
 
+@typing_extensions.final
 class Unknown(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -172,6 +182,7 @@ class Unknown(google.protobuf.message.Message):
 
 global___Unknown = Unknown
 
+@typing_extensions.final
 class InvalidTransaction(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -181,6 +192,7 @@ class InvalidTransaction(google.protobuf.message.Message):
 
 global___InvalidTransaction = InvalidTransaction
 
+@typing_extensions.final
 class MaximumAppendSizeExceeded(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
@@ -195,6 +207,7 @@ class MaximumAppendSizeExceeded(google.protobuf.message.Message):
 
 global___MaximumAppendSizeExceeded = MaximumAppendSizeExceeded
 
+@typing_extensions.final
 class BadRequest(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor
 
