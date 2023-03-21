@@ -21,7 +21,7 @@ grpcio = "^1.50.0"
 protobuf = "^4.21.8"
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=0.982,<1.1"
+mypy = ">=0.982,<1.2"
 mypy-protobuf = "^3.4.0"
 black = "^22.10.0"
 pytest = "^7.2.0"
