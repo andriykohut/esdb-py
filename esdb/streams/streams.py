@@ -49,7 +49,6 @@ class Streams:
         revision: Optional[int] = None,
         custom_metadata: Optional[dict] = None,
     ) -> AppendResult:
-
         options = AppendReq.Options(
             stream_identifier=StreamIdentifier(stream_name=stream.encode()),
             **{stream_state.value: Empty()},  # type: ignore
@@ -139,7 +138,6 @@ class Streams:
     async def read_all(
         self, count: Optional[int] = None, backwards=False, subscribe=False, filter_by: Optional[Filter] = None
     ) -> AsyncIterable[ReadEvent]:
-
         assert subscribe ^ (count is not None), "subscribe and count are mutually exclusive arguments"
         request = ReadReq(
             options=ReadReq.Options(
