@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 119
-exclude = esdb/generated/*
+exclude = esdb/generated/*,.venv
 
