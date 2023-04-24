@@ -55,24 +55,25 @@ Using pip:
 pip install esdb
 ```
 
-Using poetry:
+Using poetry/pdm:
 
 ```sh
 poetry add esdb
+pdm add esdb
 ```
 
 ## Development
 
-1. Install [poetry](https://python-poetry.org/docs/#installation)
+1. Install [pdm](https://pdm.fming.dev/latest/#installation)
 2. Create virtualenv (i.e. using pyenv):
 
     ```sh
-    pyenv install 3.11.0
-    pyenv virtualenv 3.11.0 esdb-py
+    pyenv install 3.11.3
+    pyenv virtualenv 3.11.3 esdb-py
     pyenv local esdb-py
     ```
 
-3. Install deps with `poetry install`
+3. Install deps with `pdm install`
 4. Start eventstore in docker: `make run-esdb`
 5. Run the tests: `pytest tests`
 

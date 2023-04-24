@@ -12,23 +12,23 @@ protoc:
 
 
 pretty:
-	poetry run black .
-	poetry run isort .
+	pdm run black .
+	pdm run isort .
 
 lint:
-	poetry run black --check .
-	poetry run isort --check-only .
-	poetry run flake8 .
-	poetry run mypy .
+	pdm run black --check .
+	pdm run isort --check-only .
+	pdm run flake8 .
+	pdm run mypy .
 
 test:
-	poetry run pytest --cov esdb
+	pdm run pytest --cov esdb
 
 test-ci:
-	poetry run pytest --cov esdb --cov-report=xml
+	pdm run pytest --cov esdb --cov-report=xml
 
 html-cov: test
-	poetry run coverage html
+	pdm run coverage html
 	open htmlcov/index.html
 
 cleanup:

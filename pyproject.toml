@@ -1,40 +1,48 @@
-[tool.poetry]
-name = "esdb"
-version = "0.3.2"
-description = "gRPC client for EventStore DB"
-authors = ["Andrii Kohut <kogut.andriy@gmail.com>"]
-license = "MIT"
-readme = "README.md"
-homepage = "https://github.com/andriykohut/esdb-py"
-repository = "https://github.com/andriykohut/esdb-py"
-keywords = ["eventstore", "esdb", "event sourcing", "cqrs", "event-sourcing", "grpcio", "grpc"]
-
-packages = [
-    { include = "esdb" },
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "mypy>=1.2.0",
+    "mypy-protobuf>=3.4.0",
+    "black>=23.3.0",
+    "pytest>=7.3.1",
+    "isort>=5.12.0",
+    "pytest-asyncio>=0.21.0",
+    "flake8>=6.0.0",
+    "grpcio-tools>=1.54.0",
+    "grpc-stubs>=1.53.0.1",
+    "pytest-cov>=4.0.0",
 ]
 
-exclude = ["EventStore", "certs", "es_config", "protos"]
+[project]
+name = "esdb-py"
+version = "0.3.2"
+description = "gRPC client for EventStore DB"
+authors = [
+    {name = "Andrii Kohut", email = "kogut.andriy@gmail.com"},
+]
+dependencies = [
+    "grpcio>=1.5",
+    "protobuf>=4",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["eventstore", "esdb", "event sourcing", "cqrs", "event-sourcing", "grpcio", "grpc"]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-grpcio = "^1.53.0"
-protobuf = "^4.22.1"
-
-[tool.poetry.group.dev.dependencies]
-mypy = ">=0.982,<1.2"
-mypy-protobuf = "^3.4.0"
-black = ">=22.10,<24.0"
-pytest = "^7.2.2"
-isort = "^5.12.0"
-pytest-asyncio = ">=0.19,<0.22"
-flake8 = ">=5.0.4,<7.0.0"
-grpcio-tools = "^1.53.0"
-grpc-stubs = "^1.24.12.1"
-pytest-cov = "^4.0.0"
+[project.urls]
+Homepage = "https://github.com/andriykohut/esdb-py"
+Repository = "https://github.com/andriykohut/esdb-py"
+Changelog = "https://github.com/andriykohut/esdb-py/releases"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.build]
+excludes = ["EventStore", "certs", "es_config", "protos", "./**/.git"]
+package-dir = "."
+includes = ["esdb"]
+source-includes = ["tests", "LICENSE", "README.md"]
 
 [tool.mypy]
 exclude = ["esdb/generated"]
