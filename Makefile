@@ -18,7 +18,7 @@ pretty:
 lint:
 	poetry run black --check .
 	poetry run isort --check-only .
-	poetry run flake8 .
+	poetry run ruff check .
 	poetry run mypy .
 
 test:

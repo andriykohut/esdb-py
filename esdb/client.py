@@ -8,9 +8,10 @@ import itertools
 import logging
 import random
 import urllib.parse
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from functools import cmp_to_key
-from typing import AsyncContextManager, Optional
+from typing import Optional
 
 import grpc
 
@@ -230,8 +231,8 @@ class ESClient:
             f"{endpoint.address}:{endpoint.port}", credentials, self.options
         )
 
-    @contextlib.asynccontextmanager  # type: ignore
-    async def connect(self) -> AsyncContextManager[Connection]:  # type: ignore
+    @contextlib.asynccontextmanager
+    async def connect(self) -> AsyncIterator[Connection]:
         if self.config.dns_discover:
             endpoint = await self.discover_endpoint()
         else:
