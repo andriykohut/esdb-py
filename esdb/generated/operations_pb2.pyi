@@ -87,7 +87,7 @@ class ScavengeResp(google.protobuf.message.Message):
         ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _ScavengeResultEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ScavengeResp._ScavengeResult.ValueType], builtins.type):  # noqa: F821
+    class _ScavengeResultEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ScavengeResp._ScavengeResult.ValueType], builtins.type):
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         Started: ScavengeResp._ScavengeResult.ValueType  # 0
         InProgress: ScavengeResp._ScavengeResult.ValueType  # 1

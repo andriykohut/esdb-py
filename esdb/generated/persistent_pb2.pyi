@@ -98,7 +98,7 @@ class ReadReq(google.protobuf.message.Message):
             ValueType = typing.NewType("ValueType", builtins.int)
             V: typing_extensions.TypeAlias = ValueType
 
-        class _ActionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Nack._Action.ValueType], builtins.type):  # noqa: F821
+        class _ActionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Nack._Action.ValueType], builtins.type):
             DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             Unknown: ReadReq.Nack._Action.ValueType  # 0
             Park: ReadReq.Nack._Action.ValueType  # 1
@@ -288,7 +288,7 @@ class CreateReq(google.protobuf.message.Message):
         ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _ConsumerStrategyEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[CreateReq._ConsumerStrategy.ValueType], builtins.type):  # noqa: F821
+    class _ConsumerStrategyEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[CreateReq._ConsumerStrategy.ValueType], builtins.type):
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         DispatchToSingle: CreateReq._ConsumerStrategy.ValueType  # 0
         RoundRobin: CreateReq._ConsumerStrategy.ValueType  # 1
@@ -552,7 +552,7 @@ class UpdateReq(google.protobuf.message.Message):
         ValueType = typing.NewType("ValueType", builtins.int)
         V: typing_extensions.TypeAlias = ValueType
 
-    class _ConsumerStrategyEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UpdateReq._ConsumerStrategy.ValueType], builtins.type):  # noqa: F821
+    class _ConsumerStrategyEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[UpdateReq._ConsumerStrategy.ValueType], builtins.type):
         DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
         DispatchToSingle: UpdateReq._ConsumerStrategy.ValueType  # 0
         RoundRobin: UpdateReq._ConsumerStrategy.ValueType  # 1

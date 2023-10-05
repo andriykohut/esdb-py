@@ -35,7 +35,7 @@ class ReadReq(google.protobuf.message.Message):
             ValueType = typing.NewType("ValueType", builtins.int)
             V: typing_extensions.TypeAlias = ValueType
 
-        class _ReadDirectionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Options._ReadDirection.ValueType], builtins.type):  # noqa: F821
+        class _ReadDirectionEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[ReadReq.Options._ReadDirection.ValueType], builtins.type):
             DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor
             Forwards: ReadReq.Options._ReadDirection.ValueType  # 0
             Backwards: ReadReq.Options._ReadDirection.ValueType  # 1
