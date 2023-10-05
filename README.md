@@ -67,8 +67,8 @@ poetry add esdb
 2. Create virtualenv (i.e. using pyenv):
 
     ```sh
-    pyenv install 3.11.0
-    pyenv virtualenv 3.11.0 esdb-py
+    pyenv install 3.12.0
+    pyenv virtualenv 3.12.0 esdb-py
     pyenv local esdb-py
     ```
 
