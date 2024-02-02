@@ -195,9 +195,11 @@ class PersistentSubscriptions:
         request = ListReq(
             options=ListReq.Options(
                 list_all_subscriptions=Empty() if stream is None else None,
-                list_for_stream=None
-                if stream is None
-                else ListReq.StreamOption(stream=StreamIdentifier(stream_name=stream.encode())),
+                list_for_stream=(
+                    None
+                    if stream is None
+                    else ListReq.StreamOption(stream=StreamIdentifier(stream_name=stream.encode()))
+                ),
             )
         )
         response: ListResp = await self._stub.List(request)

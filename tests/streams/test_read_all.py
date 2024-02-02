@@ -60,8 +60,7 @@ async def test_read_all_filter_by_stream_name(client):
 async def test_read_all_filter_by_stream_name_subscribe(client):
     stream_prefix = str(uuid.uuid4())
 
-    class Done_(Exception):
-        ...
+    class Done_(Exception): ...
 
     async with client.connect() as conn:
         for i in range(20):
