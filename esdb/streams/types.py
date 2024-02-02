@@ -92,12 +92,14 @@ class ReadEvent:
             id=response.event.event.id.string,
             stream_name=response.event.event.stream_identifier.stream_name.decode(),
             metadata=response.event.event.metadata,
-            custom_metadata=json.loads(response.event.event.custom_metadata)
-            if response.event.event.custom_metadata
-            else None,
-            data=json.loads(response.event.event.data)
-            if response.event.event.metadata["content-type"] == ContentType.JSON.value
-            else response.event.event.data,
+            custom_metadata=(
+                json.loads(response.event.event.custom_metadata) if response.event.event.custom_metadata else None
+            ),
+            data=(
+                json.loads(response.event.event.data)
+                if response.event.event.metadata["content-type"] == ContentType.JSON.value
+                else response.event.event.data
+            ),
             prepare_position=response.event.commit_position,
             commit_position=response.event.commit_position,
             event_type=response.event.event.metadata["type"],
@@ -131,9 +133,9 @@ class Message:
             id=UUID(string=str(self.id)),
             metadata={
                 "type": self.event_type,
-                "content-type": ContentType.OCTET_STREAM.value
-                if isinstance(self.data, bytes)
-                else ContentType.JSON.value,
+                "content-type": (
+                    ContentType.OCTET_STREAM.value if isinstance(self.data, bytes) else ContentType.JSON.value
+                ),
             },
             custom_metadata=json.dumps(self.custom_metadata).encode() if self.custom_metadata else b"",
             data=json.dumps(self.data).encode() if isinstance(self.data, dict) else self.data,

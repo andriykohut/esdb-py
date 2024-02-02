@@ -32,9 +32,11 @@ class Event:
             commit_position=event.event.commit_position,
             metadata=event.event.metadata,
             type=event.event.metadata["type"],
-            data=json.loads(event.event.data)
-            if event.event.metadata["content-type"] == ContentType.JSON.value
-            else event.event.data,
+            data=(
+                json.loads(event.event.data)
+                if event.event.metadata["content-type"] == ContentType.JSON.value
+                else event.event.data
+            ),
         )
 
 

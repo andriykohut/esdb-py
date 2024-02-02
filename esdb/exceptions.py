@@ -4,8 +4,7 @@ from esdb.generated.shared_pb2 import Empty
 from esdb.generated.streams_pb2 import AppendResp, ReadResp
 
 
-class ClientException(Exception):
-    ...
+class ClientException(Exception): ...
 
 
 class WrongExpectedVersion(ClientException):
@@ -31,5 +30,4 @@ class StreamNotFound(ClientException):
         super().__init__(f"Stream '{error.stream_identifier.stream_name.decode()}' not found")
 
 
-class DiscoveryError(ClientException):
-    ...
+class DiscoveryError(ClientException): ...
